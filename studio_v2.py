@@ -105,19 +105,22 @@ def parse_mcp_list(text):
     servers = []
     for line in text.splitlines():
         line = line.strip()
-        m = re.match(r'^([A-Za-z0-9_.@\-]+):\s+(.*)$', line)
-        if not m or m.group(1).lower() in ('checking', 'note', 'warning', 'error'):
+        # Format: "<name>: <ziel> - <status>" – Namen können Leerzeichen enthalten (claude.ai-Connectors).
+        if ' - ' not in line or ': ' not in line:
             continue
-        rest = m.group(2)
-        if '✓' in rest or 'Connected' in rest:
+        name, rest = line.split(': ', 1)
+        if name.lower() in ('checking mcp server health...', 'note', 'warning', 'error') or len(name) > 80:
+            continue
+        status = rest.rsplit(' - ', 1)[1]
+        if '✓' in status or '✔' in status or 'Connected' in status:
             state = 'Verbunden'
-        elif '✗' in rest or 'Failed' in rest or 'failed' in rest:
+        elif '✗' in status or '✘' in status or 'Failed' in status or 'failed' in status:
             state = 'Fehlgeschlagen'
-        elif 'auth' in rest.lower():
+        elif 'auth' in status.lower():
             state = 'Anmeldung nötig'
         else:
             state = 'Unbekannt'
-        servers.append({'name': m.group(1), 'state': state, 'detail': rest[:300]})
+        servers.append({'name': name, 'state': state, 'detail': rest[:300]})
     return servers
 
 

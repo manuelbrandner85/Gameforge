@@ -1,0 +1,12 @@
+{
+  "name": "gameforge-lokal",
+  "owner": { "name": "GAMEFORGE" },
+  "metadata": { "description": "Lokaler Marktplatz für das GAMEFORGE-Spielestudio-Plugin." },
+  "plugins": [
+    {
+      "name": "gameforge",
+      "source": "./gameforge-plugin",
+      "description": "KI-Spielestudio: Spiele planen, Referenzbilder, Blender → Unreal mit 20 Agenten."
+    }
+  ]
+}
