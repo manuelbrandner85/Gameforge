@@ -51,11 +51,13 @@ const AREAS=[
  {id:'games',label:'Meine Spiele',icon:'games'},
  {id:'studio',label:'Kreativstudio',icon:'studio'},
  {id:'production',label:'Produktion',icon:'production'},
- {id:'archive',label:'Archiv',icon:'archive'}];
+ {id:'archive',label:'Archiv',icon:'archive'},
+ {id:'refstudio',label:'Reference Studio',icon:'image'}];
 const TABS={
  games:[['list','Bibliothek','games'],['overview','Projektübersicht','info'],['dlcs','DLCs','layers'],['versions','Versionen','clock']],
  studio:[['ideas','Ideen & Entscheidungen','studio'],['bible','Spielbibel','book'],['refs','Referenzbilder','image']],
  production:[['overview','Überblick','production'],['pipeline','Blender → Unreal','cube'],['agents','Agenten-Team','users'],['live','Live-Monitor','activity'],['direct','Direkt-Studio','terminal'],['tasks','Aufgaben A–Z','tasks'],['roadmap','Ausbauplan','map']],
+ refstudio:[['overview','Projekt & Stil','info'],['create','Erzeugen','play'],['gallery','Galerie & Freigabe','image'],['queue','Warteschlange','clock'],['system','Modelle & System','production'],['help','Hilfe','book']],
  archive:[['downloads','Downloads','download'],['files','Originaldateien','folder'],['zips','Projekt-ZIPs','archive'],['scan','Prüfung','scan'],['backup','Sicherung','shield']]};
 const STATUS_KIND={'Idee':'','Konzept':'info','In Entwicklung':'accent','Testphase':'warn','Fertig':'ok','Veröffentlicht':'ok'};
 const DLC_LABELS={story:'Story & Kanon',prologue:'DLC-Prolog',quests:'DLC-Missionen',new_characters:'Neue Charaktere',new_world:'Zusätzliche Welt / Regionen',new_assets:'Neue 3D-Assets / Referenzen',gameplay:'Gameplay / Fähigkeiten',cinematics:'Zwischensequenzen',menu:'UI / Hauptmenü-Anbindung',integration:'Integration, Savegames & Kompatibilität',qa:'DLC-Tests & Abnahmekriterien',release:'DLC-Packaging & Veröffentlichung'};
@@ -157,6 +159,7 @@ async function render(){
     else if(S.area==='studio')await renderStudio();
     else if(S.area==='production')await renderProduction();
     else if(S.area==='archive')await renderArchive();
+    else if(S.area==='refstudio')await renderRefStudio();
   }catch(e){view.innerHTML=note('Diese Ansicht konnte nicht geladen werden: '+esc(e.message),'err','alert')}
   renderNav();
 }
@@ -433,10 +436,14 @@ async function agentsView(){
 }
 async function liveView(){
   const info=await api(G()+'/live');
+  let rs=null;try{rs=await api('/api/reference/status?game_id='+enc(S.gameId))}catch{}
   return `<div class="card"><div class="card-head"><div><h2>Live-Monitor · ${ctxLabel()}</h2><p class="help">Zeigt nur echte Ereignisse aus Claude-Code-Sitzungen in diesem Projektordner (Start, Ende, Fehler der Agenten). Keine Prozentwerte, keine Fantasie-Fortschritte. Aktualisiert sich alle 3 Sekunden.</p></div>
    <div class="btn-row">${badge(info.configured?'Ereignis-Meldung eingerichtet':'Ereignis-Meldung fehlt',info.configured?'ok':'warn')}${btn(info.configured?'Erneut einrichten':'Einrichten','live-install','sm '+(info.configured?'':'primary'),'','activity')}</div></div>
    ${!info.configured?note('Damit GAMEFORGE sieht, welcher Agent gerade arbeitet, wird im Projektordner eine kleine Meldefunktion (Claude-Code-Hook) eingerichtet. Bestehende Einstellungen werden vorher gesichert, Chat-Inhalte werden nie gespeichert.','info','info'):''}
-   <div id="live-body">${liveBody(info)}</div></div>`;
+   <div id="live-body">${liveBody(info)}</div></div>
+  ${rs?`<div class="card section"><div class="card-head"><div><h2>Lokale Bildproduktion (Reference Engine)</h2><p class="help">Läuft unabhängig von Claude auf deiner Grafikkarte.</p></div>${btn('Reference Studio','goto','sm','data-area="refstudio" data-tab="queue"','image')}</div>
+   <div class="chips">${badge('Aktiv: '+rs.counts['Aktiv'],rs.counts['Aktiv']?'accent live':'')}${badge('Wartend: '+rs.counts['Wartend'])}${badge('Abgeschlossen: '+rs.counts['Abgeschlossen'],'ok')}${badge('Fehlgeschlagen: '+rs.counts['Fehlgeschlagen'],rs.counts['Fehlgeschlagen']?'err':'')}${badge('Zur Freigabe: '+rs.to_review,rs.to_review?'warn':'')}</div>
+   ${rs.active?`<p class="help" style="margin-top:10px">Gerade: <b>${esc(rs.active.asset_name)}</b> · ${esc(rs.active.view)} · ${esc(rs.active.step)} · Modell ${esc(rs.active.model_id)}</p>`:''}</div>`:''}`;
 }
 function liveBody(v){
   const counts={};(v.agents||[]).forEach(a=>counts[a.state]=(counts[a.state]||0)+1);

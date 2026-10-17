@@ -45,6 +45,23 @@ def prepare(store,gid,data):
                      'ue_destination':f'/Game/GAMEFORGE/{taskid}'},
           'checks':['Referenztreue','Maßstab','UV und PBR','Geometrie','Unreal-Import und Materialzuordnung','Spieltest'],
           'created_at':dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds')}
+    # Produktionsvorgaben aus dem Art-Direction-Profil (Reference Engine) – Stil bestimmt den Aufwand.
+    try:
+        from reference_engine import art_direction
+        prof=art_direction.ensure_profile(store,gid)['profile']
+        rigged=typ=='character'
+        spec['art_direction']={k:prof.get(k) for k in ('style_id','style_label','lighting','color_palette','material_style','poly_budget','texture_budget','platform','engine')}
+        spec['production']={'units':'Meter, Unit Scale 1.0, Transforms angewendet','target_dimensions':str(data.get('dimensions','')).strip() or 'aus Referenz/Beschreibung ableiten und im Bericht angeben',
+            'polygon_budget':prof.get('poly_budget'),'texture_budget':prof.get('texture_budget'),
+            'uv':'überlappungsfreie UVs, Texeldichte passend zum Texturbudget' if prof.get('style_id')!='low_poly' else 'einfache UVs / Farbpalette',
+            'rigging':'Unreal-kompatibles Skelett, ein Root-Knochen, Add Leaf Bones aus' if rigged else 'nicht erforderlich',
+            'animation':'nach Vorgabe; Retargeting-fähig' if rigged else 'keine',
+            'export':{'format':'FBX','apply_scale':'FBX Units Scale','axes':'Standard beibehalten, per Testimport prüfen'},
+            'export_target':'unreal' if 'unreal' in (prof.get('engine') or '').lower() else 'generic_fbx'}
+        spec['reference_images']=[{**ref,'meta':next((json.loads(i['meta']) for i in store.all("SELECT meta FROM ref_images WHERE ref_task_id=? AND review='Freigegeben'",(ref['id'],))),None)} for ref in manifest]
+        (bundle/'asset_spec.json').write_text(json.dumps(spec,ensure_ascii=False,indent=2),encoding='utf-8')
+    except Exception as exc:  # Bestehende Pipeline darf an der Ergänzung nicht scheitern
+        spec['production_note']='Art-Direction-Vorgaben nicht verfügbar: '+str(exc)[:200]
     (bundle/'asset_spec.json').write_text(json.dumps(spec,ensure_ascii=False,indent=2),encoding='utf-8')
     (bundle/'BLENDER_TASK.md').write_text(f'''# Blender-Auftrag – {name}
 

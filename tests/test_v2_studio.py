@@ -37,7 +37,7 @@ class MigrationTests(unittest.TestCase):
             s = Store(base)
             try:
                 self.assertEqual(s.schema_version, app.SCHEMA_VERSION)
-                self.assertTrue(list((base / 'backups').glob('vor_migration_v2_*.sqlite3')))
+                self.assertTrue(list((base / 'backups').glob(f'vor_migration_v{app.SCHEMA_VERSION}_*.sqlite3')))
                 g = s.game('aion-2026')
                 self.assertEqual(g['summary'], 'Original')
                 self.assertIn('1102', g['bible']['canon'])

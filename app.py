@@ -25,12 +25,13 @@ import agent_live
 import asset_pipeline
 import studio_v2
 import game_trash
+from reference_engine import engine as ref_engine, art_direction, hardware as ref_hw, quality as ref_quality
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, quote, unquote, urlparse
 
-VERSION = '2.0.0'
-SCHEMA_VERSION = 2
+VERSION = '2.1.0'
+SCHEMA_VERSION = 3
 ROOT = Path(__file__).resolve().parent
 WEB = ROOT / 'web'
 RESOURCE = ROOT / 'resources'
@@ -224,6 +225,7 @@ class Store:
         if not seeded and not self.conn.execute('SELECT COUNT(*) FROM games').fetchone()[0]:
             self.seed()
         self.conn.execute("INSERT OR IGNORE INTO schema_meta(key,value) VALUES('seeded','1')");self.conn.commit()
+        self.refengine=ref_engine.ReferenceEngine(self,ROOT)
         # Migration älterer Bibliotheken, keine vorherigen Daten überschreiben.
         for game in self.all('SELECT id FROM games'):
             self.ensure_tasks(game['id'])
@@ -253,6 +255,8 @@ class Store:
             self.conn.execute('''CREATE TABLE IF NOT EXISTS asset_approvals(
                 game_id TEXT NOT NULL REFERENCES games(id), asset_id TEXT NOT NULL,
                 approved_at TEXT NOT NULL, PRIMARY KEY(game_id,asset_id))''')
+            # v3: Reference Engine (nur neue Tabellen)
+            self.conn.executescript(ref_engine.SCHEMA)
             self.conn.execute("INSERT OR REPLACE INTO schema_meta(key,value) VALUES('version',?)",(str(SCHEMA_VERSION),))
             self.conn.execute("INSERT OR REPLACE INTO schema_meta(key,value) VALUES('migrated_at',?)",(stamp(),))
             self.conn.commit()
@@ -677,6 +681,7 @@ class Store:
         self.execute('INSERT INTO games VALUES(?,?,?,?,?,?,?,?,?,?,?,?)', (game_id,title,str(data.get('summary',''))[:2000],'Idee',str(data.get('genre',''))[:200],
             str(data.get('style',''))[:200],'Unreal Engine 5',str(data.get('camera',''))[:200],'v0.1',json.dumps(bible,ensure_ascii=False),now,now))
         self.ensure_tasks(game_id)
+        art_direction.ensure_profile(self,game_id)
         # Jede neue Spielidee erhält eine isolierte lokale Umgebung samt Agenten-Dateien.
         # Kein Anschluss an bestehende Claude-Desktop-Sitzungen; keine Blender/Unreal-Ausführung.
         try:
@@ -1034,7 +1039,7 @@ class API(BaseHTTPRequestHandler):
         return json.loads(self.rfile.read(length) or '{}')
 
     def static(self,path):
-        mapping={'/':'index.html','/index.html':'index.html','/app.js':'app.js','/styles.css':'styles.css'}
+        mapping={'/':'index.html','/index.html':'index.html','/app.js':'app.js','/refstudio.js':'refstudio.js','/styles.css':'styles.css'}
         name=mapping.get(path)
         if not name: return self.err('Nicht gefunden',404)
         file=WEB/name
@@ -1046,7 +1051,7 @@ class API(BaseHTTPRequestHandler):
         query={k:v[0] for k,v in parse_qs(parsed.query).items()}
         parts=[unquote(p) for p in path.strip('/').split('/')]
         db=self.server.store
-        if method=='GET' and path in ('/','/index.html','/app.js','/styles.css'): return self.static(path)
+        if method=='GET' and path in ('/','/index.html','/app.js','/refstudio.js','/styles.css'): return self.static(path)
         if parts==['api','agents'] and method=='GET':
             return self.send_bytes(json_bytes({'approved_count':20,'agents':agent_studio.roster(detailed=True),
                'notes':'Konfigurationen genehmigt, Claude/MCP auf diesem PC nicht durch diesen Katalog nachgewiesen.'}))
@@ -1063,6 +1068,17 @@ class API(BaseHTTPRequestHandler):
         if parts==['api','config'] and method=='GET':
             catalog=jd((RESOURCE/'MODULE_CATALOG.json').read_text(encoding='utf-8'))
             return self.send_bytes(json_bytes({'fields':FIELDS,'states':STATES,'categories':CATEGORIES,'views':VIEWS,'view_labels':VIEW_LABELS,'kinds':KINDS,'catalog_modules':len(catalog.get('modules',[])),'version':VERSION,'schema_version':db.schema_version,'pipeline_stages':studio_v2.PIPELINE_STAGES,'approved_roadmap':jd((RESOURCE/'ROADMAP_APPROVED_1_40.json').read_text(encoding='utf-8')),'phases':PHASES,'task_statuses':TASK_STATUSES}))
+        if parts==['api','reference','status'] and method=='GET':
+            return self.send_bytes(json_bytes(db.refengine.status(query.get('game_id') or None)))
+        if parts==['api','reference','system'] and method=='GET':
+            return self.send_bytes(json_bytes(ref_hw.system_info(db.base,refresh=query.get('refresh')=='1')))
+        if len(parts)==4 and parts[:3]==['api','reference','comfy'] and method=='POST':
+            act=parts[3]
+            if act=='start': db.refengine.comfy.start()
+            elif act=='stop': db.refengine.comfy.stop()
+            elif act=='free': db.refengine.comfy.free(True)
+            else: raise ValueError('Unbekannte Aktion')
+            return self.send_bytes(json_bytes(db.refengine.comfy.status()))
         if parts==['api','trash'] and method=='GET': return self.send_bytes(json_bytes(game_trash.trash_list(db)))
         if len(parts)==4 and parts[:2]==['api','trash'] and parts[3]=='restore' and method=='POST':
             return self.send_bytes(json_bytes(game_trash.restore_game(db,parts[2])))
@@ -1110,6 +1126,26 @@ class API(BaseHTTPRequestHandler):
                 payload=agent_live.status(cfg.get('workspace'),agent_studio.roster())
                 payload['jobs']=db.direct.jobs(gid)
                 return self.send_bytes(json_bytes(payload))
+            if len(parts)>=4 and parts[3]=='reference':
+                eng=db.refengine
+                if len(parts)==4 and method=='GET':
+                    prof=eng.profile(gid)
+                    from reference_engine import models as ref_models
+                    return self.send_bytes(json_bytes({'profile':prof,'styles':{k:{'label':v['label'],'quality_auto':v['quality_auto']} for k,v in art_direction.STYLES.items()},
+                        'qualities':ref_quality.PROFILES,'route':ref_models.route(eng.comfy.root,prof['profile']['style_id'],verified=ref_models.verified_set(db)),
+                        'jobs':eng.jobs(gid),'images':eng.images(gid),'status':eng.status(gid)}))
+                if len(parts)==5 and parts[4]=='profile' and method=='PUT':
+                    return self.send_bytes(json_bytes(art_direction.update_profile(db,gid,self.payload())))
+                if len(parts)==5 and parts[4]=='jobs' and method=='POST':
+                    return self.send_bytes(json_bytes(eng.create(gid,self.payload())))
+                if len(parts)==7 and parts[4]=='jobs' and method=='POST':
+                    j=eng.job(parts[5])
+                    if j['game_id']!=gid: raise ValueError('Auftrag gehört nicht zu diesem Spiel')
+                    return self.send_bytes(json_bytes(eng.cancel(parts[5]) if parts[6]=='cancel' else eng.retry(parts[5])))
+                if len(parts)==6 and parts[4]=='images' and method=='GET':
+                    return self.send_bytes(eng.image_path(gid,parts[5]).read_bytes(),'image/png')
+                if len(parts)==7 and parts[4]=='images' and parts[6]=='review' and method=='POST':
+                    return self.send_bytes(json_bytes(eng.review(gid,parts[5],self.payload().get('action',''))))
             if len(parts)==4 and parts[3]=='scan' and method=='GET':
                 return self.send_bytes(json_bytes(studio_v2.project_scan(db,gid)))
             if len(parts)==4 and parts[3]=='pipeline' and method=='GET':

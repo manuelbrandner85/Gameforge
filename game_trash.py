@@ -15,7 +15,7 @@ import zipfile
 from pathlib import Path
 
 # Reihenfolge: abhängige Tabellen zuerst (Fremdschlüssel).
-TABLES = ['asset_approvals', 'direct_jobs', 'direct_settings', 'production_tasks', 'idea_changes',
+TABLES = ['ref_images', 'ref_jobs', 'art_profiles', 'asset_approvals', 'direct_jobs', 'direct_settings', 'production_tasks', 'idea_changes',
           'idea_suggestions', 'idea_messages', 'imported_files', 'snapshots', 'archives', 'ref_tasks', 'dlcs', 'games']
 NAME_RE = re.compile(r'^[A-Za-z0-9_-]+\.zip$')
 
@@ -35,6 +35,11 @@ def _files_of(store, gid):
         out.append(('files/refs/' + r['image_path'], store.base / 'refs' / r['image_path']))
     for f in store.all('SELECT stored_name FROM imported_files WHERE game_id=?', (gid,)):
         out.append(('files/imports/' + f['stored_name'], store.base / 'imports' / f['stored_name']))
+    gen = store.base / 'refs' / 'generated' / gid
+    if gen.is_dir():
+        for p in sorted(gen.iterdir()):
+            if p.is_file():
+                out.append(('files/generated/' + gid + '/' + p.name, p))
     return out
 
 
@@ -83,6 +88,9 @@ def delete_game(store, gid, confirm_title):
         if path.is_file():
             path.unlink()
             removed += 1
+    gen = store.base / 'refs' / 'generated' / gid
+    if gen.is_dir() and not any(gen.iterdir()):
+        gen.rmdir()
     return {'deleted': gid, 'title': game['title'], 'trash_file': target.name, 'files_moved': removed,
             'workspace_kept': workspace,
             'note': 'Spiel liegt im Papierkorb und kann wiederhergestellt werden.' + (
@@ -123,6 +131,11 @@ def restore_game(store, name):
             raise ValueError('Ein Spiel mit dieser ID existiert bereits – Wiederherstellung abgebrochen, damit nichts überschrieben wird.')
         members = set(z.namelist())
         expected = []
+        gen_prefix = 'files/generated/' + gid + '/'
+        for name in members:
+            if name.startswith(gen_prefix) and '/' not in name[len(gen_prefix):] and name[len(gen_prefix):]:
+                (store.base / 'refs' / 'generated' / gid).mkdir(parents=True, exist_ok=True)
+                expected.append((name, store.base / 'refs' / 'generated' / gid / name[len(gen_prefix):]))
         for a in rows.get('archives', []):
             expected.append(('files/uploads/' + a['file_path'], store.base / 'uploads' / a['file_path']))
         for r in rows.get('ref_tasks', []):

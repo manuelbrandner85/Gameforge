@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 engines/
 RELEASES/
+/GAMEFORGE_GODMODE_v2_0/
+/src_pkg/
+/SICHERUNG/
+*.zip
