@@ -1,0 +1,5 @@
+GAMEFORGE_DATA/
+__pycache__/
+*.pyc
+engines/
+RELEASES/

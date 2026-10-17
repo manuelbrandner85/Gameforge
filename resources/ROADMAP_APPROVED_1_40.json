@@ -1,0 +1,609 @@
+{
+  "product": "GAMEFORGE GODMODE",
+  "roadmap_version": "1.1",
+  "approved_on": "2026-10-17",
+  "type": "Verbindlicher Ausbauplan – genehmigte Funktionen 1–40 (5 abgelehnt)",
+  "truthfulness": "Genehmigung der Anforderung ist keine Implementierung. Ist-/Fertigstatus nur mit nachgewiesenem Test.",
+  "target_projects": [
+    "AION 2026",
+    "GENESIS"
+  ],
+  "architecture": {
+    "gameforge": "Planung, Referenz-Prompt-Generierung, Bildimport, Prüfungen, Archive, DLC, ZIP-Export",
+    "chatgpt": "Referenzbilder im separaten Chat erstellen; danach manueller Import in GAMEFORGE; keine OpenAI-API im Programm erforderlich",
+    "claude_code": "ZIP-Paket verarbeiten, Blender und Unreal über separat installierte und getestete MCP-Bridges bedienen"
+  },
+  "phases": [
+    {
+      "id": "I",
+      "name": "Bestandsaufnahme",
+      "goal": "Bestehende Projekte bewahren und korrekt erfassen"
+    },
+    {
+      "id": "II",
+      "name": "Kreative Spezifikation",
+      "goal": "Story, Welt, Figuren, Gameplay und Cinematics ohne Widersprüche beschreiben"
+    },
+    {
+      "id": "III",
+      "name": "Produktionsvorbereitung",
+      "goal": "Freigegebene Referenzen und präzise Blender-/Unreal-Aufträge erstellen"
+    },
+    {
+      "id": "IV",
+      "name": "Umsetzung & Qualität",
+      "goal": "Claude-Handoff, Tests, Performance und Token-Optimierung absichern"
+    },
+    {
+      "id": "V",
+      "name": "Release & Erweiterungen",
+      "goal": "Versionierte Releases und DLC-Produktionsstrecken herstellen"
+    }
+  ],
+  "features": [
+    {
+      "id": 1,
+      "title": "GODMODE Projekt-Scanner",
+      "phase": "I: Bestandsaufnahme",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Importe mit SHA-256, Manifest, Herkunft und Duplikaterkennung prüfen; Story-, Code-, Asset- und Versionskonflikte als offene Punkte ausgeben.",
+      "acceptance_criteria": "Für Testprojekt findet Scanner Duplikate, fehlende Dateien und widersprüchliche Datensätze mit Quellenbezug.",
+      "depends_on": []
+    },
+    {
+      "id": 2,
+      "title": "Story Intelligence Engine",
+      "phase": "II: Kreative Spezifikation",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Mehraktige Story, Kanon, Timeline, Verzweigungen, Dialoge, Charakterziele, Endbedingungen und Konfliktprüfung als strukturierte Game-Bible ausarbeiten.",
+      "acceptance_criteria": "Alle Hauptpfade besitzen Zustandsübergänge, keine unaufgelösten Kanonkonflikte; Entscheidungen sind exportierbar.",
+      "depends_on": [
+        1
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Ultimate Character Creator",
+      "phase": "II: Kreative Spezifikation",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Charakter-Steckbriefe, Biografien, Geometrie-/Rig-Vorgaben, Fähigkeiten, Animation-Sets und Bildprompt-Sets mit stabilen IDs.",
+      "acceptance_criteria": "Figur wird inklusive Daten, Bildbedarf, Ausrüstungs- und Animationsliste eindeutig exportiert.",
+      "depends_on": [
+        2
+      ]
+    },
+    {
+      "id": 4,
+      "title": "World Architect",
+      "phase": "II: Kreative Spezifikation",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Regionen, Welt- und Levelkoordinaten, Level-Streaming, Zugänge, Interaktionszonen, Dungeons und Umgebungs-Assets systematisch modellieren.",
+      "acceptance_criteria": "Weltzonen und Mission-Standorte sind eindeutig verlinkt; keine unerreichbaren Pflichtorte.",
+      "depends_on": [
+        2
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Boss & Combat Designer",
+      "phase": "II: Kreative Spezifikation",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Kampfschleife, Waffen, Trefferfenster, Zustandsmaschinen, Bossphasen, Verhalten und Balancing-Kriterien ausarbeiten.",
+      "acceptance_criteria": "Jeder Boss besitzt mindestens eine vollständige testbare Ablaufdefinition mit Phasen und Fehlschlagszenarien.",
+      "depends_on": [
+        3,
+        4
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Cinematic Director",
+      "phase": "II: Kreative Spezifikation",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Prologe, Zwischensequenzen und Outro als Shotlisten, Kamera-/Audio-Timelines und Gameplay-Übergaben definieren.",
+      "acceptance_criteria": "Alle verpflichtenden Storyszenen haben Timing, Assets, Eingangstrigger und Endzustand.",
+      "depends_on": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Asset Dependency Brain",
+      "phase": "I: Bestandsaufnahme",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Assets, Missionen, Dialoge, Audio, Animationen und Cinematics über unveränderliche IDs und Referenzbeziehungen nachverfolgen.",
+      "acceptance_criteria": "Änderung an einem Asset liefert vollständigen Änderungsfolgen-Bericht und Warnung bei fehlenden Referenzen.",
+      "depends_on": [
+        1
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Blender Production Master",
+      "phase": "III: Produktionsvorbereitung",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Vorgaben für Maßstab, Polygonziele, Topologie, UV, PBR, LOD, Rigs, Animationen, Kollisionsobjekte und Exportprofile erstellen.",
+      "acceptance_criteria": "Blender-Auftrag enthält Eingaben, Modell-/Exportnamen, technische Limits und überprüfbare Asset-Abnahme.",
+      "depends_on": [
+        3,
+        7,
+        14
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Unreal Blueprint Architect",
+      "phase": "III: Produktionsvorbereitung",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Versionierte UE-Architektur mit C++-Klassen, Blueprint-Interfaces, Datenobjekten, Input, Speichern und Build-Tests spezifizieren.",
+      "acceptance_criteria": "Claude-Export besitzt Modulgraph, Reihenfolge, Schnittstellen, Definition-of-Done und Testanforderungen.",
+      "depends_on": [
+        4,
+        5,
+        7
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Autonomous QA Director",
+      "phase": "IV: Umsetzung & Qualität",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Tests für Kompilierung, Gameplay, Save/Load, Regression, visuelle Checks, Performance und manuelle Gates definieren.",
+      "acceptance_criteria": "Jeder Fertigstatus verlangt realen Testbeleg; rote Tests sperren Releasefreigabe.",
+      "depends_on": [
+        9,
+        18
+      ]
+    },
+    {
+      "id": 11,
+      "title": "KI-Missionsgenerator",
+      "phase": "II: Kreative Spezifikation",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Haupt- und Nebenmissionen mit Vorbedingungen, Schritten, Quest-State, Belohnungen, Scheitern und Wiederaufnahme modellieren.",
+      "acceptance_criteria": "Alle Missionsschritte besitzen eindeutige Auslöser, erfolgreiche und fehlerhafte Pfade.",
+      "depends_on": [
+        2,
+        4
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Living World Simulator",
+      "phase": "II: Kreative Spezifikation",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "NPC-Routinen, Fraktionen, Weltzustände, Handel, Tageszeiten, Wetter und reaktive Events ausarbeiten.",
+      "acceptance_criteria": "NPC-/Weltzustandsübergänge sind definiert, kompatibel mit Quests und speicherbar.",
+      "depends_on": [
+        4,
+        11
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Sound & Voice Director",
+      "phase": "III: Produktionsvorbereitung",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Sound-Cue-Katalog, Musikmotive, Dialogline-IDs, Stimmrollen, Raumklang, Untertitel-Synchronität und Rechteangaben.",
+      "acceptance_criteria": "Jede verpflichtende Szene und Aktion referenziert Audio oder dokumentiert bewusst stumme Ausführung.",
+      "depends_on": [
+        2,
+        6
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Referenzbild-Qualitätsprüfer",
+      "phase": "III: Produktionsvorbereitung",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "ChatGPT-Referenzprompts, Bildansichten, Dimensionsregeln, Stil-Konsistenz und menschliche Freigabe nach Import verwalten.",
+      "acceptance_criteria": "Pflichtbilder werden pro Asset gezählt; Inkonsistenzen sperren Bild-Freigabe, bis behoben/begründet.",
+      "depends_on": [
+        3,
+        4,
+        7
+      ]
+    },
+    {
+      "id": 15,
+      "title": "DLC Expansion Studio",
+      "phase": "V: Release & Erweiterungen",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "DLCs dem Basisspiel zuordnen, Story-/Asset-Abhängigkeiten und Kompatibilität gegen konkrete Spielversionen prüfen.",
+      "acceptance_criteria": "Ein DLC lässt sich separat exportieren und meldet inkompatible Basisversionen und fehlende Asset-IDs.",
+      "depends_on": [
+        7,
+        9,
+        18
+      ]
+    },
+    {
+      "id": 16,
+      "title": "Game Evolution System",
+      "phase": "V: Release & Erweiterungen",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Bestehende Releases versioniert verbessern: Änderungswünsche, Regressionen, Branches, Migrationspläne und Patch-Freigaben.",
+      "acceptance_criteria": "Ein Nachfolge-Release bewahrt Originalstände und zeigt alle Änderungen sowie Rückrollmöglichkeit.",
+      "depends_on": [
+        7,
+        10,
+        15
+      ]
+    },
+    {
+      "id": 17,
+      "title": "Performance Architect",
+      "phase": "IV: Umsetzung & Qualität",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Ziel-Hardware, Framerate, Auflösung, Speichergrenzen, Streaming, LOD und GPU-/CPU-Budgets je Grafikstil definieren.",
+      "acceptance_criteria": "Performance-Budget und Messprofil sind im Produktionspaket festgelegt; Abweichungen werden protokolliert.",
+      "depends_on": [
+        8,
+        9
+      ]
+    },
+    {
+      "id": 18,
+      "title": "Claude Precision Export",
+      "phase": "IV: Umsetzung & Qualität",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Präzise ZIP-Handoff-Pakete mit Game-Bible, Bildreferenzen, Dateiindex, DAG-Aufträgen, MCP-Checkliste, Tests und Fortsetzungszustand.",
+      "acceptance_criteria": "Jede Task besitzt Eingaben, Schritte, Abhängigkeiten, Abnahme und gültige Pfade; Paket ist reproduzierbar.",
+      "depends_on": [
+        1,
+        7,
+        8,
+        9,
+        11,
+        14
+      ]
+    },
+    {
+      "id": 19,
+      "title": "Kosten- und Tokenoptimierung",
+      "phase": "IV: Umsetzung & Qualität",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Kontext selektiv laden, Prompt-Deduplizierung, Versions-Deltas, zwischengespeicherte Analysen und nachvollziehbares Budget.",
+      "acceptance_criteria": "Export/Arbeitsauftrag verarbeitet bei unveränderten Quellen nur notwendige Deltas ohne Kanonverlust.",
+      "depends_on": [
+        1,
+        7,
+        18
+      ]
+    },
+    {
+      "id": 20,
+      "title": "Release & Publishing Center",
+      "phase": "V: Release & Erweiterungen",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Reproduzierbare Builds, Installer, Plattformprofile, Credits, Rechte, Controller, Barrierefreiheit, Lokalisierung und Store-Pakete vorbereiten.",
+      "acceptance_criteria": "Freigabe nur mit bestandenem Testplan, Build-Artefakt, Quellenarchiv und überprüfter Release-Checkliste.",
+      "depends_on": [
+        10,
+        15,
+        16,
+        17,
+        18
+      ]
+    },
+    {
+      "id": 24,
+      "title": "Procedural World Lab",
+      "phase": "II: Kreative Spezifikation",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Biom-Baupläne, Terrain-Höhenkarten, deterministische Seeds, Wege, Vegetationsregeln, World-Partition-Zellen und PCG-Aufträge für Unreal erstellen.",
+      "acceptance_criteria": "Jede Region hat Seed, Maßeinheit, Eingaben, PCG-Parameter, Streaming-Budget, World-Partition-Plan und sichtbare Referenzen.",
+      "depends_on": [
+        4,
+        9,
+        17
+      ]
+    },
+    {
+      "id": 25,
+      "title": "Real Asset Validator",
+      "phase": "III: Produktionsvorbereitung",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Importierte .blend- und 3D-Asset-Berichte auf Größe, Achsen, Polygonbudget, UVs, PBR-Texturen, LODs, Rigging, Namenskonventionen und Exportparameter prüfen. Binäre Prüfung braucht passende Prüftools.",
+      "acceptance_criteria": "Für jedes geprüfte Asset liegt ein maschinenlesbarer Bericht mit Datei-Hash, Prüfregeln, Fehlern, Warnungen und nachprüfbarem Resultat vor.",
+      "depends_on": [
+        8,
+        14
+      ]
+    },
+    {
+      "id": 26,
+      "title": "Quest Deadlock Simulator",
+      "phase": "II: Kreative Spezifikation",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Quest- und Dialog-Graphen auf erreichbare Ziele, Sackgassen, unerfüllbare Bedingungen, widersprüchliche Zustände und fehlende Fortschrittswege simulieren.",
+      "acceptance_criteria": "Alle definierten Pflichtmissionen können unter dokumentierten Startbedingungen abgeschlossen werden; blockierende Wege erzeugen reproduzierbare Gegenbeispiele.",
+      "depends_on": [
+        2,
+        11
+      ]
+    },
+    {
+      "id": 27,
+      "title": "Vertical Slice Studio",
+      "phase": "IV: Umsetzung & Qualität",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Aus kompletter Spielbibel einen kleinen, tatsächlich spielbaren Abschnitt mit klaren Grenzen, referenzierten Assets, Aufgaben und echten Tests definieren.",
+      "acceptance_criteria": "Abgenommener Slice hat startbaren Build, Spielstart, mindestens einen vollständigen Gameplay-Loop, gespeicherten Testbeleg und Abnahmereport.",
+      "depends_on": [
+        8,
+        9,
+        10,
+        18
+      ]
+    },
+    {
+      "id": 28,
+      "title": "Reusable Game Systems",
+      "phase": "III: Produktionsvorbereitung",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Wiederverwendbare, versionierte Vorlagen für Inventar, Save/Load, Input, Kamera, Quest-Tracking und Dialoge definieren; projektspezifische Logik getrennt halten.",
+      "acceptance_criteria": "Systemvorlage hat klaren Vertrag, dokumentierte Versionsnummer, Ein- und Ausgaben und einen isolierten Integrationstest pro Zielprojekt.",
+      "depends_on": [
+        7,
+        9
+      ]
+    },
+    {
+      "id": 29,
+      "title": "Savegame Migration Lab",
+      "phase": "IV: Umsetzung & Qualität",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Versionierte Savegame-Schemata und Migrationspfade für Hauptspiel-Updates und DLCs samt Rückwärtskompatibilität und Test-Szenarien spezifizieren.",
+      "acceptance_criteria": "Referenz-Speicherstände werden in einer Testumgebung fehlerfrei migriert, Ausnahmen protokolliert und Datenverlust ausgeschlossen oder explizit begründet.",
+      "depends_on": [
+        9,
+        15,
+        16
+      ]
+    },
+    {
+      "id": 30,
+      "title": "Asset Rights Vault",
+      "phase": "I: Bestandsaufnahme",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Pro Datei die Herkunft, Urheber, Quellenlink, Lizenz, Kauf- oder Nutzungsnachweis, erlaubte Verbreitungsarten und erforderliche Credits dokumentieren.",
+      "acceptance_criteria": "Veröffentlichung ist gesperrt, wenn für genutzte Fremdassets kein ausreichender Lizenznachweis oder keine passende Freigabe eingetragen ist.",
+      "depends_on": [
+        1,
+        7,
+        20
+      ]
+    },
+    {
+      "id": 31,
+      "title": "Accessibility & Controls Lab",
+      "phase": "IV: Umsetzung & Qualität",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Matrizen für remappbare Steuerung, alternative Eingaben, Untertitel, Kontraste, Lesbarkeit, Barrierefreiheitsoptionen und reale Controller-Tests erstellen.",
+      "acceptance_criteria": "Alle gewählten Zielplattformen besitzen Eingabeprofile, Abnahmefälle und dokumentierte praktische Tests oder ausdrücklich erfasste Lücken.",
+      "depends_on": [
+        9,
+        10,
+        20
+      ]
+    },
+    {
+      "id": 32,
+      "title": "Animation Retarget Studio",
+      "phase": "III: Produktionsvorbereitung",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Skelettstandards, Animationsbenennungen, Retarget-Profile, Motion-Matching-Daten und Übergänge als Blender- und Unreal-Aufträge definieren.",
+      "acceptance_criteria": "Bewegungsclips sind zugewiesen und auf Zielrig mit definierten Testposen geprüft; Fußgleiten, Root Motion und Bone-Fehler dokumentiert.",
+      "depends_on": [
+        3,
+        8,
+        9
+      ]
+    },
+    {
+      "id": 33,
+      "title": "Physics Reality Suite",
+      "phase": "III: Produktionsvorbereitung",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Masse, Skalierung, Gravitation, Kollisionen, Chaos-Constraints, Fahrzeuge, Wasserreaktionen und physikalische Extremfälle als testbare Vorgaben planen.",
+      "acceptance_criteria": "Szenen mit messbaren Sollwerten für Stabilität, Geschwindigkeit, Kollision und Frame-Budget besitzen nachgewiesene Tests in Unreal.",
+      "depends_on": [
+        4,
+        8,
+        9,
+        17
+      ]
+    },
+    {
+      "id": 34,
+      "title": "Visual Fidelity Benchmark",
+      "phase": "IV: Umsetzung & Qualität",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Freigegebene Konzeptreferenzen mit standardisierten Unreal-Screenshots vergleichen und Abweichungen bei Licht, Material, Silhouette und Stimmung dokumentieren.",
+      "acceptance_criteria": "Jeder Vergleich speichert Referenz, Render, Kameraparameter, Bewertungsrubrik und dokumentierte Abnahme durch Nutzer.",
+      "depends_on": [
+        8,
+        10,
+        14,
+        17
+      ]
+    },
+    {
+      "id": 35,
+      "title": "Dialogue & Lip-Sync Director",
+      "phase": "III: Produktionsvorbereitung",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Sprecherrollen, Sprachdatei-IDs, Lokalisierung, Phoneme, Gesichtsanimationen, Kamera- und Untertitel-Timings je Dialog verknüpfen.",
+      "acceptance_criteria": "Dialogsequenzen enthalten vollständige Event-Timelines, Audio-Assets, Fallbacks und synchronisierte Abnahmetests.",
+      "depends_on": [
+        2,
+        3,
+        6,
+        13
+      ]
+    },
+    {
+      "id": 36,
+      "title": "Multiplayer Architecture Switch",
+      "phase": "III: Produktionsvorbereitung",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Optionales Multiplayer-Profil mit Serverautorität, Zustandsreplikation, Sessions, Netzausfällen, Lobby- und Anti-Cheat-Anforderungen planen; standardmäßig Singleplayer.",
+      "acceptance_criteria": "Nur bei aktivem Multiplayer-Profil werden Netzwerkaufträge exportiert; mit Profil liegen Topologie, Security-Threats und Synchronisationstests vor.",
+      "depends_on": [
+        9,
+        10
+      ]
+    },
+    {
+      "id": 38,
+      "title": "Modding & Community Studio",
+      "phase": "V: Release & Erweiterungen",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Optionales Modding-Konzept mit Plugin-/Content-Format, Versionskompatibilität, Sandbox-Regeln, Berechtigungen und kontrolliertem Installationsprozess.",
+      "acceptance_criteria": "Mod-Paket kann in einer isolierten Testumgebung installiert und entfernt werden; fremde Dateien dürfen keine ungeprüften Produktionsskripte starten.",
+      "depends_on": [
+        15,
+        16,
+        20
+      ]
+    },
+    {
+      "id": 40,
+      "title": "Production Feasibility Brain",
+      "phase": "I: Bestandsaufnahme",
+      "approved": true,
+      "implementation_status": "geplant",
+      "scope": "Vor Erstellung großer Claude-Aufträge Engine-Version, erforderliche Plugins, RAM/VRAM, Speicherbedarf, Assets, Personalzeit und offene Abhängigkeiten prüfen.",
+      "acceptance_criteria": "Machbarkeitsreport enthält Annahmen, Risikoampel, Grobaufwand, harte Blocker, Versionsmatrix und Minimalumfang für erstes Release.",
+      "depends_on": [
+        1,
+        7,
+        17,
+        18
+      ]
+    }
+  ],
+  "decision_summary": {
+    "total_proposed": 40,
+    "approved_count": 35,
+    "rejected_count": 5,
+    "approved_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      38,
+      40
+    ],
+    "rejected_ids": [
+      21,
+      22,
+      23,
+      37,
+      39
+    ]
+  },
+  "rejected": [
+    {
+      "id": 21,
+      "title": "Master Canon Lock",
+      "decision": "Nein",
+      "not_to_implement": true
+    },
+    {
+      "id": 22,
+      "title": "Intelligenter Projekt-Merger",
+      "decision": "Nein",
+      "not_to_implement": true
+    },
+    {
+      "id": 23,
+      "title": "Design-DNA Studio",
+      "decision": "Nein",
+      "not_to_implement": true
+    },
+    {
+      "id": 37,
+      "title": "Gameplay Replay Analyzer",
+      "decision": "Nein",
+      "not_to_implement": true
+    },
+    {
+      "id": 39,
+      "title": "Disaster Recovery Engine",
+      "decision": "Nein",
+      "not_to_implement": true
+    }
+  ],
+  "notes": [
+    "Bestehende Basisfunktionen und Backup der Datenbibliothek bleiben erhalten. Abgelehnte Ideen werden nicht neu implementiert.",
+    "Keine Formulierung genehmigt eine Implementierung oder ein bestandenes Testergebnis.",
+    "Funktionen 36 und 38 sind optional und dürfen andere Spiele nicht automatisch beeinflussen."
+  ]
+}

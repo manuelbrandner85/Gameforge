@@ -1,0 +1,1580 @@
+{
+  "version": "1.0",
+  "created": "2026-10-17",
+  "description": "Anforderungskatalog für GAMEFORGE. Es handelt sich nicht um ein fertiges Spiel.",
+  "feature_flags": {
+    "narrative": "Projekt enthält Story mit Prolog/Akten/Enden",
+    "quests": "Projekt enthält Missionen/Questketten",
+    "cinematics": "Projekt enthält Cutscenes oder Filminhalte",
+    "retro_2d": "Projekt enthält 2D-, Retro- oder Pixel-Art-Assets",
+    "three_d": "Projekt enthält 3D-Assets und Blender-Modellierung",
+    "characters": "Projekt enthält benannte Charaktere",
+    "open_world": "Projekt enthält große zusammenhängende Welt",
+    "weather": "Projekt enthält Wetter oder dynamische Tageszeiten",
+    "procedural": "Projekt enthält prozedurale Inhalte",
+    "combat": "Projekt enthält Kampfsysteme",
+    "abilities": "Projekt enthält Fähigkeiten/Fertigkeiten",
+    "enemies": "Projekt enthält gegnerische KI",
+    "bosses": "Projekt enthält Bosskämpfe",
+    "npcs": "Projekt enthält NPCs",
+    "inventory": "Projekt enthält Inventar und Items",
+    "economy": "Projekt enthält Handel/Währung",
+    "crafting": "Projekt enthält Crafting/Bauen",
+    "progression": "Projekt enthält Level/Upgrades/Skilltrees",
+    "stealth": "Projekt enthält Stealth",
+    "vehicles": "Projekt enthält Fahrzeuge/Reiten/Fliegen",
+    "water": "Projekt enthält Schwimmen/Tauchen/Wassersimulation",
+    "destruction": "Projekt enthält Zerstörung/Feuer/Cloth",
+    "voice": "Projekt enthält Sprachausgabe",
+    "multiplayer": "Projekt enthält Multiplayer",
+    "online": "Projekt enthält Onlinedienste",
+    "special_platforms": "Projekt enthält Mobile/VR/Konsole",
+    "release": "Projekt enthält Store-Veröffentlichung",
+    "strategy": "Projekt enthält Strategie/Aufbauspiel",
+    "racing": "Projekt enthält Rennspiel",
+    "rpg": "Projekt enthält Rollenspiel",
+    "survival": "Projekt enthält Horror/Survival",
+    "photo_mode": "Projekt enthält Fotomodus/Replay",
+    "analytics": "Projekt enthält Nutzungsanalytik",
+    "mods": "Projekt enthält Modding/UGC",
+    "achievements": "Projekt enthält Achievements/Leaderboards"
+  },
+  "modules": [
+    {
+      "id": "GF-001",
+      "group": "01 Design",
+      "name": "Spielvision",
+      "applies": "core",
+      "required_specification": [
+        "Arbeitstitel und Pitch",
+        "Zielgruppe und Altersrahmen",
+        "Genre und Subgenre",
+        "USP und Spielerlebnis",
+        "Zielplattformen und Eingabegeräte",
+        "Erfolgsdefinition"
+      ],
+      "acceptance": "Eine dritte Person kann Spielziel, Spielerrolle und Zielplattform ohne Rückfragen erklären.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-001_Spielvision.md"
+      ]
+    },
+    {
+      "id": "GF-002",
+      "group": "01 Design",
+      "name": "Umfang und Produktionsplan",
+      "applies": "core",
+      "required_specification": [
+        "Spielumfang und Feature-Priorität",
+        "Meilensteine und Abhängigkeiten",
+        "Aufwands und Hardwarebudget",
+        "MVP und Vertical Slice",
+        "Risiken und Notfallumfang",
+        "Definition of Done"
+      ],
+      "acceptance": "Für alle Meilensteine liegen überprüfbare Ergebnisse und Grenzen vor.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-002_Umfang_und_Produktionsplan.md"
+      ]
+    },
+    {
+      "id": "GF-003",
+      "group": "01 Design",
+      "name": "Design Bible und Kanon",
+      "applies": "core",
+      "required_specification": [
+        "Verbindliche Terminologie und Schreibregeln",
+        "Stilregeln und Inspirationsabgrenzung",
+        "Unveränderliche Entscheidungen",
+        "Entscheidungsprotokoll",
+        "Veto und Freigabeprozess",
+        "Kanon-Versionierung"
+      ],
+      "acceptance": "Widersprüche zwischen Dokumenten werden erkannt und aufgelöst.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-003_Design_Bible_und_Kanon.md"
+      ]
+    },
+    {
+      "id": "GF-004",
+      "group": "01 Design",
+      "name": "Game Loop und Spielregeln",
+      "applies": "core",
+      "required_specification": [
+        "Sekunden- und Minuten-Spielschleife",
+        "Ziel und Versagensbedingungen",
+        "Grundmechaniken mit Zahlenwerten",
+        "Schwierigkeitskurve",
+        "Feedback und Belohnungen",
+        "Pausen und Neustartverhalten"
+      ],
+      "acceptance": "Eine minimal spielbare Regelrunde ist eindeutig formulierbar.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-004_Game_Loop_und_Spielregeln.md"
+      ]
+    },
+    {
+      "id": "GF-005",
+      "group": "01 Design",
+      "name": "Genre-Profile",
+      "applies": "core",
+      "required_specification": [
+        "Vordefinierte Spieltypen",
+        "Retro/Pixel/Low Poly/Stylized/Realistisch/AAA-Look",
+        "2D/2.5D/3D",
+        "Perspektiven",
+        "Einzelspieler/Koop/Multiplayer",
+        "Optionale Funktionen mit begründetem N/A"
+      ],
+      "acceptance": "Aktivierte Funktionen widersprechen nicht Plattform oder Projektumfang.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-005_Genre-Profile.md"
+      ]
+    },
+    {
+      "id": "GF-006",
+      "group": "01 Design",
+      "name": "Spielerführung und Onboarding",
+      "applies": "core",
+      "required_specification": [
+        "Tutorial und kontextuelle Hilfen",
+        "Erste 5 Spielminuten",
+        "Hints und Ziele",
+        "Fehlereingaben und Rückmeldung",
+        "Schwierigkeitsanpassung",
+        "Wiedereinstieg"
+      ],
+      "acceptance": "Spielende verstehen ohne externe Erklärung, wie sie beginnen und Fortschritte erzielen.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-006_Spielerf_hrung_und_Onboarding.md"
+      ]
+    },
+    {
+      "id": "GF-007",
+      "group": "02 Narrative",
+      "name": "Weltenkanon und Lore",
+      "applies": "narrative",
+      "required_specification": [
+        "Historie und Zeitachse",
+        "Orte und Fraktionen",
+        "Magie/Technik/Religion als Spielweltregeln",
+        "Kartenbezüge",
+        "Ursache-Wirkung-Konflikte",
+        "Wissen der NPCs"
+      ],
+      "acceptance": "Keine widersprüchlichen Ereignisse, Orte oder Figurenbeziehungen.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-007_Weltenkanon_und_Lore.md"
+      ]
+    },
+    {
+      "id": "GF-008",
+      "group": "02 Narrative",
+      "name": "Hauptstory komplett",
+      "applies": "narrative",
+      "required_specification": [
+        "Prämisse und Themen",
+        "Prolog und Einstieg",
+        "Alle Akte und Kapitel",
+        "Wendepunkte und Enthüllungen",
+        "Finale und Abspann",
+        "Chronologie und Spannungsbogen"
+      ],
+      "acceptance": "Jeder Handlungsabschnitt hat Auslöser, Ablauf, Ergebnis und Abhängigkeiten.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-008_Hauptstory_komplett.md"
+      ]
+    },
+    {
+      "id": "GF-009",
+      "group": "02 Narrative",
+      "name": "Dialogskripte",
+      "applies": "narrative",
+      "required_specification": [
+        "Dialog-IDs",
+        "Sprechende und Hörer",
+        "Alle Textzeilen",
+        "Antwortauswahl",
+        "Bedingungen und Konsequenzen",
+        "Audio/Untertitel und Sprecherhinweise"
+      ],
+      "acceptance": "Jede Dialogverzweigung endet definiert oder führt zu einem gültigen Knoten.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-009_Dialogskripte.md"
+      ]
+    },
+    {
+      "id": "GF-010",
+      "group": "02 Narrative",
+      "name": "Questdesign",
+      "applies": "quests",
+      "required_specification": [
+        "Main- und Sidequests",
+        "Quest-IDs",
+        "Startbedingungen",
+        "Ziele und Zwischenziele",
+        "Fehler-/Abbruchfälle",
+        "Belohnungen und Rückwirkungen",
+        "Quest-Sperren und Zustandsautomaten"
+      ],
+      "acceptance": "Es gibt keine unerreichbaren Hauptquests oder Sackgassen ohne Lösung.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-010_Questdesign.md"
+      ]
+    },
+    {
+      "id": "GF-011",
+      "group": "02 Narrative",
+      "name": "Entscheidungen und Enden",
+      "applies": "narrative",
+      "required_specification": [
+        "Knoten-/Variablenliste",
+        "Karma/Ansehen und Fraktionswerte",
+        "Bedingungen der Enden",
+        "Speicherkonsequenzen",
+        "Endsequenzen",
+        "Logische Erreichbarkeit"
+      ],
+      "acceptance": "Alle vorgesehenen Enden sind unter dokumentierten Bedingungen erreichbar.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-011_Entscheidungen_und_Enden.md"
+      ]
+    },
+    {
+      "id": "GF-012",
+      "group": "02 Narrative",
+      "name": "Cutscenes Prolog Epilog",
+      "applies": "cinematics",
+      "required_specification": [
+        "Shotlist und Storyboard",
+        "Dialog und Timing",
+        "Kamerapositionen",
+        "Animations-/VFX-/Audio-Cues",
+        "Gameplay-Übergänge",
+        "Überspringen/Wiederholen",
+        "Fehlerfälle und Speicherpunkte"
+      ],
+      "acceptance": "Eine Szene ist von Beginn bis Rückgabe der Spielersteuerung vollständig beschrieben.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-012_Cutscenes_Prolog_Epilog.md"
+      ]
+    },
+    {
+      "id": "GF-013",
+      "group": "03 Referenzen",
+      "name": "Visuelle Art Bible",
+      "applies": "core",
+      "required_specification": [
+        "Farbpalette und Kontrast",
+        "Stilebene pro Assetklasse",
+        "Beleuchtung und Look",
+        "Materialkatalog",
+        "Größenreferenzen",
+        "Bildsprache und UI-Stil"
+      ],
+      "acceptance": "Jedes neue Asset lässt sich auf den gewählten Stil abgleichen.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-013_Visuelle_Art_Bible.md"
+      ]
+    },
+    {
+      "id": "GF-014",
+      "group": "03 Referenzen",
+      "name": "Referenzbild-Sets",
+      "applies": "core",
+      "required_specification": [
+        "Eindeutige IDs und Dateipfade",
+        "Front/Seite/Rücken und Detailansichten wo sinnvoll",
+        "Farben und Material-Callouts",
+        "Maßstab",
+        "Posen und Silhouetten",
+        "Version und Freigabe",
+        "Urheber-/Nutzungsnachweis"
+      ],
+      "acceptance": "Referenzsets decken Herstellungsansichten ab; fehlende Bilddateien blockieren Export.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-014_Referenzbild-Sets.md"
+      ]
+    },
+    {
+      "id": "GF-015",
+      "group": "03 Referenzen",
+      "name": "2D/Sprite/Retro-Pipeline",
+      "applies": "retro_2d",
+      "required_specification": [
+        "Pixelauflösung und Seitenverhältnis",
+        "Sprite Sheets und Flipbooks",
+        "Animationsraster und FPS",
+        "Tile-Sets und Levelkacheln",
+        "Collision Shapes",
+        "Scaling/Filtering",
+        "Palette und UI-Sprites"
+      ],
+      "acceptance": "Sprites sind als testbare Animationen und Kollisionen spezifiziert.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-015_2D_Sprite_Retro-Pipeline.md"
+      ]
+    },
+    {
+      "id": "GF-016",
+      "group": "03 Referenzen",
+      "name": "3D-Modellbau",
+      "applies": "three_d",
+      "required_specification": [
+        "Maße und Achsen",
+        "High-/Low-Poly",
+        "Topology und Polygonbudget",
+        "UV-Unwrapping",
+        "Collision Meshes",
+        "LOD/HLOD Strategie",
+        "Dateiformat .blend und Export",
+        "Asset-Pivot und Benennung"
+      ],
+      "acceptance": "Ein Import-Test erzeugt korrekte Skala, Ausrichtung, Pivot und Materialsätze.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-016_3D-Modellbau.md"
+      ]
+    },
+    {
+      "id": "GF-017",
+      "group": "03 Referenzen",
+      "name": "Materialien Texturen Shader",
+      "applies": "three_d",
+      "required_specification": [
+        "PBR-Maps",
+        "Texel-Density und Auflösung",
+        "UV-Packing",
+        "Materialslots und Shaderverwendung",
+        "Transparenz und SSS",
+        "Performancebudgets",
+        "Import- und Farbmanagement"
+      ],
+      "acceptance": "Material ist in Engine reproduzierbar und bewegt sich im Speicherbudget.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-017_Materialien_Texturen_Shader.md"
+      ]
+    },
+    {
+      "id": "GF-018",
+      "group": "03 Referenzen",
+      "name": "Rigging und Animationen",
+      "applies": "three_d",
+      "required_specification": [
+        "Skelett-Hierarchie",
+        "Root Motion Regeln",
+        "IK/Retargeting",
+        "Facial Blendshapes",
+        "Bewegungsbibliothek",
+        "Animation-State-Machine",
+        "Montages und Events",
+        "Export und Tests"
+      ],
+      "acceptance": "Animationsliste deckt die vorgesehenen Gameplayzustände und Übergänge ab.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-018_Rigging_und_Animationen.md"
+      ]
+    },
+    {
+      "id": "GF-019",
+      "group": "03 Referenzen",
+      "name": "Charakterproduktion",
+      "applies": "characters",
+      "required_specification": [
+        "Character-ID und Biografie",
+        "Körperform und Proportionen",
+        "Outfit-Varianten",
+        "Gesichts- und Haarreferenzen",
+        "Materialien und Rig",
+        "Hitboxes",
+        "Ausrüstungs-Sockets",
+        "LOD",
+        "Stimmprofil"
+      ],
+      "acceptance": "Jede Figur besitzt zusammengehörige Daten, Ansichten und Unreal-Zuordnung.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-019_Charakterproduktion.md"
+      ]
+    },
+    {
+      "id": "GF-020",
+      "group": "03 Referenzen",
+      "name": "Props Waffen Gebäude",
+      "applies": "three_d",
+      "required_specification": [
+        "Objektliste und eindeutige IDs",
+        "Funktion und interaktive Zustände",
+        "Größe und Maßstab",
+        "Kollisionsregeln",
+        "Material- und LOD-Vorgaben",
+        "Varianten und Instancing",
+        "Positionen und Referenzbilder"
+      ],
+      "acceptance": "Jedes Objekt ist korrekt einer Szene oder einem Spielsystem zugeordnet.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-020_Props_Waffen_Geb_ude.md"
+      ]
+    },
+    {
+      "id": "GF-021",
+      "group": "04 Welt",
+      "name": "Leveldesign und Navigation",
+      "applies": "core",
+      "required_specification": [
+        "Levelübersicht",
+        "Start/Exit/Respawn",
+        "Landmarks und Orientierung",
+        "Laufwege und Sichtlinien",
+        "Begegnungsdesign",
+        "Sammelobjekte/Trigger",
+        "Navigation und Blockaden"
+      ],
+      "acceptance": "Der gesamte kritische Weg ist mit den vorgesehenen Fähigkeiten erreichbar.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-021_Leveldesign_und_Navigation.md"
+      ]
+    },
+    {
+      "id": "GF-022",
+      "group": "04 Welt",
+      "name": "Open World und Streaming",
+      "applies": "open_world",
+      "required_specification": [
+        "Weltkarte mit Regionen",
+        "Koordinaten und Maßstab",
+        "World Partition Zellen",
+        "Data Layers",
+        "POIs und Reisepfade",
+        "Streaming/Spawn Budgets",
+        "Sicherheits-/Fallbackzonen",
+        "Schnellreise"
+      ],
+      "acceptance": "Weltregionen laden und entladen ohne verlorenen Questfortschritt.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-022_Open_World_und_Streaming.md"
+      ]
+    },
+    {
+      "id": "GF-023",
+      "group": "04 Welt",
+      "name": "Biomes Wetter Tageszeiten",
+      "applies": "weather",
+      "required_specification": [
+        "Biome-Liste",
+        "Jahreszeiten und Wetterwahrscheinlichkeiten",
+        "Tag/Nacht-Zyklus",
+        "Beleuchtung",
+        "Gameplayauswirkungen",
+        "Audio/Partikel",
+        "Speicherzustand und Performance"
+      ],
+      "acceptance": "Zustandswechsel zeigen konsistente Grafik- und Gameplayreaktionen.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-023_Biomes_Wetter_Tageszeiten.md"
+      ]
+    },
+    {
+      "id": "GF-024",
+      "group": "04 Welt",
+      "name": "Prozedurale Generierung",
+      "applies": "procedural",
+      "required_specification": [
+        "Seed und Reproduzierbarkeit",
+        "Generierungsalgorithmen",
+        "Regel- und Qualitätsgrenzen",
+        "POI-Placement",
+        "Navigation",
+        "Optimierung und Bake-Schritte",
+        "Regenerationsschutz"
+      ],
+      "acceptance": "Gleicher Seed liefert reproduzierbaren nutzbaren Inhalt.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-024_Prozedurale_Generierung.md"
+      ]
+    },
+    {
+      "id": "GF-025",
+      "group": "04 Welt",
+      "name": "Interaktion Rätsel und Trigger",
+      "applies": "core",
+      "required_specification": [
+        "Interaktionsarten und Prioritäten",
+        "Öffnen/Schließen/Benutzen",
+        "Puzzles und Hinweise",
+        "Triggerzustände",
+        "Reset/Fehlerbehandlung",
+        "Bedienoberfläche/Audio-Feedback"
+      ],
+      "acceptance": "Alle notwendigen Interaktionen sind auslösbar, rückmeldend und zustandssicher.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-025_Interaktion_R_tsel_und_Trigger.md"
+      ]
+    },
+    {
+      "id": "GF-026",
+      "group": "05 Gameplay",
+      "name": "Steuerung und Input",
+      "applies": "core",
+      "required_specification": [
+        "Keyboard Maus Gamepad und Rebinding",
+        "Input Actions/Contexts",
+        "Tastenbelegung",
+        "Dead Zones und Sensitivität",
+        "Controller Icons",
+        "Pause und Menüsteuerung",
+        "Konfliktbehandlung"
+      ],
+      "acceptance": "Kernspiel ist auf allen ausgewählten Eingabegeräten bedienbar.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-026_Steuerung_und_Input.md"
+      ]
+    },
+    {
+      "id": "GF-027",
+      "group": "05 Gameplay",
+      "name": "Kamera und Perspektiven",
+      "applies": "core",
+      "required_specification": [
+        "First/Third/Top Down/Fixed",
+        "Kameraabstand/FOV",
+        "Kollision und Sichtschutz",
+        "Zielen und Lock-On",
+        "Cinematic Übergänge",
+        "Motion Sickness und Einstellungen"
+      ],
+      "acceptance": "Keine spielkritische Sichtblockade in wichtigen Situationen.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-027_Kamera_und_Perspektiven.md"
+      ]
+    },
+    {
+      "id": "GF-028",
+      "group": "05 Gameplay",
+      "name": "Bewegung Fortbewegung",
+      "applies": "core",
+      "required_specification": [
+        "Laufen/Springen/Schwimmen/Klettern je Profil",
+        "Beschleunigung und Trägheit",
+        "Stamina und Gelände",
+        "Treppen/Abgründe",
+        "Animation Sync",
+        "Sonderfälle und Anti-Stuck"
+      ],
+      "acceptance": "Bewegungszustände haben konkrete Übergänge und Kollisionsregeln.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-028_Bewegung_Fortbewegung.md"
+      ]
+    },
+    {
+      "id": "GF-029",
+      "group": "05 Gameplay",
+      "name": "Kampf Schadenssystem",
+      "applies": "combat",
+      "required_specification": [
+        "Treffer-/Block-/Ausweichfenster",
+        "Schadensformeln und Resistenz",
+        "Nah-/Fernkampf",
+        "Lock-On und Kamera",
+        "Hit-Reactions",
+        "Balancewerte",
+        "Tod/Respawn",
+        "PvE/PvP Varianten"
+      ],
+      "acceptance": "Alle Angriffsarten haben Start, Trefferprüfung, Konsequenz und Ende.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-029_Kampf_Schadenssystem.md"
+      ]
+    },
+    {
+      "id": "GF-030",
+      "group": "05 Gameplay",
+      "name": "Fähigkeiten und Statuswerte",
+      "applies": "abilities",
+      "required_specification": [
+        "Attribute und Ressourcen",
+        "Fähigkeits-IDs",
+        "Kosten/Cooldowns",
+        "Gameplay Tags/Effekte",
+        "Freischaltung",
+        "VFX/SFX/Animation",
+        "Abbruchfälle",
+        "Persistenz"
+      ],
+      "acceptance": "Fähigkeiten überschneiden sich nicht widersprüchlich und sind testbar.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-030_F_higkeiten_und_Statuswerte.md"
+      ]
+    },
+    {
+      "id": "GF-031",
+      "group": "05 Gameplay",
+      "name": "Gegner KI und Verhalten",
+      "applies": "enemies",
+      "required_specification": [
+        "KI-Archetypen",
+        "Wahrnehmung und Sicht",
+        "Navigation/Patrouille",
+        "Suche/Angriff/Rückzug",
+        "Gruppenkoordination",
+        "Schwierigkeit",
+        "Debug-Modi",
+        "Loot und Respawn"
+      ],
+      "acceptance": "Gegner reagieren stabil auf Spieleraktion und scheitern nicht an Navigation.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-031_Gegner_KI_und_Verhalten.md"
+      ]
+    },
+    {
+      "id": "GF-032",
+      "group": "05 Gameplay",
+      "name": "Bosskämpfe und Phasen",
+      "applies": "bosses",
+      "required_specification": [
+        "Boss-Biografie und Arena",
+        "Telegraphing",
+        "Phasen und Zustandswechsel",
+        "Movesets/Cooldowns",
+        "Balancing",
+        "Audio/VFX/Animationen",
+        "Checkpoints",
+        "Loot/Story-Ergebnis",
+        "Fehlerrücksetzung"
+      ],
+      "acceptance": "Jede Bossphase ist spielbar, lesbar und zuverlässig abschließbar.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-032_Bossk_mpfe_und_Phasen.md"
+      ]
+    },
+    {
+      "id": "GF-033",
+      "group": "05 Gameplay",
+      "name": "NPCs Fraktionen Tagesroutinen",
+      "applies": "npcs",
+      "required_specification": [
+        "NPC-Profile",
+        "Dialog und Beziehungen",
+        "Tagesablauf und Jobs",
+        "Quest-Schnittstellen",
+        "Verhalten bei Gewalt/Alarm",
+        "Inventar/Handel",
+        "Reputationssystem",
+        "Fallback-Spawn"
+      ],
+      "acceptance": "Wichtige NPCs bleiben erreichbar und verursachen keine Questblockaden.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-033_NPCs_Fraktionen_Tagesroutinen.md"
+      ]
+    },
+    {
+      "id": "GF-034",
+      "group": "05 Gameplay",
+      "name": "Inventar Ausrüstung Items",
+      "applies": "inventory",
+      "required_specification": [
+        "Item-IDs und Kategorien",
+        "Gewicht/Slots/Stacks",
+        "Ausrüstungsslots",
+        "Loot Tables",
+        "Drop/Pickup",
+        "Seltenheit/Stats",
+        "UI und Sortierung",
+        "Verlust und Persistenz"
+      ],
+      "acceptance": "Keine Duplizierung/Verluste bei Speichern, Wechsel oder Tod.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-034_Inventar_Ausr_stung_Items.md"
+      ]
+    },
+    {
+      "id": "GF-035",
+      "group": "05 Gameplay",
+      "name": "Ressourcen Handel Wirtschaft",
+      "applies": "economy",
+      "required_specification": [
+        "Währungen und Preise",
+        "Händler",
+        "Preisregeln und Handelslimits",
+        "Belohnungen und Sinks",
+        "Loot-Balance",
+        "Anti-Exploit",
+        "UI und Speicherstände"
+      ],
+      "acceptance": "Wirtschaftssimulation hat definierte Preise und verhindert triviale Exploits.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-035_Ressourcen_Handel_Wirtschaft.md"
+      ]
+    },
+    {
+      "id": "GF-036",
+      "group": "05 Gameplay",
+      "name": "Crafting Bauen Rezepte",
+      "applies": "crafting",
+      "required_specification": [
+        "Ressourcen und Werkzeuge",
+        "Rezept-IDs",
+        "Produktionszeiten",
+        "Werkbänke",
+        "Fehlschlag und Rückgabe",
+        "Bauen/Platzieren",
+        "Persistenz",
+        "UI"
+      ],
+      "acceptance": "Jede Rezeptabhängigkeit ist erfüllbar und sicher speicherbar.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-036_Crafting_Bauen_Rezepte.md"
+      ]
+    },
+    {
+      "id": "GF-037",
+      "group": "05 Gameplay",
+      "name": "Fortschritt Skills Upgrades",
+      "applies": "progression",
+      "required_specification": [
+        "XP/Level-/Skillkurven",
+        "Skilltrees und Voraussetzungen",
+        "Respec",
+        "Klassen/Ränge",
+        "Stat-Balance",
+        "Freischaltbedingungen",
+        "New Game Plus ggf."
+      ],
+      "acceptance": "Keine toten Skillpfade und kein unabsichtlicher Fortschrittsverlust.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-037_Fortschritt_Skills_Upgrades.md"
+      ]
+    },
+    {
+      "id": "GF-038",
+      "group": "05 Gameplay",
+      "name": "Stealth Alarm Tarnung",
+      "applies": "stealth",
+      "required_specification": [
+        "Sicht-/Hörreichweiten",
+        "Deckung",
+        "Verdachtszustände",
+        "Alarmverteilung",
+        "Takedowns",
+        "Ablenkungen",
+        "UI/Audiofeedback",
+        "Resetregeln"
+      ],
+      "acceptance": "Erkennung ist nachvollziehbar und reproduzierbar testbar.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-038_Stealth_Alarm_Tarnung.md"
+      ]
+    },
+    {
+      "id": "GF-039",
+      "group": "06 Physik",
+      "name": "Kollision und Physikgrundlagen",
+      "applies": "core",
+      "required_specification": [
+        "Kollisionsebenen/Kanäle",
+        "Masse/Schwerkraft",
+        "Physikmaterialien",
+        "Ragdoll falls benötigt",
+        "Interaktive Physik",
+        "Numerische Stabilität",
+        "Maximalbudgets und Fallbacks"
+      ],
+      "acceptance": "Keine fallenden Spieler, endlosen Kollisionen oder unerklärlichen Physiksprünge.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-039_Kollision_und_Physikgrundlagen.md"
+      ]
+    },
+    {
+      "id": "GF-040",
+      "group": "06 Physik",
+      "name": "Fahrzeuge Reiten Flug",
+      "applies": "vehicles",
+      "required_specification": [
+        "Fahrzeugklassen",
+        "Steuerung/Kamera",
+        "Reifen/Antrieb/Traktion",
+        "Kollision/Schaden",
+        "Ein-/Aussteigen",
+        "KI-Verkehr",
+        "Audio und VFX",
+        "Netzwerk/Persistenz ggf."
+      ],
+      "acceptance": "Fahrzeug kann vollständig benutzt und wieder verlassen werden.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-040_Fahrzeuge_Reiten_Flug.md"
+      ]
+    },
+    {
+      "id": "GF-041",
+      "group": "06 Physik",
+      "name": "Wasser Schwimmen Tauchen",
+      "applies": "water",
+      "required_specification": [
+        "Wasserzonen",
+        "Buoyancy/Wellen",
+        "Schwimm-/Tauchsteuerung",
+        "Sauerstoff und Strömung",
+        "Unterwasserkamera",
+        "Audio/Shader",
+        "Kollision und Performance"
+      ],
+      "acceptance": "Übergang zwischen Land und Wasser funktioniert stabil.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-041_Wasser_Schwimmen_Tauchen.md"
+      ]
+    },
+    {
+      "id": "GF-042",
+      "group": "06 Physik",
+      "name": "Zerstörung Feuer Stoff Haar",
+      "applies": "destruction",
+      "required_specification": [
+        "Zerstörbare Teile",
+        "Chaos Fracturing",
+        "Partikel und Debris",
+        "Feuer-/Rauchregeln",
+        "Cloth/Hair falls benutzt",
+        "Baukosten/LOD",
+        "Zurücksetzen und Savezustand"
+      ],
+      "acceptance": "Dynamische Effekte bleiben deterministisch genug und performant.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-042_Zerst_rung_Feuer_Stoff_Haar.md"
+      ]
+    },
+    {
+      "id": "GF-043",
+      "group": "07 Präsentation",
+      "name": "Hauptmenü Settings HUD",
+      "applies": "core",
+      "required_specification": [
+        "Splash/Start/Hauptmenü",
+        "Spiel neu/laden/weiter",
+        "Pause/Settings/Verlassen",
+        "HUD-Layouts und Zustände",
+        "Navigation und Fokus",
+        "Auflösungen/Skalierung",
+        "Fehlermeldungen und Ladeanzeigen"
+      ],
+      "acceptance": "Alle Menüpfade inklusive Abbruch und Zurück führen zum korrekten Ziel.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-043_Hauptmen_Settings_HUD.md"
+      ]
+    },
+    {
+      "id": "GF-044",
+      "group": "07 Präsentation",
+      "name": "Ton Geräusche Musik",
+      "applies": "core",
+      "required_specification": [
+        "Musikthemen/Loops",
+        "SFX-Liste",
+        "Ambience und Räume",
+        "Dynamische Musik-Cues",
+        "3D-Audio/Attenuation",
+        "Lautstärke-Mixer",
+        "Lizenz und Format",
+        "Fallback ohne Audio"
+      ],
+      "acceptance": "Jede spielkritische Aktion hat passendes akustisches oder visuelles Feedback.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-044_Ton_Ger_usche_Musik.md"
+      ]
+    },
+    {
+      "id": "GF-045",
+      "group": "07 Präsentation",
+      "name": "Sprachausgabe und Lipsync",
+      "applies": "voice",
+      "required_specification": [
+        "Sprecherliste und Castingprofil",
+        "Dialog-Audio-IDs",
+        "Voiceover-Aufnahmeanweisungen",
+        "Lipsync/Face Animation",
+        "Timing und Emotion",
+        "Versionen/Lizenzen",
+        "Fallback-Text"
+      ],
+      "acceptance": "Sprachdatei, Sprecher, Untertitel und Szene sind exakt verknüpft.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-045_Sprachausgabe_und_Lipsync.md"
+      ]
+    },
+    {
+      "id": "GF-046",
+      "group": "07 Präsentation",
+      "name": "VFX und Gamefeel",
+      "applies": "core",
+      "required_specification": [
+        "Hit-Feedback",
+        "Partikelkatalog",
+        "Haptik/Kamera-Impulse",
+        "Übergänge und Interaktionsfeedback",
+        "Visuelle Lesbarkeit",
+        "Accessibility-Schalter",
+        "Performance-Limits"
+      ],
+      "acceptance": "Spielkritische Rückmeldung ist visuell/akustisch klar, nicht überladen.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-046_VFX_und_Gamefeel.md"
+      ]
+    },
+    {
+      "id": "GF-047",
+      "group": "07 Präsentation",
+      "name": "Untertitel Accessibility",
+      "applies": "core",
+      "required_specification": [
+        "Untertitel/Audio-Captions",
+        "Textgröße/Kontrast",
+        "Farbenblindheitsoptionen",
+        "Input-Remapping",
+        "Motion-Reduction",
+        "Schwierigkeitshilfen",
+        "Testfälle"
+      ],
+      "acceptance": "Kerninformationen sind nicht nur über Sound oder Farbe zugänglich.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-047_Untertitel_Accessibility.md"
+      ]
+    },
+    {
+      "id": "GF-048",
+      "group": "07 Präsentation",
+      "name": "Lokalisierung Sprachen",
+      "applies": "core",
+      "required_specification": [
+        "Zielsprachen inkl. DE/EN/IT falls gewünscht",
+        "String IDs",
+        "UI-Längenregeln",
+        "Datums/Zahlenformat",
+        "Schriftzeichen",
+        "Sprecher/Untertitelvarianten",
+        "Übersetzungsworkflow"
+      ],
+      "acceptance": "Keine fest codierten Texte in dafür vorgesehenen Oberflächen.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-048_Lokalisierung_Sprachen.md"
+      ]
+    },
+    {
+      "id": "GF-049",
+      "group": "08 Grundtechnik",
+      "name": "Unreal Projektarchitektur",
+      "applies": "core",
+      "required_specification": [
+        "Engineversion",
+        "C++ Klassenstruktur und Module",
+        "GameInstance/GameMode/Controller/Pawn",
+        "Subsysteme",
+        "Blueprints vs C++",
+        "Plugininventar und Kompatibilität",
+        "Konfiguration"
+      ],
+      "acceptance": "Projekt kompiliert auf gewählter Engine mit minimalem Testlevel.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-049_Unreal_Projektarchitektur.md"
+      ]
+    },
+    {
+      "id": "GF-050",
+      "group": "08 Grundtechnik",
+      "name": "Datenmodell und Referenzen",
+      "applies": "core",
+      "required_specification": [
+        "Eindeutige IDs",
+        "Game Data Tabellen/Assets",
+        "Verweise und Beziehungen",
+        "Tag-Namensräume",
+        "Schemas und Versionen",
+        "Konsistenzvalidator",
+        "Migrationen"
+      ],
+      "acceptance": "Keine kaputten internen Verweise und kein unbenannter Pflichtdatensatz.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-050_Datenmodell_und_Referenzen.md"
+      ]
+    },
+    {
+      "id": "GF-051",
+      "group": "08 Grundtechnik",
+      "name": "Speichern Laden Checkpoints",
+      "applies": "core",
+      "required_specification": [
+        "Persistente Zustandsliste",
+        "SaveGame-Versionierung",
+        "Autosave/Manual Save",
+        "Quests/Inventar/Position",
+        "Recovery nach Crash",
+        "Mehrere Slots",
+        "Integrität/Backup",
+        "New Game/Reset"
+      ],
+      "acceptance": "Save->Exit->Load reproduziert wesentliche Spielzustände.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-051_Speichern_Laden_Checkpoints.md"
+      ]
+    },
+    {
+      "id": "GF-052",
+      "group": "08 Grundtechnik",
+      "name": "Mehrspieler Netcode",
+      "applies": "multiplayer",
+      "required_specification": [
+        "Koop/PvP/Servermodell",
+        "Replikation und Prediction",
+        "Lobby/Matchmaking",
+        "Join/Leave",
+        "Datenautorität",
+        "Lag/Disconnect-Reconnect",
+        "Netzwerktests",
+        "Serverbetrieb"
+      ],
+      "acceptance": "Mindestens zwei Clients erhalten konsistente entscheidende Zustände.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-052_Mehrspieler_Netcode.md"
+      ]
+    },
+    {
+      "id": "GF-053",
+      "group": "08 Grundtechnik",
+      "name": "Online Dienste Datenschutz",
+      "applies": "online",
+      "required_specification": [
+        "Account/Auth wenn benötigt",
+        "Cloud-Saves/Erfolge",
+        "Serverstatus",
+        "Datenerhebung und Opt-in",
+        "Moderation/Meldung",
+        "Datenschutz und Löschprozesse",
+        "Servicefehler und Offlineverhalten"
+      ],
+      "acceptance": "Ausfälle und Privatsphäreanforderungen sind ausdrücklich getestet.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-053_Online_Dienste_Datenschutz.md"
+      ]
+    },
+    {
+      "id": "GF-054",
+      "group": "08 Grundtechnik",
+      "name": "Mobile VR Konsolenprofile",
+      "applies": "special_platforms",
+      "required_specification": [
+        "Plattformspezifische Eingaben",
+        "Auflösung und Touch/VR-Komfort",
+        "Shader- und Speicherlimits",
+        "Rechte/SDKs",
+        "Offline/Online Policies",
+        "Store Vorgaben",
+        "Device-Matrix"
+      ],
+      "acceptance": "Zielhardware-spezifische Anforderungen haben eigene Tests.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-054_Mobile_VR_Konsolenprofile.md"
+      ]
+    },
+    {
+      "id": "GF-055",
+      "group": "08 Grundtechnik",
+      "name": "Blender Asset-Pipeline",
+      "applies": "three_d",
+      "required_specification": [
+        "Versionsfixierung",
+        "Datei-/Assetnamen",
+        "Maßstab Achsen/Rotation",
+        "Export FBX/glTF nach Eignung",
+        "UV/Animation/Testimport",
+        "Assetregistrierung",
+        "Reimport und Fehlerlog"
+      ],
+      "acceptance": "Exportiertes Modell kann reproduzierbar in Unreal importiert werden.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-055_Blender_Asset-Pipeline.md"
+      ]
+    },
+    {
+      "id": "GF-056",
+      "group": "08 Grundtechnik",
+      "name": "Claude MCP Handoff",
+      "applies": "core",
+      "required_specification": [
+        "CLAUDE.md Einstiegsdatei",
+        "Unreal MCP Preflight",
+        "Blender MCP Preflight",
+        "Tool Capability Matrix",
+        "Arbeitsaufträge in Reihenfolge",
+        "Erlaubnisse/Sicherheitsgrenzen",
+        "Fehler- und Retryprotokoll",
+        "Tokenbudget"
+      ],
+      "acceptance": "Keine MCP-Aktion ohne erfolgreiche lokale Verfügbarkeitsprüfung.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-056_Claude_MCP_Handoff.md"
+      ]
+    },
+    {
+      "id": "GF-057",
+      "group": "08 Grundtechnik",
+      "name": "Repository Backups Versionen",
+      "applies": "core",
+      "required_specification": [
+        "Git Branches und Tags",
+        "Assetstrategien Git LFS/Perforce",
+        "Backups vor destruktiven Schritten",
+        "Versionspinning",
+        "Rebuild/Reproduzierbarkeit",
+        "Rollback/Ownership",
+        "Keine Secrets im Repo"
+      ],
+      "acceptance": "Restore-Test funktioniert nach simulierter fehlerhafter Änderung.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-057_Repository_Backups_Versionen.md"
+      ]
+    },
+    {
+      "id": "GF-058",
+      "group": "09 Testing",
+      "name": "Testpyramide und Testfälle",
+      "applies": "core",
+      "required_specification": [
+        "Unit/Integration/Systemtests",
+        "Level Smoke Tests",
+        "Mission- und Branch-Tests",
+        "Save/Load Tests",
+        "Asset Validation",
+        "Screenshots/Regression",
+        "Hardware-Tests",
+        "Fehlerpriorität"
+      ],
+      "acceptance": "Alle Freigabepunkte verweisen auf ausgeführte Tests mit Ergebnisbeleg.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-058_Testpyramide_und_Testf_lle.md"
+      ]
+    },
+    {
+      "id": "GF-059",
+      "group": "09 Testing",
+      "name": "Performancebudgets",
+      "applies": "core",
+      "required_specification": [
+        "Ziel-FPS und Framezeit",
+        "CPU/GPU/RAM/VRAM",
+        "Auflösung und Hardwareklasse",
+        "LOD/Nanite/Streaming",
+        "Lastszenen",
+        "Profiling Logs",
+        "Shader/Builddauer Budgets",
+        "Fallbackstufen"
+      ],
+      "acceptance": "Worst-Case-Tests liegen innerhalb definierter Hardwarebudgets.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-059_Performancebudgets.md"
+      ]
+    },
+    {
+      "id": "GF-060",
+      "group": "09 Testing",
+      "name": "Stabilität Sicherheitschecks",
+      "applies": "core",
+      "required_specification": [
+        "Crash-/Hang-Protokolle",
+        "Datei/Modding-Sicherheit",
+        "Input-Validation",
+        "Abhängigkeitenscans",
+        "Anti-Cheat wenn MP",
+        "Privacy-Security",
+        "Save-Korruption",
+        "Berechtigungen"
+      ],
+      "acceptance": "Keine bekannten Blocker der höchsten Priorität vor Freigabe.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-060_Stabilit_t_Sicherheitschecks.md"
+      ]
+    },
+    {
+      "id": "GF-061",
+      "group": "09 Testing",
+      "name": "Balance Spielbarkeit Abnahme",
+      "applies": "core",
+      "required_specification": [
+        "Qualitative Spieltests",
+        "Kampf- und Schwierigkeitstests",
+        "Sackgassen",
+        "Quest-Logik",
+        "Framerate und Lesbarkeit",
+        "Usability",
+        "Abnahmeprotokoll",
+        "Offene Issues"
+      ],
+      "acceptance": "Feature ist erst fertig bei realem Build-Test und Nutzerfreigabe.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-061_Balance_Spielbarkeit_Abnahme.md"
+      ]
+    },
+    {
+      "id": "GF-062",
+      "group": "10 Release",
+      "name": "Build Packaging Installer",
+      "applies": "core",
+      "required_specification": [
+        "Target Windows/weitere Plattformen",
+        "Development/Shipping Config",
+        "Cook/Package/Sign falls nötig",
+        "Abhängigkeiten/Redistributables",
+        "Erster Start und Updateprozess",
+        "Buildlog/Checksums",
+        "Offline-Start",
+        "Deinstallation"
+      ],
+      "acceptance": "Ein sauberer Zielrechner kann das gebaute Spiel starten und spielen.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-062_Build_Packaging_Installer.md"
+      ]
+    },
+    {
+      "id": "GF-063",
+      "group": "10 Release",
+      "name": "Rechte Lizenzen und Einwilligungen",
+      "applies": "core",
+      "required_specification": [
+        "Asset-Herkunft und Nutzungsrechte",
+        "KI-Inhalte und Nutzungsbedingungen",
+        "Musik/Synchron/Likeness Rechte",
+        "Open-Source-Lizenzen",
+        "Marken/Datenschutz",
+        "Credits",
+        "Freigaben",
+        "Drittanbieter-Regeln"
+      ],
+      "acceptance": "Keine Produktionsassets ohne nachvollziehbare Herkunft und Erlaubnis.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-063_Rechte_Lizenzen_und_Einwilligungen.md"
+      ]
+    },
+    {
+      "id": "GF-064",
+      "group": "10 Release",
+      "name": "Store und Veröffentlichung",
+      "applies": "release",
+      "required_specification": [
+        "Storetexte und Tags",
+        "Trailer/Screenshots/Kapseln",
+        "Preis/Regionen",
+        "Ratings soweit nötig",
+        "Systemanforderungen",
+        "Steam/Epic Store Review",
+        "Release Notes",
+        "Supportkontakt"
+      ],
+      "acceptance": "Store- und Build-Freigabechecklisten für gewählte Plattform erfüllt.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-064_Store_und_Ver_ffentlichung.md"
+      ]
+    },
+    {
+      "id": "GF-065",
+      "group": "10 Release",
+      "name": "Updates Wartung Support",
+      "applies": "release",
+      "required_specification": [
+        "Patch-Versionierung",
+        "Bug-Triage",
+        "Save-Kompatibilität",
+        "Telemetrie nur mit Rechtsbasis",
+        "Rollbackstrategie",
+        "Support-FAQ",
+        "Crash-Reporting",
+        "Roadmap"
+      ],
+      "acceptance": "Patch verändert bestehende Spielstände ohne unbeabsichtigten Datenverlust.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-065_Updates_Wartung_Support.md"
+      ]
+    },
+    {
+      "id": "GF-066",
+      "group": "11 Zusätze",
+      "name": "Strategie Aufbau Simulation",
+      "applies": "strategy",
+      "required_specification": [
+        "Ressourcenketten",
+        "Bau- und Produktionslogik",
+        "Einheiten-KI",
+        "Pfadfindung",
+        "Balance",
+        "Ökonomie",
+        "Tech Trees",
+        "Siegesregeln"
+      ],
+      "acceptance": "Simulationsergebnisse folgen reproduzierbaren Regeln.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-066_Strategie_Aufbau_Simulation.md"
+      ]
+    },
+    {
+      "id": "GF-067",
+      "group": "11 Zusätze",
+      "name": "Racing Rennspiel",
+      "applies": "racing",
+      "required_specification": [
+        "Fahrphysik",
+        "Strecken und Checkpoints",
+        "Rundenzeiten und Regeln",
+        "KI-Gegner",
+        "Tuning",
+        "Menüs/HUD",
+        "Replay",
+        "Kollisionsstrafen"
+      ],
+      "acceptance": "Eine vollständige Runde mit gültiger Zeitwertung ist spielbar.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-067_Racing_Rennspiel.md"
+      ]
+    },
+    {
+      "id": "GF-068",
+      "group": "11 Zusätze",
+      "name": "RPG Rollenspiel",
+      "applies": "rpg",
+      "required_specification": [
+        "Klassen",
+        "Skills und Stats",
+        "Quests",
+        "Gegenstände",
+        "Dialog-/Beziehungsentscheidungen",
+        "Fortschritt",
+        "Schadenslogik",
+        "Balance"
+      ],
+      "acceptance": "Jeder vorgesehenen Character Build hat einen erreichbaren Spielpfad.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-068_RPG_Rollenspiel.md"
+      ]
+    },
+    {
+      "id": "GF-069",
+      "group": "11 Zusätze",
+      "name": "Horror/Survival",
+      "applies": "survival",
+      "required_specification": [
+        "Angst/Spannungsbogen",
+        "Licht und Sound",
+        "Verstecken und Ressourcen",
+        "Überlebensregeln",
+        "Gegnerwahrnehmung",
+        "Sichtbarkeit und Fairness",
+        "Schock- und Safety-Optionen"
+      ],
+      "acceptance": "Kernressourcen reichen unter dokumentierten Bedingungen zum Durchspielen.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-069_Horror_Survival.md"
+      ]
+    },
+    {
+      "id": "GF-070",
+      "group": "11 Zusätze",
+      "name": "Eingabe/Plattform-Sonderfälle",
+      "applies": "core",
+      "required_specification": [
+        "Alt-Tab/Focus Lost",
+        "Audio Device Disconnect",
+        "Keyboard/Gamepad Hot-Swap",
+        "Fenster-/Vollbildwechsel",
+        "No Internet",
+        "Erste-Installation",
+        "Controller Disconnect",
+        "Tastatur-Layoutvarianten"
+      ],
+      "acceptance": "Kein Datenverlust oder Softlock bei typischen Umgebungswechseln.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-070_Eingabe_Plattform-Sonderf_lle.md"
+      ]
+    },
+    {
+      "id": "GF-071",
+      "group": "11 Zusätze",
+      "name": "Kameras Fotomodus Replay",
+      "applies": "photo_mode",
+      "required_specification": [
+        "Photo-Mode Pause und Kamera",
+        "UI-Hide",
+        "DOF/Belichtung",
+        "Speicherpfad",
+        "Replay Daten",
+        "Speicherkosten",
+        "Urheberlogos"
+      ],
+      "acceptance": "Foto und Wiederholung beeinträchtigen keine Missionen.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-071_Kameras_Fotomodus_Replay.md"
+      ]
+    },
+    {
+      "id": "GF-072",
+      "group": "11 Zusätze",
+      "name": "Analytics und Nutzerauswertung",
+      "applies": "analytics",
+      "required_specification": [
+        "Ziel-/Erfolgsmessung",
+        "Event IDs",
+        "Einwilligung/Löschbarkeit",
+        "Anonymisierung",
+        "Dashboard",
+        "Fehlerberichte",
+        "Keine Geheimdaten"
+      ],
+      "acceptance": "Alle Events sind dokumentiert und auf gewünschte Privatsphäre begrenzt.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-072_Analytics_und_Nutzerauswertung.md"
+      ]
+    },
+    {
+      "id": "GF-073",
+      "group": "11 Zusätze",
+      "name": "Mods UGC Editor",
+      "applies": "mods",
+      "required_specification": [
+        "Modding-API und Datenformat",
+        "Sandbox",
+        "Freigaben und Rechte",
+        "Performancebudgets",
+        "Import/Export",
+        "Vertrauensmodell",
+        "Kompatibilität"
+      ],
+      "acceptance": "Fremdinhalte beeinflussen Kernspiel und Nutzerdateien nicht unkontrolliert.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-073_Mods_UGC_Editor.md"
+      ]
+    },
+    {
+      "id": "GF-074",
+      "group": "11 Zusätze",
+      "name": "Achievements Leaderboards",
+      "applies": "achievements",
+      "required_specification": [
+        "Achievement IDs",
+        "Trigger und Bedingungen",
+        "Offline/Online Verhalten",
+        "Fortschritt",
+        "UI",
+        "Missbrauchsprävention",
+        "Store API Zuordnung"
+      ],
+      "acceptance": "Erfolge werden nur bei erfüllter Bedingung ausgelöst und gespeichert.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-074_Achievements_Leaderboards.md"
+      ]
+    },
+    {
+      "id": "GF-075",
+      "group": "12 Nachvollziehbarkeit",
+      "name": "Claude Aufgabenmatrix",
+      "applies": "core",
+      "required_specification": [
+        "Kleine atomare Tasks",
+        "Eingabedateien und konkrete Outputs",
+        "Abhängigkeiten",
+        "MCP/Toolvoraussetzungen",
+        "Akzeptanztests",
+        "Status und Evidence-Pfade",
+        "Retry/Blocker/Owner"
+      ],
+      "acceptance": "Jeder Auftrag kann isoliert ausgeführt und nachweislich geprüft werden.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-075_Claude_Aufgabenmatrix.md"
+      ]
+    },
+    {
+      "id": "GF-076",
+      "group": "12 Nachvollziehbarkeit",
+      "name": "Bild-/Asset-Authentizität",
+      "applies": "core",
+      "required_specification": [
+        "Datei ist vorhanden und lesbar",
+        "Inhalt entspricht der Referenz",
+        "Assetquelle und License",
+        "Hash/Version",
+        "Style/Model/Scene Mapping",
+        "Status getrennt nach geplant/erzeugt/freigegeben"
+      ],
+      "acceptance": "Kein Platzhalter wird als endgültiger 3D-/Bild-Asset gemeldet.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-076_Bild-_Asset-Authentizit_t.md"
+      ]
+    },
+    {
+      "id": "GF-077",
+      "group": "12 Nachvollziehbarkeit",
+      "name": "Ende-zu-Ende Qualitätstore",
+      "applies": "core",
+      "required_specification": [
+        "G1 Design vollständig",
+        "G2 Referenzen vorhanden",
+        "G3 Claude Handoff konsistent",
+        "G4 Vertical Slice testbar",
+        "G5 Content vollständig",
+        "G6 Performance/QA",
+        "G7 Release und Abnahme"
+      ],
+      "acceptance": "Ein Gate kann nur mit dokumentierten Beweisen auf bestanden wechseln.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-077_Ende-zu-Ende_Qualit_tstore.md"
+      ]
+    },
+    {
+      "id": "GF-078",
+      "group": "12 Nachvollziehbarkeit",
+      "name": "Komplexität Kosten Ressourcen",
+      "applies": "core",
+      "required_specification": [
+        "Hardwareprofil",
+        "Kosten- und Zeitrahmen als Schätzung",
+        "Anzahl Assets/Dialogzeilen/Levels",
+        "Risiken und Engpässe",
+        "Token-/API-Budget",
+        "Jobpriorität",
+        "Asset-Reuse"
+      ],
+      "acceptance": "Unerfüllbare Zielvorgaben werden vor Produktion markiert.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-078_Komplexit_t_Kosten_Ressourcen.md"
+      ]
+    },
+    {
+      "id": "GF-079",
+      "group": "12 Nachvollziehbarkeit",
+      "name": "Referenz- und Logikgraph",
+      "applies": "core",
+      "required_specification": [
+        "Figuren-/Objekt-/Orts-IDs",
+        "Crosslinks Quest zu Szene zu Asset",
+        "Fehlende Referenzen",
+        "Zyklische Taskabhängigkeiten",
+        "Kanonkonflikte",
+        "Versionssprünge",
+        "Coverage-Metriken"
+      ],
+      "acceptance": "Keine ungeklärten Pflichtverweise und keine Abhängigkeitszyklen.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-079_Referenz-_und_Logikgraph.md"
+      ]
+    },
+    {
+      "id": "GF-080",
+      "group": "12 Nachvollziehbarkeit",
+      "name": "Claude Übergabeprotokoll",
+      "applies": "core",
+      "required_specification": [
+        "Versionsfixierung für Engine/Plugins",
+        "Zip Manifest und Dateihashes",
+        "Absolute Schritte zum Entpacken",
+        "Runbook",
+        "Erstprüfung",
+        "Fortschrittszustände",
+        "Abnahme und Fortsetzung nach Session-Ende"
+      ],
+      "acceptance": "Ein neuer Claude-Chat kann ab gespeichertem Status ohne Annahmen fortfahren.",
+      "deliverables": [
+        "SPECIFICATIONS/GF-080_Claude_bergabeprotokoll.md"
+      ]
+    }
+  ]
+}
