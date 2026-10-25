@@ -28,7 +28,8 @@ RESERVE_DEFAULT = 0.20
 
 # Bekannte GPU-Großverbraucher (Prozessname -> Anzeigename). Hintergrund-Blender (-b) zählt nur, wenn er von GAMEFORGE kommt.
 GPU_APPS = {"unrealeditor": "Unreal Editor", "unrealeditor-cmd": "Unreal (Kommandozeile)", "blender": "Blender",
-            "comfyui": "ComfyUI", "natronrenderer": "Natron", "davinci": "DaVinci Resolve"}
+            "comfyui": "ComfyUI", "natronrenderer": "Natron", "resolve": "DaVinci Resolve",
+            "twinmotioncookededitor-win64-shipping": "Twinmotion"}
 
 OOM_PATTERNS = [r"out of memory", r"CUDA_ERROR_OUT_OF_MEMORY", r"cudaErrorMemoryAllocation", r"OutOfVideoMemory",
                 r"ran out of video memory", r"out of video memory", r"DXGI_ERROR_DEVICE_REMOVED", r"DXGI_ERROR_DEVICE_HUNG",
@@ -74,6 +75,19 @@ def measure():
             "util_pct": None, "temp_c": None, "driver": None, "source": "WMI (nur Name)", "measured": False}
 
 
+def classify(name, cmd):
+    """Prozessname + Befehlszeile -> (Anzeigename, Modus) oder None."""
+    low, cmdl = name.lower().replace(".exe", ""), (cmd or "").lower()
+    if low in ("python", "pythonw"):
+        return ("ComfyUI", "Server") if "comfyui" in cmdl and "main.py" in cmdl else None
+    label = GPU_APPS.get(low)
+    if not label:
+        return None
+    if low == "blender" and (" -b " in f" {cmdl} " or "--background" in cmdl):
+        return label, "Hintergrund"
+    return label, "Kommandozeile" if "-cmd" in low or "-run=" in cmdl else "Fenster (Editor)"
+
+
 def gpu_apps():
     """Laufende GPU-Großverbraucher, die NICHT von GAMEFORGE gestartet wurden (werden nie beendet)."""
     found = []
@@ -81,24 +95,16 @@ def gpu_apps():
         return json.loads(os.environ["GAMEFORGE_GPU_FAKE_APPS"])
     if os.name == "nt":
         code, out = _run(["powershell", "-NoProfile", "-Command",
-                          "Get-CimInstance Win32_Process | Where-Object { $_.Name -match '^(UnrealEditor|blender|python|NatronRenderer|Resolve)' } | "
+                          "Get-CimInstance Win32_Process | Where-Object { $_.Name -match '^(UnrealEditor|blender|python|NatronRenderer|Resolve|Twinmotion)' } | "
                           "ForEach-Object { $_.ProcessId.ToString() + '|' + $_.Name + '|' + [int]($_.WorkingSetSize/1MB) + '|' + $_.CommandLine }"], timeout=20)
         for line in out.splitlines():
             parts = line.split("|", 3)
             if len(parts) < 4:
                 continue
             pid, name, ram, cmd = parts
-            low, cmdl = name.lower().replace(".exe", ""), cmd.lower()
-            if low == "python" or low == "pythonw":
-                if "comfyui" in cmdl and "main.py" in cmdl:
-                    found.append({"pid": int(pid), "app": "ComfyUI", "ram_mb": int(ram), "mode": "Server"})
-                continue
-            label = GPU_APPS.get(low)
-            if not label:
-                continue
-            mode = "Hintergrund" if low == "blender" and (" -b " in f" {cmdl} " or "--background" in cmdl) else \
-                   "Kommandozeile" if "-cmd" in low or "-run=" in cmdl else "Fenster (Editor)"
-            found.append({"pid": int(pid), "app": label, "ram_mb": int(ram), "mode": mode})
+            hit = classify(name, cmd)
+            if hit:
+                found.append({"pid": int(pid), "app": hit[0], "ram_mb": int(ram), "mode": hit[1]})
     return found
 
 

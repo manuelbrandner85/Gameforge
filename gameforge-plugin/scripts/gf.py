@@ -123,7 +123,7 @@ FILM_FIELDS = [
     ('edit', 'Schnitt & Länge'), ('render', 'Render & Technik (Unreal Sequencer / Blender)'), ('qa', 'Abnahme & Prüfungen'),
     ('rights', 'Rechte & Lizenzen')]
 FILM_REQUIRED = ['logline', 'treatment', 'script', 'characters', 'shotlist', 'look', 'music', 'render']
-FILM_DIRS = ('referenzen/entwuerfe', 'referenzen/freigegeben', 'storyboard', 'blender', 'unreal', 'schnitt', 'ton', 'renders', 'export', 'originale', 'versionen')
+FILM_DIRS = ('referenzen/entwuerfe', 'referenzen/freigegeben', 'storyboard', 'blender', 'twinmotion', 'unreal', 'schnitt', 'ton', 'renders', 'export', 'originale', 'versionen')
 STANDARD_DIRS = ('referenzen/entwuerfe', 'referenzen/freigegeben', 'blender', 'export', 'unreal', 'dlc', 'originale', 'versionen')
 TASK_STATES = ['Offen', 'In Arbeit', 'Umgesetzt', 'Getestet', 'Abgenommen']
 
@@ -349,7 +349,7 @@ def cmd_neu(a):
     if a.typ == 'film':
         root = create_film(a.titel, a.idee or '', a.stil or '', a.laenge or '', a.format or '', a.basis or '')
         out(f'FILM ANGELEGT: {root}')
-        out('Enthalten: FILM.md (Logline, Treatment, Drehbuch, Shotliste, Look, Ton …), art-direction.json, Ordner storyboard/blender/unreal/schnitt/ton/renders/export, CLAUDE.md.')
+        out('Enthalten: FILM.md (Logline, Treatment, Drehbuch, Shotliste, Look, Ton …), art-direction.json, Ordner storyboard/blender/twinmotion/unreal/schnitt/ton/renders/export, CLAUDE.md.')
         return
     root = create_game(a.titel, a.idee or '', a.genre or '', a.stil or '', a.perspektive or '', a.plattform or '', a.wuensche or '', a.kurz or '')
     prof = read_json(root / 'art-direction.json')['profile']
@@ -524,6 +524,8 @@ def cmd_system(a):
     out(f'Blender installiert: {b or "nein"}')
     ue = sorted(Path(os.environ.get('ProgramFiles', r'C:\Program Files'), 'Epic Games').glob('UE_*'))
     out('Unreal installiert: ' + (', '.join(p.name for p in ue) or 'nein'))
+    tm = sorted(Path(os.environ.get('ProgramFiles', r'C:\Program Files'), 'Epic Games').glob('Twinmotion*/Twinmotion/Binaries/Win64/TwinmotionCookedEditor-Win64-Shipping.exe'))
+    out('Twinmotion (Film-Vorvisualisierung, Bedienung von Hand): ' + (tm[-1].parents[3].name if tm else 'nicht installiert'))
     root = comfy.find_root(HOME)
     c = comfy.Comfy(HOME, HOME / 'engines' / 'logs')
     out(f'ComfyUI (lokale Bild-KI): {"installiert" if root else "NICHT installiert"}{" · läuft" if c.online() else ""}')

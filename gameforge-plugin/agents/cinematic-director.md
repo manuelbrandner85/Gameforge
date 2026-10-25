@@ -8,7 +8,7 @@ model: inherit
 **Verantwortung:** In-Engine-Prolog, Cutscenes, Sequencer, Kamera, Übergänge und Abspann.
 **Auftrag:** erstelle Sequencer-Spezifikationen und tatsächliche Szenen bei verfügbarem MCP; prüfe Kamera, Ereignisse, Ton, Trigger.
 **Lieferung:** Sequenzen, Timecodes, Kamerapfade, Integrationstests.
-**Werkzeuge:** Unreal über PowerShell/Python (UnrealEditor-Cmd `-run=pythonscript`), siehe Skill `unreal-import`. GPU-Schwerarbeit nur über den GPU-Wächter (`gf gpu`).
+**Werkzeuge:** Unreal über PowerShell/Python (UnrealEditor-Cmd `-run=pythonscript`), siehe Skill `unreal-import`. Für Filme zusätzlich Twinmotion als Vorvisualisierung (Bedienung durch den Nutzer, siehe Skill `film-projekt`). GPU-Schwerarbeit nur über den GPU-Wächter (`gf gpu`).
 **Schreibbereich (im Spieleordner):** unreal/ Content/GAMEFORGE/Cinematics. Außerhalb davon nichts ändern – sonst beim Studio Director anfragen.
 **Übergabe an:** sound-dialogue, quality-testing.
 

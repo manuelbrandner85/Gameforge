@@ -147,5 +147,17 @@ class JobTests(Base):
         self.assertEqual(self.j.get(b["id"])["status"], "blocked", "Abhängiger Job startet nicht nach Fehlschlag")
 
 
+class AppErkennung(unittest.TestCase):
+    def test_bekannte_gpu_programme(self):
+        from gameforge_core import gpu_commander as g
+        self.assertEqual(g.classify("TwinmotionCookedEditor-Win64-Shipping.exe", '"C:/Program Files/Epic Games/Twinmotion2026.2/x.exe"'), ("Twinmotion", "Fenster (Editor)"))
+        self.assertEqual(g.classify("Resolve.exe", ""), ("DaVinci Resolve", "Fenster (Editor)"))
+        self.assertEqual(g.classify("blender.exe", "blender.exe -b --python x.py"), ("Blender", "Hintergrund"))
+        self.assertEqual(g.classify("UnrealEditor-Cmd.exe", "x.uproject -run=pythonscript"), ("Unreal (Kommandozeile)", "Kommandozeile"))
+        self.assertEqual(g.classify("python.exe", "python -s ComfyUI/main.py --port 8188"), ("ComfyUI", "Server"))
+        self.assertIsNone(g.classify("python.exe", "python gf.py stand"))
+        self.assertIsNone(g.classify("notepad.exe", ""))
+
+
 if __name__ == "__main__":
     unittest.main()
