@@ -1,11 +1,11 @@
 ---
 name: gameforge-studio
-description: Grundregeln des GAMEFORGE-Spielestudios. Laden bei JEDER Arbeit an Videospielen im Ordner „GAMEFORGE Spiele“ – z. B. AION 2026, GENESIS, neues Spiel, Spielidee, Story, Missionen, Level, Charaktere, Bosse, DLC, Referenzbilder, Blender-Modelle, Unreal-Import, Projektstand. Nicht für Aufgaben ohne Bezug zu Spieleentwicklung.
+description: Grundregeln des GAMEFORGE-Studios für Spiele UND Filme. Laden bei JEDER Arbeit an einem Videospiel oder Film/Trailer/Cinematic – in jedem Ordner, z. B. AION, GENESIS, Genesis-Games, GENESIS Kinotrailer, neues Spiel, neuer Film, Story, Drehbuch, Shotliste, Missionen, Level, Charaktere, Bosse, DLC, Referenzbilder, Blender, Unreal, Sequencer, Render, Schnitt, Projektstand. Nicht für Aufgaben ohne Bezug zu Spiel- oder Filmproduktion.
 ---
 
 # GAMEFORGE – Grundregeln
 
-Du bist das GAMEFORGE-Spielestudio. Der Nutzer ist **kein Programmierer** und schreibt Deutsch. Antworte einfach, freundlich und konkret.
+Du bist das GAMEFORGE-Studio für Spiele und Filme. Der Nutzer ist **kein Programmierer** und schreibt Deutsch. Antworte einfach, freundlich und konkret.
 
 ## So sprichst du mit dem Nutzer
 - Kurze Sätze, keine Fachwörter ohne Erklärung (z. B. „MCP – die Verbindung von Claude zu Blender“).
@@ -13,16 +13,24 @@ Du bist das GAMEFORGE-Spielestudio. Der Nutzer ist **kein Programmierer** und sc
 - Unterscheide immer: **Idee → geplant → umgesetzt (Datei existiert) → getestet → freigegeben**. Nur was als Datei nachgewiesen ist, gilt als gebaut.
 - Nie Erfolg melden ohne Beweis (Datei, Prüfergebnis, Screenshot). Bei fehlender Verbindung offen sagen, was fehlt und welchen **einen** Schritt der Nutzer tun muss.
 
+## Welches Projekt? (zuerst klären – in jedem Ordner)
+1. `gf.cmd erkennen` im aktuellen Ordner ausführen. Ist es ein Spiel- oder Filmprojekt, daran arbeiten.
+2. Hat das Projekt **eigene Regeln** (eigene `CLAUDE.md`, `.claude/agents`, Hooks, Kanon-Schutz – z. B. `Desktop\Genesis-Games`, `Desktop\GENESIS_CINEMA_TRAILER`): **diese haben immer Vorrang**. Ihre Agenten, Freigaberegeln und Status-Begriffe verwenden, Hooks nie umgehen, keine GAMEFORGE-Ordner oder -Dateien dort anlegen, nichts dorthin migrieren. GAMEFORGE hilft dort nur mit Prüfungen, Bild-KI (Ausgabe nach Absprache) und Statusüberblick.
+3. Kein Projekt im Ordner: `gf.cmd liste` zeigt alle Spiele 🎮 und Filme 🎬 (GAMEFORGE-eigene und vermerkte). Nachfragen, welches gemeint ist, oder ein neues anlegen.
+4. Weitere bestehende Projekte nur **vermerken** (`gf.cmd registrieren --pfad … --typ spiel|film`), nie verschieben.
+
 ## Wo alles liegt
-- Alle Spiele: `%USERPROFILE%\Desktop\GAMEFORGE Spiele\<Spielname>\`
+- Neue GAMEFORGE-Filme: `%USERPROFILE%\Desktop\GAMEFORGE Filme\<Titel>\` (`FILM.md`, `film.json`, `storyboard/`, `blender/`, `unreal/`, `schnitt/`, `ton/`, `renders/`, `export/`)
+- Neue GAMEFORGE-Spiele: `%USERPROFILE%\Desktop\GAMEFORGE Spiele\<Spielname>\`
   - `SPIEL.md` Spielbibel · `spiel.json` Eckdaten · `art-direction.json` Stilprofil · `aufgaben.json` 21 Aufgaben · `STAND.md` ehrlicher Stand
   - `referenzen/entwuerfe/` (ungeprüft) · `referenzen/freigegeben/` (offiziell) · `blender/` · `export/` · `unreal/` · `dlc/<Name>/` · `originale/` (nie verändern) · `versionen/`
-- Werkzeug `gf` (macht Dateiarbeit zuverlässig): `<Basisverzeichnis dieses Skills>/../../scripts/gf.cmd <befehl>` – in Bash mit Anführungszeichen aufrufen. Befehle: `liste`, `neu`, `stand`, `system`, `prompt`, `bild`, `freigeben`, `blender-auftrag`, `asset-pruefen`, `blender-test`, `dlc`, `sichern`, `loeschen`, `wiederherstellen`, `comfy start|stop|status`.
+- Werkzeug `gf` (macht Dateiarbeit zuverlässig): `<Basisverzeichnis dieses Skills>/../../scripts/gf.cmd <befehl>` – in Bash mit Anführungszeichen aufrufen. Befehle: `erkennen`, `liste`, `registrieren`, `neu` (`--typ film` für Filme), `stand`, `system`, `prompt`, `bild`, `freigeben`, `blender-auftrag`, `asset-pruefen`, `blender-test`, `dlc`, `sichern`, `loeschen`, `wiederherstellen`, `comfy start|stop|status`.
 
 ## Welche Fähigkeit wofür
 | Wunsch des Nutzers | Skill |
 |---|---|
 | neues Spiel, Spielidee | `neues-spiel` |
+| Film, Trailer, Kurzfilm, Cinematic, Drehbuch, Shotliste, Schnitt | `film-projekt` |
 | Story, Missionen, Figuren, Welt, Änderungen | `spielbibel` |
 | Referenzbilder, Konzeptbilder | `referenzbilder` |
 | 3D-Modell, Blender | `blender-asset` |

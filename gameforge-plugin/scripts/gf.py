@@ -15,6 +15,8 @@ from gflib import art_direction, prompts, quality, imagecheck, comfy, hardware  
 PLUGIN = HERE.parent
 HOME = PLUGIN.parent                                   # GAMEFORGE-Ordner (enthält engines/ mit ComfyUI)
 GAMES = Path(os.environ.get('GAMEFORGE_SPIELE') or Path.home() / 'Desktop' / 'GAMEFORGE Spiele')
+FILMS = Path(os.environ.get('GAMEFORGE_FILME') or GAMES.parent / 'GAMEFORGE Filme')
+REGISTRY = GAMES / '_projekte.json'          # extern liegende Projekte: nur Verweis, nie verschoben
 BACKUPS = GAMES / '_Sicherungen'
 TRASH = GAMES / '_Papierkorb'
 
@@ -59,6 +61,14 @@ TASKS = [
     ('09 Test & Optimierung', 'Performance', 'FPS-Ziele auf Zielhardware erreicht'),
     ('10 Release', 'Finaler Build und Installer', 'Installierbarer Build geprüft'),
     ('10 Release', 'Rechteprüfung und Abnahme', 'Release-Checkliste freigegeben')]
+FILM_FIELDS = [
+    ('logline', 'Logline (ein Satz)'), ('treatment', 'Treatment / Inhalt'), ('canon', 'Kanon & Vorgaben (verbindlich)'),
+    ('script', 'Drehbuch / Szenen'), ('characters', 'Figuren & Besetzung'), ('locations', 'Schauplätze'),
+    ('shotlist', 'Shotliste'), ('storyboard', 'Storyboard'), ('look', 'Look, Kamera & Farbe'), ('music', 'Musik, Ton & Sprache'),
+    ('edit', 'Schnitt & Länge'), ('render', 'Render & Technik (Unreal Sequencer / Blender)'), ('qa', 'Abnahme & Prüfungen'),
+    ('rights', 'Rechte & Lizenzen')]
+FILM_REQUIRED = ['logline', 'treatment', 'script', 'characters', 'shotlist', 'look', 'music', 'render']
+FILM_DIRS = ('referenzen/entwuerfe', 'referenzen/freigegeben', 'storyboard', 'blender', 'unreal', 'schnitt', 'ton', 'renders', 'export', 'originale', 'versionen')
 STANDARD_DIRS = ('referenzen/entwuerfe', 'referenzen/freigegeben', 'blender', 'export', 'unreal', 'dlc', 'originale', 'versionen')
 TASK_STATES = ['Offen', 'In Arbeit', 'Umgesetzt', 'Getestet', 'Abgenommen']
 
@@ -92,25 +102,92 @@ def write_json(p, data):
     os.replace(tmp, p)
 
 
-def games():
-    if not GAMES.is_dir():
+def _own(root, marker):
+    if not root.is_dir():
         return []
-    return sorted([d for d in GAMES.iterdir() if d.is_dir() and not d.name.startswith(('_', '.')) and (d / 'spiel.json').is_file()],
+    return sorted([d for d in root.iterdir() if d.is_dir() and not d.name.startswith(('_', '.')) and (d / marker).is_file()],
                   key=lambda d: d.name.lower())
 
 
+def games():
+    return _own(GAMES, 'spiel.json')
+
+
+def films():
+    return _own(FILMS, 'film.json')
+
+
+def external():
+    return [x for x in (read_json(REGISTRY, []) or []) if Path(x.get('path', '')).is_dir()]
+
+
+def all_projects():
+    """(Anzeigename, Typ, Pfad, extern?) für alle bekannten Spiele und Filme."""
+    out = [(g.name, 'spiel', g, False) for g in games()] + [(f.name, 'film', f, False) for f in films()]
+    out += [(x['title'], x['kind'], Path(x['path']), True) for x in external()]
+    return out
+
+
+def detect(path):
+    """Erkennt, ob ein Ordner (oder ein übergeordneter) ein Spiel- oder Filmprojekt ist.
+    Reihenfolge: GAMEFORGE-Marker und vermerkte Projekte zuerst, dann Unreal-Projekt/CLAUDE.md."""
+    chain = [Path(path).resolve()]
+    chain += list(chain[0].parents)[:4]
+    reg = {Path(x['path']).resolve(): x for x in external()}
+    for d in chain:
+        if (d / 'spiel.json').is_file():
+            return d, 'spiel', 'GAMEFORGE-Spiel'
+        if (d / 'film.json').is_file():
+            return d, 'film', 'GAMEFORGE-Film'
+        if d in reg:
+            return d, reg[d]['kind'], 'vermerktes Projekt'
+    film_words = ('trailer', 'film', 'kino', 'cinema', 'movie render', 'drehbuch')
+    for i, d in enumerate(chain):
+        up = list(d.glob('*.uproject')) + list(d.glob('*/*.uproject'))
+        md = next((c / 'CLAUDE.md' for c in chain[i:] if (c / 'CLAUDE.md').is_file()), None)
+        text = md.read_text(encoding='utf-8', errors='replace')[:6000].lower() if md else ''
+        if not up and not (d / 'CLAUDE.md').is_file():
+            continue
+        root = md.parent if md and md.parent in chain[i:i + 3] and not up else d
+        film_score = sum(text.count(w) for w in film_words + ('sequencer', 'shot', 'szene', 'render'))
+        game_score = sum(text.count(w) for w in ('gameplay', 'spielbar', 'spielprojekt', 'level', 'quest', 'mission', 'savegame', 'menü'))
+        if film_score > game_score:
+            return root, 'film', 'Film-/Unreal-Projekt (eigene Regeln)'
+        if up or any(w in text for w in ('spiel', 'game', 'unreal')):
+            return root, 'spiel', 'Spiel-/Unreal-Projekt (eigene Regeln)'
+    return None, None, None
+
+
 def find_game(name):
-    name = (name or '').strip().lower()
-    gs = games()
-    exact = [g for g in gs if g.name.lower() == name]
-    if exact:
-        return exact[0]
-    part = [g for g in gs if name and name in g.name.lower()]
+    """Findet ein Projekt (Spiel oder Film) über Namen, Ordnerpfad oder „.“ (aktueller Ordner)."""
+    raw = (name or '').strip()
+    if raw in ('.', '') or Path(raw).is_absolute() or Path(raw).is_dir():
+        d, kind, _ = detect(raw or '.')
+        if d:
+            return d
+        if raw:
+            raise SystemExit(f'„{raw}“ ist kein erkennbares Spiel- oder Filmprojekt.')
+    name = raw.lower()
+    ps = all_projects()
+    exact = [p for p in ps if p[0].lower() == name]
+    if len(exact) == 1:
+        return exact[0][2]
+    part = [p for p in ps if name and name in p[0].lower()]
     if len(part) == 1:
-        return part[0]
-    if not gs:
-        raise SystemExit('Noch kein Spiel vorhanden. Mit „gf neu --titel …“ anlegen.')
-    raise SystemExit(f'Spiel „{name}“ nicht eindeutig gefunden. Vorhanden: ' + ', '.join(g.name for g in gs))
+        return part[0][2]
+    if not ps:
+        raise SystemExit('Noch kein Projekt vorhanden. Mit „gf neu --titel …“ anlegen.')
+    raise SystemExit(f'Projekt „{raw}“ nicht eindeutig gefunden. Vorhanden: ' + ', '.join(f'{p[0]} ({p[1]})' for p in ps))
+
+
+def is_gameforge(root):
+    return (root / 'spiel.json').is_file() or (root / 'film.json').is_file()
+
+
+def need_gameforge(root, what):
+    if not is_gameforge(root):
+        raise SystemExit(f'„{root.name}“ ist ein eigenständiges Projekt mit eigenen Regeln. {what} geht dort nur nach dessen CLAUDE.md – '
+                         'GAMEFORGE legt in fremden Projekten keine eigenen Ordner oder Dateien an.')
 
 
 # ------------------------------------------------------------------ Spielbibel (SPIEL.md)
@@ -151,6 +228,39 @@ Dieser Ordner gehört ausschließlich zum Spiel **{title}**. Nichts mit anderen 
 '''
 
 
+def film_md(title, data):
+    lines = [f'# {title}', '', '> Filmbibel. Abschnitte mit „(offen)“ sind noch nicht ausgearbeitet – GAMEFORGE erfindet dort nichts.',
+             '> „Kanon & Vorgaben (verbindlich)“ wird nur nach ausdrücklicher Zustimmung geändert.', '']
+    for key, label in FILM_FIELDS:
+        lines += [f'## {label}', '', (data.get(key) or '').strip() or '(offen)', '']
+    return '\n'.join(lines)
+
+
+def create_film(title, idea='', style='', length='', fmt='', basis=''):
+    name = safe_name(title)
+    root = FILMS / name
+    if root.exists():
+        raise SystemExit(f'Es gibt bereits einen Filmordner „{name}“. Nichts überschrieben.')
+    for sub in FILM_DIRS:
+        (root / sub).mkdir(parents=True, exist_ok=True)
+    meta = {'id': hashlib.sha256((name + now()).encode()).hexdigest()[:12], 'kind': 'film', 'title': title, 'status': 'Idee', 'version': 'v0.1',
+            'style': style, 'length': length, 'format': fmt, 'based_on': basis, 'engine': 'Unreal Engine 5 (Sequencer / Movie Render Queue)',
+            'created_at': now(), 'updated_at': now()}
+    write_json(root / 'film.json', meta)
+    (root / 'FILM.md').write_text(film_md(title, {'treatment': idea, 'edit': ('Ziellänge: ' + length) if length else ''}), encoding='utf-8')
+    (root / 'CLAUDE.md').write_text(f'''# Film: {title}
+
+Dieser Ordner gehört ausschließlich zum Film **{title}**{(' (basiert auf ' + basis + ')') if basis else ''}.
+- Verbindliche Filmbibel: `FILM.md` (Kanon nur nach ausdrücklicher Zustimmung ändern).
+- Stil: `art-direction.json`. Ehrlicher Stand: `gf stand "{title}"`.
+- Status nur mit Nachweis: geplant → gebaut → gerendert → geprüft → freigegeben.
+''', encoding='utf-8')
+    prof = art_direction.build_profile({'title': title, 'style': style or 'cinematic', 'genre': 'Film', 'camera': '', 'engine': 'Unreal Engine 5', 'bible': {'vision': idea}})
+    write_json(root / 'art-direction.json', {'profile': prof, 'source': 'automatisch', 'approved': False, 'updated_at': now()})
+    write_json(root / 'referenzen' / 'auftraege.json', [])
+    return root
+
+
 def create_game(title, vision='', genre='', style='', camera='', platform='', wishes='', summary='', engine='Unreal Engine 5', bible=None, extra=None):
     name = safe_name(title)
     root = GAMES / name
@@ -181,6 +291,11 @@ def create_game(title, vision='', genre='', style='', camera='', platform='', wi
 
 # ------------------------------------------------------------------ Befehle
 def cmd_neu(a):
+    if a.typ == 'film':
+        root = create_film(a.titel, a.idee or '', a.stil or '', a.laenge or '', a.format or '', a.basis or '')
+        out(f'FILM ANGELEGT: {root}')
+        out('Enthalten: FILM.md (Logline, Treatment, Drehbuch, Shotliste, Look, Ton …), art-direction.json, Ordner storyboard/blender/unreal/schnitt/ton/renders/export, CLAUDE.md.')
+        return
     root = create_game(a.titel, a.idee or '', a.genre or '', a.stil or '', a.perspektive or '', a.plattform or '', a.wuensche or '', a.kurz or '')
     prof = read_json(root / 'art-direction.json')['profile']
     out(f'ANGELEGT: {root}')
@@ -189,13 +304,55 @@ def cmd_neu(a):
 
 
 def cmd_liste(a):
-    gs = games()
-    if not gs:
-        out(f'Noch keine Spiele in {GAMES}.')
+    ps = all_projects()
+    if not ps:
+        out(f'Noch keine Projekte (Spiele: {GAMES}, Filme: {FILMS}).')
         return
-    for g in gs:
-        m = read_json(g / 'spiel.json', {})
-        out(f'- {g.name} · {m.get("status", "?")} · {m.get("version", "")} · {m.get("style", "")}')
+    for name, kind, path, ext in ps:
+        m = read_json(path / ('spiel.json' if kind == 'spiel' else 'film.json'), {}) or {}
+        info = f'{m.get("status", "?")} · {m.get("version", "")}' if m else 'eigene Regeln (CLAUDE.md des Projekts)'
+        out(f'- {"🎮" if kind == "spiel" else "🎬"} {name} ({kind}) · {info} · {path}' + (' · extern vermerkt' if ext else ''))
+
+
+def cmd_erkennen(a):
+    d, kind, how = detect(a.pfad or '.')
+    if not d:
+        out('KEIN PROJEKT erkannt in diesem Ordner. Für Neues: „gf neu“ (Spiel) oder „gf neu --typ film“.')
+        return
+    rules = [x for x in ('CLAUDE.md', '.claude/agents', '.claude/settings.json', 'hooks') if (d / x).exists()]
+    out(f'PROJEKT: {d.name} · Typ: {kind} · erkannt als: {how} · Ordner: {d}')
+    out('Eigene Regeln vorhanden (haben Vorrang): ' + (', '.join(rules) if rules else 'keine'))
+
+
+def cmd_registrieren(a):
+    d = Path(a.pfad).resolve()
+    if not d.is_dir():
+        raise SystemExit('Ordner nicht gefunden.')
+    reg = [x for x in (read_json(REGISTRY, []) or []) if Path(x['path']).resolve() != d]
+    reg.append({'title': a.titel or d.name, 'kind': a.typ, 'path': str(d), 'registered_at': now(), 'note': a.notiz or ''})
+    GAMES.mkdir(parents=True, exist_ok=True)
+    write_json(REGISTRY, reg)
+    out(f'VERMERKT: {a.titel or d.name} ({a.typ}) → {d}  (nur Verweis – im Projekt wurde nichts verändert)')
+
+
+def external_status(root):
+    """Nur lesender Überblick über ein eigenständiges Projekt."""
+    count = lambda pat: sum(1 for _ in root.rglob(pat)) if root.is_dir() else 0
+    up = list(root.glob('*.uproject')) + list(root.glob('*/*.uproject'))
+    branch = ''
+    try:
+        branch = subprocess.run(['git', '-C', str(root), 'branch', '--show-current'], capture_output=True, text=True, timeout=10).stdout.strip()
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+    lines = [f'# Stand: {root.name} (eigenständiges Projekt – nur gelesen)', '',
+             f'- Ordner: {root}' + (f' · Git-Zweig: {branch}' if branch else ''),
+             f'- Unreal-Projekt: {", ".join(p.name for p in up) or "keins"}',
+             f'- Unreal-Dateien (.umap / .uasset): {count("*.umap")} / {count("*.uasset")}',
+             f'- Blender-Dateien: {count("*.blend")} · FBX: {count("*.fbx")}',
+             f'- Videos (.mp4/.mov): {count("*.mp4") + count("*.mov")} · Audio (.wav): {count("*.wav")}',
+             f'- Eigene Regeln: ' + ', '.join(x for x in ('CLAUDE.md', '.claude', 'hooks') if (root / x).exists()), '',
+             'Die genauen Status-Regeln stehen in der CLAUDE.md des Projekts – sie haben Vorrang. Hier wurde nichts verändert.']
+    return '\n'.join(lines)
 
 
 def blend_ok(p):
@@ -234,8 +391,33 @@ def game_status(root):
             'uprojects': uprojects, 'uassets': uassets, 'tasks': tasks, 'builds': builds, 'dlcs': dlcs}
 
 
+def film_status(root):
+    sec = parse_md(root / 'FILM.md') if (root / 'FILM.md').is_file() else {}
+    labels = dict(FILM_FIELDS)
+    missing = [labels[k] for k in FILM_REQUIRED if not filled(sec.get(labels[k], ''))]
+    m = read_json(root / 'film.json', {})
+    count = lambda sub, *ext: sum(1 for p in (root / sub).rglob('*') if p.suffix.lower() in ext) if (root / sub).is_dir() else 0
+    lines = [f'# Stand: {root.name} (Film)', f'_Automatisch aus echten Dateien ermittelt am {dt.datetime.now().strftime("%d.%m.%Y %H:%M")}_', '',
+             f'- Status: {m.get("status")} · Version: {m.get("version")} · Ziellänge: {m.get("length") or "offen"}',
+             f'- Filmbibel: {len(FILM_REQUIRED) - len(missing)}/{len(FILM_REQUIRED)} Pflichtbereiche' + (f' – offen: {", ".join(missing)}' if missing else ''),
+             f'- Referenzen: {count("referenzen/freigegeben", ".png")} freigegeben, {count("referenzen/entwuerfe", ".png")} Entwürfe · Storyboard-Bilder: {count("storyboard", ".png", ".jpg")}',
+             f'- Unreal-Projekt: {"ja" if list((root / "unreal").rglob("*.uproject")) else "nein"} · Blender-Dateien: {count("blender", ".blend")}',
+             f'- Gerenderte Clips: {count("renders", ".mp4", ".mov", ".exr", ".png")} · Schnittdateien: {count("schnitt", ".mlt", ".otio", ".kdenlive")} · Ton: {count("ton", ".wav", ".flac")}',
+             f'- Fertige Fassungen in export/: {count("export", ".mp4", ".mov")}', '',
+             'Nur was als Datei nachgewiesen ist, gilt als gebaut bzw. gerendert.']
+    return '\n'.join(lines)
+
+
 def cmd_stand(a):
     root = find_game(a.spiel)
+    if not is_gameforge(root):
+        out(external_status(root))
+        return
+    if (root / 'film.json').is_file():
+        text = film_status(root)
+        (root / 'STAND.md').write_text(text + '\n', encoding='utf-8')
+        out(text)
+        return
     s = game_status(root)
     m = s['meta']
     t = s['tasks']
@@ -318,6 +500,7 @@ def _next_version(folder, view):
 
 
 def cmd_bild(a):
+    need_gameforge(find_game(a.spiel), 'Bilder ablegen')
     """Erzeugt Referenzbilder lokal über ComfyUI (127.0.0.1). Ein Bild nach dem anderen."""
     root = find_game(a.spiel)
     prof = read_json(root / 'art-direction.json')['profile']
@@ -390,6 +573,7 @@ def cmd_bild(a):
 
 
 def cmd_freigeben(a):
+    need_gameforge(find_game(a.spiel), 'Freigeben')
     root = find_game(a.spiel)
     src = (root / a.bild).resolve() if not Path(a.bild).is_absolute() else Path(a.bild).resolve()
     if root.resolve() not in src.parents or not src.is_file():
@@ -419,6 +603,7 @@ def cmd_freigeben(a):
 
 
 def cmd_blender_auftrag(a):
+    need_gameforge(find_game(a.spiel), 'Ein Blender-Auftrag')
     root = find_game(a.spiel)
     prof = read_json(root / 'art-direction.json')['profile']
     asset_dir = safe_name(a.asset)
@@ -490,6 +675,7 @@ def cmd_blender_test(a):
 
 
 def cmd_dlc(a):
+    need_gameforge(find_game(a.spiel), 'Ein DLC')
     root = find_game(a.spiel)
     d = root / 'dlc' / safe_name(a.titel)
     if d.exists():
@@ -529,6 +715,7 @@ def cmd_sichern(a):
 
 def cmd_loeschen(a):
     root = find_game(a.spiel)
+    need_gameforge(root, 'Löschen')
     if a.bestaetigen != root.name:
         raise SystemExit(f'Zum Löschen muss --bestaetigen exakt „{root.name}“ lauten.')
     TRASH.mkdir(parents=True, exist_ok=True)
@@ -549,11 +736,14 @@ def cmd_wiederherstellen(a):
         top = {n.split('/')[0] for n in names}
         if len(top) != 1 or any('..' in n.split('/') or n.startswith('/') or ':' in n for n in names):
             raise SystemExit('Unerwarteter Inhalt – Wiederherstellung abgebrochen.')
-        dest = GAMES / top.pop()
+        top_name = top.pop()
+        base = FILMS if any(n == f'{top_name}/film.json' for n in names) else GAMES
+        base.mkdir(parents=True, exist_ok=True)
+        dest = base / top_name
         if dest.exists():
             raise SystemExit(f'„{dest.name}“ existiert bereits – nichts überschrieben. Vorher umbenennen.')
-        z.extractall(GAMES)
-    for sub in STANDARD_DIRS:
+        z.extractall(base)
+    for sub in (FILM_DIRS if base == FILMS else STANDARD_DIRS):
         (dest / sub).mkdir(parents=True, exist_ok=True)
     out(f'WIEDERHERGESTELLT: {dest}')
 
@@ -639,9 +829,13 @@ def main(argv=None):
             stream.reconfigure(encoding='utf-8')
     p = argparse.ArgumentParser(prog='gf', description='GAMEFORGE-Werkzeug')
     sp = p.add_subparsers(dest='cmd', required=True)
-    x = sp.add_parser('neu'); x.add_argument('--titel', required=True); x.add_argument('--idee'); x.add_argument('--genre'); x.add_argument('--stil')
+    x = sp.add_parser('neu'); x.add_argument('--titel', required=True); x.add_argument('--typ', default='spiel', choices=['spiel', 'film'])
+    x.add_argument('--laenge'); x.add_argument('--format'); x.add_argument('--basis'); x.add_argument('--idee'); x.add_argument('--genre'); x.add_argument('--stil')
     x.add_argument('--perspektive'); x.add_argument('--plattform'); x.add_argument('--wuensche'); x.add_argument('--kurz'); x.set_defaults(f=cmd_neu)
     sp.add_parser('liste').set_defaults(f=cmd_liste)
+    x = sp.add_parser('erkennen'); x.add_argument('pfad', nargs='?', default='.'); x.set_defaults(f=cmd_erkennen)
+    x = sp.add_parser('registrieren'); x.add_argument('--pfad', required=True); x.add_argument('--typ', required=True, choices=['spiel', 'film'])
+    x.add_argument('--titel'); x.add_argument('--notiz'); x.set_defaults(f=cmd_registrieren)
     x = sp.add_parser('stand'); x.add_argument('spiel'); x.set_defaults(f=cmd_stand)
     sp.add_parser('system').set_defaults(f=cmd_system)
     x = sp.add_parser('prompt'); x.add_argument('spiel'); x.add_argument('--asset', required=True); x.add_argument('--art', default='character', choices=list(VIEWS))

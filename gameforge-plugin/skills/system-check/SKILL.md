@@ -1,6 +1,6 @@
 ---
 name: system-check
-description: Prüfen, ob die GAMEFORGE-Werkzeuge funktionieren – Claude-Anmeldung, Blender- und Unreal-Verbindung (MCP), lokale Bild-KI (ComfyUI), Grafikkarte. Bei „geht Blender?“, „ist Unreal verbunden?“, Fehlern der Produktion.
+description: Prüfen, ob die Werkzeuge für Spiel- und Filmproduktion funktionieren – Claude-Anmeldung, Blender- und Unreal-Verbindung (MCP), lokale Bild-KI (ComfyUI), Grafikkarte. Bei „geht Blender?“, „ist Unreal verbunden?“, Fehlern der Produktion.
 ---
 
 # System-Check

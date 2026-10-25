@@ -1,6 +1,6 @@
 ---
 name: unreal-import
-description: Fertige Blender-Exporte (.fbx) eines GAMEFORGE-Spiels in Unreal Engine 5 importieren, prüfen und in eine Testszene einbauen – über die Unreal-MCP-Verbindung (unreal-mcp). Auch für Unreal-Gameplay-Aufgaben im Spielprojekt.
+description: Blender-Exporte in Unreal Engine 5 importieren, prüfen und in eine Testszene einbauen – für Spiele und Filme (Sequencer-Kulissen) über die Unreal-MCP-Verbindung (unreal-mcp). Auch für Unreal-Gameplay- und Sequencer-Aufgaben.
 ---
 
 # Unreal-Import

@@ -1,6 +1,6 @@
 ---
 name: sichern-und-loeschen
-description: GAMEFORGE-Spiele sichern, Versionen anlegen, ein Spiel löschen (Papierkorb) oder wiederherstellen.
+description: GAMEFORGE-Spiele und -Filme sichern, Versionen anlegen, ein Projekt löschen (Papierkorb) oder wiederherstellen.
 ---
 
 # Sichern, Löschen, Wiederherstellen

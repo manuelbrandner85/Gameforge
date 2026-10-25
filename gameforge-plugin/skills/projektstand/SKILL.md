@@ -1,6 +1,6 @@
 ---
 name: projektstand
-description: Ehrlichen Stand eines GAMEFORGE-Spiels ermitteln – „wie weit sind wir“, „was ist wirklich fertig“, „was fehlt“, „was soll ich als Nächstes tun“, Fortschritt der Agenten.
+description: Ehrlichen Stand eines Spiels oder Films ermitteln – „wie weit sind wir“, „was ist wirklich fertig“, „was fehlt“, „welche Projekte habe ich“, „was soll ich als Nächstes tun“. Für GAMEFORGE-Projekte und eigenständige Projekte wie Genesis-Games oder den GENESIS-Trailer.
 ---
 
 # Projektstand

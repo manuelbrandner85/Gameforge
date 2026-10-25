@@ -1,6 +1,6 @@
 {
   "name": "gameforge",
-  "version": "3.0.0",
-  "description": "GAMEFORGE – KI-Spielestudio für Claude Code: Spiele planen, Referenzbilder lokal erzeugen, Blender- und Unreal-Produktion mit 20 Agenten. Nur für Spieleentwicklung.",
+  "version": "3.1.0",
+  "description": "GAMEFORGE – KI-Spielestudio für Claude Code: Spiele und Filme planen, Referenzbilder lokal erzeugen, Blender- und Unreal-Produktion mit 20 Agenten. Nur für Spiel- und Filmproduktion.",
   "author": { "name": "GAMEFORGE" }
 }

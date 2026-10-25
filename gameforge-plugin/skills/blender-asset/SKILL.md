@@ -1,6 +1,6 @@
 ---
 name: blender-asset
-description: 3D-Modelle für ein GAMEFORGE-Spiel in Blender erstellen (Figuren, Bosse, Waffen, Rüstungen, Gebäude, Fahrzeuge, Props) über die Blender-MCP-Verbindung, speichern als .blend und für Unreal als .fbx exportieren und prüfen.
+description: 3D-Modelle für ein Spiel oder einen Film in Blender erstellen (Figuren, Bosse, Waffen, Rüstungen, Gebäude, Fahrzeuge, Props, Kulissen) über die Blender-MCP-Verbindung, als .blend speichern, als .fbx exportieren und prüfen.
 ---
 
 # Blender-Asset erstellen
