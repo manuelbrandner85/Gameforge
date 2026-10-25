@@ -1,0 +1,16 @@
+{
+ "project": "C:\\Users\\manue\\Desktop\\GAMEFORGE_GODMODE_v2_0\\projects\\_smoke\\UE_Smoke\\UE_Smoke.uproject",
+ "setup": {
+  "exit": 4294967295,
+  "sec": 14,
+  "result": null
+ },
+ "render": {
+  "exit": 3,
+  "sec": 34,
+  "frames": 0,
+  "distinct": 0,
+  "finished": false
+ },
+ "ok": false
+}

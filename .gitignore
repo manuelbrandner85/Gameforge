@@ -7,3 +7,9 @@ RELEASES/
 /src_pkg/
 /SICHERUNG/
 *.zip
+projects/_smoke/UE_Smoke/Saved/
+projects/_smoke/UE_Smoke/Intermediate/
+projects/_smoke/UE_Smoke/DerivedDataCache/
+projects/_smoke/UE_Smoke/Content/
+projects/_smoke/UE_Smoke/Build/
+projects/_smoke/UE_Smoke/Binaries/

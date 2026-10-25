@@ -102,9 +102,11 @@ def tools():
         "mod-script-pipe vorhanden" if mod else "kein mod-script-pipe-Modul in Audacity 4 gefunden: nur manuell")
     nat = [p for d in (Path(r"C:\Program Files"), HOME / "AppData/Local/Programs") if d.exists()
            for p in d.glob("Natron*/bin/NatronRenderer.exe")]
-    add("natron", bool(nat), None, nat[0] if nat else None, "Dateisuche NatronRenderer.exe")
-    c, o = run([sys.executable, "-c", "import opentimelineio as o;print(o.__version__)"])
-    add("opentimelineio", c == 0, first_line(o) if c == 0 else None, None, "import im System-Python")
+    add("natron", bool(nat), file_version(nat[0]) if nat else None, nat[0] if nat else None, "Dateisuche NatronRenderer.exe",
+        "-t-Modus braucht geschlossene Standardeingabe; PNG-Alpha als unpremultiplied lesen")
+    otio_py = ai / "GAMEFORGE/otio/Scripts/python.exe"          # own venv (install plan I-1), never system pip
+    c, o = run([str(otio_py), "-c", "import opentimelineio as o;print(o.__version__)"]) if otio_py.exists() else (None, "")
+    add("opentimelineio", c == 0, first_line(o) if c == 0 else None, otio_py, "import in der OTIO-venv")
     for name, rel in (("piper_tts", "GENESIS/piper/venv/Scripts/python.exe"),
                       ("faster_whisper", "GENESIS/faster-whisper/venv/Scripts/python.exe"),
                       ("ace_step_1_5", "GENESIS/ace-step/ACE-Step-1.5"),

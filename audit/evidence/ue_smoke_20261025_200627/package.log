@@ -1,0 +1,36 @@
+Running AutomationTool...
+Using bundled DotNet SDK version: 10.0 win-x64
+Starting AutomationTool...
+Parsing command line: BuildCookRun -project=C:\Users\manue\Desktop\GAMEFORGE_GODMODE_v2_0\projects\_smoke\UE_Smoke\UE_Smoke.uproject -noP4 -platform=Win64 -clientconfig=Development -cook -allmaps -stage -pak -archive -archivedirectory=C:\Users\manue\Desktop\GAMEFORGE_GODMODE_v2_0\audit\evidence\ue_smoke_20261025_200627\package -unattended -utf8output
+Initializing script modules...
+Total script module initialization time: 1.30 s.
+Using C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\MSBuild.exe
+Executing commands...
+Setting up ProjectParams for C:\Users\manue\Desktop\GAMEFORGE_GODMODE_v2_0\projects\_smoke\UE_Smoke\UE_Smoke.uproject
+********** COOK COMMAND STARTED **********
+System.IO.DirectoryNotFoundException: Could not find a part of the path 'C:\Users\manue\Desktop\GAMEFORGE_GODMODE_v2_0\projects\_smoke\UE_Smoke\Binaries\Win64\UE_SmokeEditor.target'.
+   at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+   at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+   at System.IO.Strategies.OSFileStreamStrategy..ctor(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+   at System.IO.Strategies.FileStreamHelpers.ChooseStrategyCore(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+   at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share, Int32 bufferSize, FileOptions options, Int64 preallocationSize)
+   at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share, Int32 bufferSize, FileOptions options)
+   at EpicGames.Core.JsonObject.ParseUtf8File(String path)
+   at EpicGames.Core.JsonObject.Read(FileReference file)
+   at UnrealBuildTool.TargetReceipt.Read(FileReference Location, DirectoryReference EngineDir)
+   at UnrealBuildTool.TargetReceipt.Read(FileReference Location)
+   at AutomationTool.ProjectUtils.GetProjectTarget(FileReference ProjectFile, TargetType TargetType, UnrealTargetPlatform TargetPlatform, UnrealTargetConfiguration TargetConfiguration, Boolean Cmd)
+   at AutomationTool.ProjectUtils.GetEditorForProject(FileReference ProjectFile)
+   at AutomationTool.ProjectParams.get_UnrealExe()
+   at AutomationScripts.Project.Cook(ProjectParams Params)
+   at BuildCookRun.DoBuildCookRun(ProjectParams Params)
+   at BuildCookRun.ExecuteBuild()
+   at AutomationTool.BuildCommand.Execute()
+   at AutomationTool.BuildCommand.ExecuteAsync()
+   at AutomationTool.Automation.ExecuteAsync(List`1 CommandsToExecute, Dictionary`2 Commands)
+   at AutomationTool.Automation.ExecuteAsync(List`1 CommandsToExecute, Dictionary`2 Commands)
+   at AutomationTool.Automation.ProcessAsync(ParsedCommandLine AutomationToolCommandLine, HashSet`1 ScriptModuleAssemblies)
+(see C:\Users\manue\AppData\Roaming\Unreal Engine\AutomationTool\Logs\C+Program+Files+Epic+Games+UE_5.8\Log.txt for full exception trace)
+AutomationTool executed for 0h 0m 4s
+AutomationTool exiting with ExitCode=1 (Error_Unknown)
+BUILD FAILED

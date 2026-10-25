@@ -1,0 +1,13 @@
+Note: -t argument given, loading in command-line interpreter mode, only Python commands / scripts are accepted
+Restoring the image cache...
+Loading plugin cache...
+Info: init.py script not loaded (this is not an error)
+Loading PyPlugs...
+Note: -t argument given, loading in command-line interpreter mode, only Python commands / scripts are accepted
+Write1 ==> Rendering started
+Write1 ==> Frame: 1, Progress: 20.0%, 4.0 Fps, Time Remaining: 1 seconds
+Write1 ==> Frame: 2, Progress: 40.0%, 7.4 Fps, Time Remaining: 0 second 
+Write1 ==> Frame: 3, Progress: 60.0%, 11.0 Fps, Time Remaining: 0 second
+Write1 ==> Frame: 4, Progress: 80.0%, 13.9 Fps, Time Remaining: 0 second
+Write1 ==> Frame: 5, Progress: 100.0%, 17.3 Fps, Time Remaining: 0 second
+Write1 ==> Rendering finished

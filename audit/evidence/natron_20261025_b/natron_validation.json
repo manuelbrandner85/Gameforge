@@ -1,0 +1,16 @@
+{
+ "natron_exit": 3221225477,
+ "note_exit": "0xC0000005 beim Beenden nach EOF auf stdin (nach dem Rendern)",
+ "frames": 5,
+ "centre_pixel_srgb": [
+  205,
+  93,
+  93
+ ],
+ "expected_linear_over_srgb": [
+  205,
+  92,
+  92
+ ],
+ "ok": true
+}
