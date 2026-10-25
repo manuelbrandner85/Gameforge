@@ -1,0 +1,15 @@
+{
+  "geprueft_am": "2026-10-25T21:08:11+00:00",
+  "ergebnisse": [
+    {
+      "datei": "C:\\Users\\manue\\Desktop\\GAMEFORGE_GODMODE_v2_0\\GAMEFORGE_DATA\\tests\\TM_Testfilm\\twinmotion\\Testobjekt\\export\\Image1.png",
+      "bytes": 2182505,
+      "info": {
+        "width": 1920,
+        "height": 1080,
+        "fps": null
+      },
+      "ok": true
+    }
+  ]
+}
