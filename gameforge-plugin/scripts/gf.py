@@ -14,6 +14,61 @@ from gflib import art_direction, prompts, quality, imagecheck, comfy, hardware  
 
 PLUGIN = HERE.parent
 HOME = PLUGIN.parent                                   # GAMEFORGE-Ordner (enthält engines/ mit ComfyUI)
+
+sys.path.insert(0, str(HOME))
+try:                                                    # gemeinsamer Kern: Smart GPU Commander + Auftragswarteschlange
+    from gameforge_core import gpu_commander as gc, jobs as gjobs  # noqa: E402
+except ImportError:                                     # Plugin ohne GAMEFORGE-Ordner: ohne Wächter, aber ehrlich gemeldet
+    gc = gjobs = None
+
+
+class _GpuGuard:
+    """Ein GPU-Schwerjob gleichzeitig: wartet auf Token + VRAM, misst den Spitzenbedarf und lernt ihn je Jobtyp."""
+
+    def __init__(self, name, job_type, default_mb, timeout_s=1800, make_room=None):
+        self.name, self.job_type, self.timeout_s, self.make_room = name, job_type, timeout_s, make_room
+        self.need = gc.estimate_need(job_type, default_mb) if gc else default_mb
+        self._last, self._peak, self._stop = 0.0, 0, None
+
+    def _wait(self, msg):
+        if time.time() - self._last > 60:
+            out('WARTET – ' + msg)
+            self._last = time.time()
+
+    def _sample(self, base):
+        while not self._stop.wait(2):
+            m = gc.measure()
+            if m['measured']:
+                self._peak = max(self._peak, m['vram_used_mb'] - base)
+
+    def __enter__(self):
+        if not gc:
+            out('Hinweis: GPU-Wächter nicht gefunden – Job läuft ohne Warteschlange.')
+            return self
+        import threading
+        self._cm = gc.gpu_slot(self.name, 'heavy', self.need, self.timeout_s, 15, self._wait, self.make_room)
+        try:
+            info = self._cm.__enter__()
+        except RuntimeError as e:
+            raise SystemExit('BLOCKIERT – ' + str(e).replace('RESOURCE_BLOCKED: ', '') + ' Die Qualität wird nicht automatisch gesenkt.')
+        before = info.get('before') or {}
+        out(f'GPU frei für „{self.name}“ ({info.get("preflight")}).')
+        if before.get('measured'):
+            self._stop = threading.Event()
+            self._t = threading.Thread(target=self._sample, args=(before['vram_used_mb'],), daemon=True)
+            self._t.start()
+        return self
+
+    def __exit__(self, et, ev, tb):
+        if not gc:
+            return False
+        if self._stop:
+            self._stop.set(); self._t.join(5)
+            if et is None and self._peak > 200:
+                gc.record_peak(self.job_type, self._peak)
+                out(f'Gemessener zusätzlicher VRAM-Bedarf: {self._peak} MB (für künftige Planung gespeichert).')
+        return self._cm.__exit__(et, ev, tb)
+
 GAMES = Path(os.environ.get('GAMEFORGE_SPIELE') or Path.home() / 'Desktop' / 'GAMEFORGE Spiele')
 FILMS = Path(os.environ.get('GAMEFORGE_FILME') or GAMES.parent / 'GAMEFORGE Filme')
 REGISTRY = GAMES / '_projekte.json'          # extern liegende Projekte: nur Verweis, nie verschoben
@@ -515,7 +570,20 @@ def cmd_bild(a):
     out(f'Stil: {prof["style_label"]} · Qualität: {q} ({qp["label"]}) · Ansichten: {", ".join(views)}')
     if started:
         out('ComfyUI wird gestartet (nur lokal, 127.0.0.1) …')
-    c.start()
+    def _room():                                       # nur ComfyUIs eigene Modelle entladen, wenn dort nichts läuft
+        q_ = c.queue_state() or {}
+        return not q_.get('queue_running') and not q_.get('queue_pending') and c.free()
+    guard = _GpuGuard(f'bild:{root.name}/{a.asset}', 'comfy_flux2_klein', 7000, make_room=_room)
+    guard.__enter__()
+    try:
+        c.start()
+        _bild_views(a, root, prof, q, qp, views, asset_dir, c, post)
+    finally:
+        guard.__exit__(*sys.exc_info())
+    out('Alle Bilder brauchen deine Sichtprüfung (Anatomie, Design, Kanon). Freigeben mit: gf freigeben "<Spiel>" "<Bildpfad>"')
+
+
+def _bild_views(a, root, prof, q, qp, views, asset_dir, c, post):
     orders = ref_orders(root)
     for view in views:
         approved = root / 'referenzen' / 'freigegeben' / asset_dir / f'{view}.png'
@@ -548,7 +616,9 @@ def cmd_bild(a):
                 if not hist or hist['status'].get('status_str') == 'error':
                     msgs = [m for m in (hist or {}).get('status', {}).get('messages', []) if m[0] == 'execution_error']
                     err = msgs[0][1].get('exception_message', '') if msgs else 'keine Antwort'
-                    raise SystemExit(f'FEHLER bei {view}: {err[:400]}' + (' – Grafikspeicher reicht nicht, niedrigere Qualität wählen oder Unreal/Blender schließen.' if 'memory' in err.lower() else ''))
+                    if gc and gc.detect_oom(err):
+                        raise SystemExit(f'BLOCKIERT bei {view}: Grafikspeicher voll ({err[:200]}). Die Qualität wird NICHT automatisch gesenkt – Unreal/Blender speichern und schließen oder warten, dann erneut starten.')
+                    raise SystemExit(f'FEHLER bei {view}: {err[:400]}')
                 imgs = [im for o in hist.get('outputs', {}).values() for im in o.get('images', [])]
                 data = c.fetch_image(imgs[0]['filename'], imgs[0].get('subfolder', ''), imgs[0].get('type', 'output'))
                 target = folder / f'{view}_v{ver}.png'
@@ -569,7 +639,6 @@ def cmd_bild(a):
                 out('  Technische Prüfung nicht bestanden – neuer Versuch mit anderem Seed …' if attempt + 1 < qp['max_attempts'] else '  Technische Prüfung endgültig nicht bestanden.')
             orders = [o for o in orders if not (o['asset'] == a.asset and o['view'] == view)] + [{'asset': a.asset, 'type': a.art, 'view': view, 'details': a.details or '', 'state': 'Entwurf' if ok else 'Fehlerhaft', 'updated_at': now()}]
     write_json(root / 'referenzen' / 'auftraege.json', orders)
-    out('Alle Bilder brauchen deine Sichtprüfung (Anatomie, Design, Kanon). Freigeben mit: gf freigeben "<Spiel>" "<Bildpfad>"')
 
 
 def cmd_freigeben(a):
@@ -668,7 +737,8 @@ def cmd_blender_test(a):
     outdir = GAMES / '_Systemtest' / dt.datetime.now().strftime('%Y%m%d_%H%M%S')
     outdir.mkdir(parents=True)
     script = outdir / 'test.py'; script.write_text(BLENDER_TEST, encoding='utf-8')
-    r = subprocess.run([str(b), '-b', '--factory-startup', '--python', str(script), '--', str(outdir)], capture_output=True, text=True, timeout=600, errors='replace', stdin=subprocess.DEVNULL)
+    with _GpuGuard('blender-test', 'blender_background', 1500):
+        r = subprocess.run([str(b), '-b', '--factory-startup', '--python', str(script), '--', str(outdir)], capture_output=True, text=True, timeout=600, errors='replace', stdin=subprocess.DEVNULL)
     m = re.search(r'GF_RESULT=(\{.*\})', r.stdout)
     ok = bool(m) and blend_ok(outdir / 'GF_TestCrate.blend') and fbx_ok(outdir / 'GF_TestCrate.fbx')
     out(('BESTANDEN' if ok else 'FEHLGESCHLAGEN') + f' – Blender-Hintergrundtest in {outdir}' + (f' · {json.loads(m.group(1))}' if m else '\n' + (r.stdout + r.stderr)[-1500:]))
@@ -823,6 +893,38 @@ def cmd_migrieren(a):
     out('Die alte Datenbank wurde nur gelesen, nicht verändert.')
 
 
+def cmd_gpu(a):
+    if not gc:
+        raise SystemExit('GPU-Wächter (gameforge_core) nicht gefunden.')
+    out(gc.status_text())
+
+
+def cmd_jobs(a):
+    if not gjobs:
+        raise SystemExit('Auftragskern (gameforge_core) nicht gefunden.')
+    if a.aktion == 'liste':
+        rows = gjobs.listing(a.projekt)
+        if not rows:
+            out('Keine Aufträge in der Warteschlange.')
+        for r in rows:
+            out(f'#{r["id"]} {r["status"]:<12} {r["project"]} · {r["title"]}' + (f' – {r["reason"]}' if r['reason'] else ''))
+    elif a.aktion == 'arbeiten':
+        n = gjobs.recover()
+        if n:
+            out(f'{n} abgebrochene Aufträge wieder eingereiht.')
+        gjobs.work('gf', on_wait=lambda m: out('WARTET – ' + m), on_done=lambda r: out(f'#{r["id"]} → {r["status"]}' + (f' ({r["reason"]})' if r['reason'] else '')), max_idle_s=a.leerlauf)
+    elif a.aktion in ('abbrechen', 'erneut'):
+        if not a.id:
+            raise SystemExit('Bitte Auftragsnummer angeben, z. B. gf jobs abbrechen 3')
+        if not gjobs.get(a.id):
+            raise SystemExit(f'Auftrag #{a.id} nicht gefunden.')
+        try:
+            (gjobs.cancel if a.aktion == 'abbrechen' else gjobs.retry)(a.id)
+        except ValueError as e:
+            raise SystemExit(str(e))
+        out(f'#{a.id} → {gjobs.get(a.id)["status"]}')
+
+
 def main(argv=None):
     for stream in (sys.stdout, sys.stderr):
         if stream.encoding and stream.encoding.lower() not in ('utf-8', 'utf8'):
@@ -853,6 +955,9 @@ def main(argv=None):
     x = sp.add_parser('loeschen'); x.add_argument('spiel'); x.add_argument('--bestaetigen', required=True); x.set_defaults(f=cmd_loeschen)
     x = sp.add_parser('wiederherstellen'); x.add_argument('datei'); x.set_defaults(f=cmd_wiederherstellen)
     x = sp.add_parser('comfy'); x.add_argument('aktion', choices=['start', 'stop', 'status']); x.set_defaults(f=cmd_comfy)
+    sp.add_parser('gpu').set_defaults(f=cmd_gpu)
+    x = sp.add_parser('jobs'); x.add_argument('aktion', nargs='?', default='liste', choices=['liste', 'arbeiten', 'abbrechen', 'erneut'])
+    x.add_argument('id', nargs='?', type=int); x.add_argument('--projekt'); x.add_argument('--leerlauf', type=int, default=5); x.set_defaults(f=cmd_jobs)
     x = sp.add_parser('migrieren'); x.add_argument('--db', required=True); x.set_defaults(f=cmd_migrieren)
     a = p.parse_args(argv)
     a.f(a)

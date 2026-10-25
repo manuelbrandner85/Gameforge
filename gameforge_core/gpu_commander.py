@@ -201,8 +201,10 @@ def release(resource="gpu", pid=None):
 
 
 @contextlib.contextmanager
-def gpu_slot(name, gpu_class="heavy", need_mb=4000, timeout_s=3600, poll_s=15, on_wait=None):
-    """Kontext: wartet auf Token UND VRAM-Freigabe. Bei Zeitablauf: RuntimeError('RESOURCE_BLOCKED: …')."""
+def gpu_slot(name, gpu_class="heavy", need_mb=4000, timeout_s=3600, poll_s=15, on_wait=None, make_room=None):
+    """Kontext: wartet auf Token UND VRAM-Freigabe. Bei Zeitablauf: RuntimeError('RESOURCE_BLOCKED: …').
+    make_room: optionaler Rückruf, der einmalig NUR eigene Zwischenspeicher leeren darf (z. B. ComfyUI-Modelle entladen,
+    wenn dessen Warteschlange leer ist). Fremde Programme werden nie beendet."""
     if gpu_class != "heavy":
         yield {"gpu_class": gpu_class}
         return
@@ -219,6 +221,11 @@ def gpu_slot(name, gpu_class="heavy", need_mb=4000, timeout_s=3600, poll_s=15, o
             ok, why, det = preflight(gpu_class, need_mb)
             if ok:
                 break
+            if make_room:
+                room, make_room = make_room, None
+                if room():
+                    time.sleep(3)
+                    continue
             if on_wait:
                 on_wait(why)
             if time.time() - start > timeout_s:

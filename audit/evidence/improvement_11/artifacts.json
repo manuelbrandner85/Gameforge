@@ -1,0 +1,22 @@
+[
+  {
+    "path": "gameforge_core/gpu_commander.py",
+    "sha256": "395b12c310397d191ff57f908bd6c415640a8085c6d4cc8097f12a0d46d175ba"
+  },
+  {
+    "path": "gameforge_core/jobs.py",
+    "sha256": "8842ffd9eee7758796e19960f9120d27836d85f7c0f861f54e394d768639e962"
+  },
+  {
+    "path": "gameforge_core/gpu_lock.py",
+    "sha256": "19d83abc17f283fa3ca1c26bc830fc43502acd6ea3de9dcc721531fa64f60a3f"
+  },
+  {
+    "path": "tests/test_gpu_commander.py",
+    "sha256": "c5aac29eee300fa33bee2e46c27a07d00606400239a73120e597ada691a069ac"
+  },
+  {
+    "path": "gameforge-plugin/scripts/gf.py",
+    "sha256": "1b477bafb5d638e44790e79fb2b78f0200dadb92c2afc93bd3850d2e56ccbd9b"
+  }
+]
