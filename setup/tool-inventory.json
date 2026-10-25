@@ -1,0 +1,250 @@
+{
+ "timestamp": "2026-10-25T19:46:34",
+ "tools": {
+  "claude_code": {
+   "found": true,
+   "version": "2.1.309 (Claude Code)",
+   "path": "C:\\Users\\manue\\.local\\bin\\claude.EXE",
+   "method": "claude --version",
+   "note": ""
+  },
+  "python": {
+   "found": true,
+   "version": "Python 3.13.15",
+   "path": "C:\\Users\\manue\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+   "method": "--version",
+   "note": ""
+  },
+  "git": {
+   "found": true,
+   "version": "git version 2.55.0.windows.3",
+   "path": "C:\\Program Files\\Git\\mingw64\\bin\\git.EXE",
+   "method": "--version",
+   "note": ""
+  },
+  "git_lfs": {
+   "found": true,
+   "version": "git-lfs/3.7.1 (GitHub; windows amd64; go 1.25.1; git b84b3384)",
+   "path": null,
+   "method": "git lfs version",
+   "note": ""
+  },
+  "winget": {
+   "found": true,
+   "version": "v1.30.140-preview",
+   "path": "C:\\Users\\manue\\AppData\\Local\\Microsoft\\WindowsApps\\winget.EXE",
+   "method": "--version",
+   "note": ""
+  },
+  "blender": {
+   "found": true,
+   "version": "Blender 5.2.3 LTS",
+   "path": "C:\\Program Files\\Blender Foundation\\Blender 5.2\\blender.exe",
+   "method": "blender --version",
+   "note": ""
+  },
+  "unreal_engine": {
+   "found": true,
+   "version": "5.8.4 CL58902052",
+   "path": "C:\\Program Files\\Epic Games\\UE_5.8",
+   "method": "Build.version",
+   "note": ""
+  },
+  "ue_plugin_PythonScriptPlugin": {
+   "found": true,
+   "version": null,
+   "path": "C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Plugins\\Experimental\\PythonScriptPlugin\\PythonScriptPlugin.uplugin",
+   "method": "*.uplugin im Engine-Ordner",
+   "note": ""
+  },
+  "ue_plugin_MovieRenderPipeline": {
+   "found": true,
+   "version": null,
+   "path": "C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Plugins\\MovieScene\\MovieRenderPipeline\\MovieRenderPipeline.uplugin",
+   "method": "*.uplugin im Engine-Ordner",
+   "note": ""
+  },
+  "ue_plugin_SequencerScripting": {
+   "found": true,
+   "version": null,
+   "path": "C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Plugins\\MovieScene\\SequencerScripting\\SequencerScripting.uplugin",
+   "method": "*.uplugin im Engine-Ordner",
+   "note": ""
+  },
+  "ue_plugin_MetaHumanCharacter": {
+   "found": true,
+   "version": null,
+   "path": "C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Plugins\\MetaHuman\\MetaHumanCharacter\\MetaHumanCharacter.uplugin",
+   "method": "*.uplugin im Engine-Ordner",
+   "note": ""
+  },
+  "ue_plugin_MetaHuman": {
+   "found": true,
+   "version": null,
+   "path": "C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Plugins\\MetaHuman\\MetaHumanAnimator\\MetaHuman.uplugin",
+   "method": "*.uplugin im Engine-Ordner",
+   "note": ""
+  },
+  "ue_plugin_MetaHumanAnimationTools": {
+   "found": true,
+   "version": null,
+   "path": "C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Plugins\\MetaHuman\\MetaHumanAnimationTools\\MetaHumanAnimationTools.uplugin",
+   "method": "*.uplugin im Engine-Ordner",
+   "note": ""
+  },
+  "ue_plugin_ControlRig": {
+   "found": true,
+   "version": null,
+   "path": "C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Plugins\\Animation\\ControlRig\\ControlRig.uplugin",
+   "method": "*.uplugin im Engine-Ordner",
+   "note": ""
+  },
+  "ue_plugin_PCG": {
+   "found": true,
+   "version": null,
+   "path": "C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Plugins\\PCG\\PCG.uplugin",
+   "method": "*.uplugin im Engine-Ordner",
+   "note": ""
+  },
+  "ue_plugin_Niagara": {
+   "found": true,
+   "version": null,
+   "path": "C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Plugins\\FX\\Niagara\\Niagara.uplugin",
+   "method": "*.uplugin im Engine-Ordner",
+   "note": ""
+  },
+  "ue_plugin_RemoteControl": {
+   "found": true,
+   "version": null,
+   "path": "C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Plugins\\VirtualProduction\\RemoteControl\\RemoteControl.uplugin",
+   "method": "*.uplugin im Engine-Ordner",
+   "note": ""
+  },
+  "ffmpeg": {
+   "found": true,
+   "version": "ffmpeg version 9.0.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+   "path": "C:\\Users\\manue\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-9.0.2-full_build\\bin\\ffmpeg.EXE",
+   "method": "-version",
+   "note": ""
+  },
+  "ffprobe": {
+   "found": true,
+   "version": "ffprobe version 9.0.2-full_build-www.gyan.dev Copyright (c) 2007-2026 the FFmpeg developers",
+   "path": "C:\\Users\\manue\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-9.0.2-full_build\\bin\\ffprobe.EXE",
+   "method": "-version",
+   "note": ""
+  },
+  "mlt_melt": {
+   "found": true,
+   "version": "melt.exe 7.43.0",
+   "path": "C:\\Users\\manue\\AppData\\Local\\Programs\\Kdenlive\\bin\\melt.exe",
+   "method": "melt -version (cwd=bin: DLL-Suche)",
+   "note": "nur mit Arbeitsordner = Kdenlive\\bin startfähig; sonst hängt melt ohne Ausgabe"
+  },
+  "kdenlive": {
+   "found": true,
+   "version": null,
+   "path": "C:\\Users\\manue\\AppData\\Local\\Programs\\Kdenlive\\bin\\kdenlive.exe",
+   "method": "Dateisuche",
+   "note": "GUI zur Sichtkorrektur"
+  },
+  "krita": {
+   "found": true,
+   "version": "5.3.4.1 (git bd6e8d0)",
+   "path": "C:\\Program Files\\Krita (x64)\\bin\\krita.exe",
+   "method": "VersionInfo",
+   "note": ""
+  },
+  "audacity": {
+   "found": true,
+   "version": "4.0.1",
+   "path": "C:\\Program Files\\Audacity 4\\bin\\Audacity4.exe",
+   "method": "VersionInfo",
+   "note": "kein mod-script-pipe-Modul in Audacity 4 gefunden: nur manuell"
+  },
+  "natron": {
+   "found": false,
+   "version": null,
+   "path": null,
+   "method": "Dateisuche NatronRenderer.exe",
+   "note": ""
+  },
+  "opentimelineio": {
+   "found": false,
+   "version": null,
+   "path": null,
+   "method": "import im System-Python",
+   "note": ""
+  },
+  "piper_tts": {
+   "found": true,
+   "version": null,
+   "path": "C:\\Users\\manue\\AI-Tools\\GENESIS\\piper\\venv\\Scripts\\python.exe",
+   "method": "Ordner/venv vorhanden",
+   "note": ""
+  },
+  "faster_whisper": {
+   "found": true,
+   "version": null,
+   "path": "C:\\Users\\manue\\AI-Tools\\GENESIS\\faster-whisper\\venv\\Scripts\\python.exe",
+   "method": "Ordner/venv vorhanden",
+   "note": ""
+  },
+  "ace_step_1_5": {
+   "found": true,
+   "version": null,
+   "path": "C:\\Users\\manue\\AI-Tools\\GENESIS\\ace-step\\ACE-Step-1.5",
+   "method": "Ordner/venv vorhanden",
+   "note": ""
+  },
+  "chatterbox_tts": {
+   "found": true,
+   "version": null,
+   "path": "C:\\Users\\manue\\AI-Tools\\GENESIS_TRAILER\\chatterbox",
+   "method": "Ordner/venv vorhanden",
+   "note": ""
+  },
+  "comfyui": {
+   "found": true,
+   "version": null,
+   "path": "C:\\Users\\manue\\Desktop\\GAMEFORGE_GODMODE_v2_0\\engines\\ComfyUI_windows_portable\\ComfyUI",
+   "method": "Ordner",
+   "note": "Modelle: flux-2-klein-4b.safetensors, wan2.2_ti2v_5B_fp16.safetensors"
+  },
+  "ollama": {
+   "found": true,
+   "version": "ollama version is 0.40.11",
+   "path": null,
+   "method": "--version",
+   "note": "lokale LLM-Laufzeit; nicht Teil der Pipeline"
+  },
+  "rhubarb": {
+   "found": false,
+   "version": null,
+   "path": null,
+   "method": "PATH",
+   "note": ""
+  },
+  "material_maker": {
+   "found": false,
+   "version": null,
+   "path": null,
+   "method": "PATH",
+   "note": ""
+  },
+  "freemocap": {
+   "found": false,
+   "version": null,
+   "path": null,
+   "method": "PATH",
+   "note": ""
+  },
+  "davinci_resolve": {
+   "found": false,
+   "version": null,
+   "path": null,
+   "method": "PATH",
+   "note": ""
+  }
+ }
+}

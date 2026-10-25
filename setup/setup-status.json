@@ -1,0 +1,199 @@
+{
+ "timestamp": "2026-10-25",
+ "phase": 0,
+ "gate": "READY_MIT_AUFLAGEN",
+ "open_warnings": [
+  "H-01",
+  "H-02",
+  "H-03",
+  "H-04"
+ ],
+ "tools": {
+  "claude_code": {
+   "found": true,
+   "version": "2.1.309 (Claude Code)",
+   "status": "bereits_vorhanden"
+  },
+  "python": {
+   "found": true,
+   "version": "Python 3.13.15",
+   "status": "bereits_vorhanden"
+  },
+  "git": {
+   "found": true,
+   "version": "git version 2.55.0.windows.3",
+   "status": "bereits_vorhanden"
+  },
+  "git_lfs": {
+   "found": true,
+   "version": "git-lfs/3.7.1 (GitHub; windows amd64; go 1.25.1; git b84b3384)",
+   "status": "bereits_vorhanden"
+  },
+  "winget": {
+   "found": true,
+   "version": "v1.30.140-preview",
+   "status": "bereits_vorhanden"
+  },
+  "blender": {
+   "found": true,
+   "version": "Blender 5.2.3 LTS",
+   "status": "getestet",
+   "evidence": "audit/evidence/smoke_cpu_20261025_194840"
+  },
+  "unreal_engine": {
+   "found": true,
+   "version": "5.8.4 CL58902052",
+   "status": "getestet_extern (GENESIS/Trailer), eigener Smoke-Test ausstehend"
+  },
+  "ue_plugin_PythonScriptPlugin": {
+   "found": true,
+   "version": null,
+   "status": "bereits_vorhanden"
+  },
+  "ue_plugin_MovieRenderPipeline": {
+   "found": true,
+   "version": null,
+   "status": "bereits_vorhanden"
+  },
+  "ue_plugin_SequencerScripting": {
+   "found": true,
+   "version": null,
+   "status": "bereits_vorhanden"
+  },
+  "ue_plugin_MetaHumanCharacter": {
+   "found": true,
+   "version": null,
+   "status": "bereits_vorhanden"
+  },
+  "ue_plugin_MetaHuman": {
+   "found": true,
+   "version": null,
+   "status": "bereits_vorhanden"
+  },
+  "ue_plugin_MetaHumanAnimationTools": {
+   "found": true,
+   "version": null,
+   "status": "bereits_vorhanden"
+  },
+  "ue_plugin_ControlRig": {
+   "found": true,
+   "version": null,
+   "status": "bereits_vorhanden"
+  },
+  "ue_plugin_PCG": {
+   "found": true,
+   "version": null,
+   "status": "bereits_vorhanden"
+  },
+  "ue_plugin_Niagara": {
+   "found": true,
+   "version": null,
+   "status": "bereits_vorhanden"
+  },
+  "ue_plugin_RemoteControl": {
+   "found": true,
+   "version": null,
+   "status": "bereits_vorhanden"
+  },
+  "ffmpeg": {
+   "found": true,
+   "version": "ffmpeg version 9.0.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+   "status": "getestet",
+   "evidence": "audit/evidence/smoke_cpu_20261025_194840"
+  },
+  "ffprobe": {
+   "found": true,
+   "version": "ffprobe version 9.0.2-full_build-www.gyan.dev Copyright (c) 2007-2026 the FFmpeg developers",
+   "status": "bereits_vorhanden"
+  },
+  "mlt_melt": {
+   "found": true,
+   "version": "melt.exe 7.43.0",
+   "status": "getestet",
+   "evidence": "audit/evidence/smoke_cpu_20261025_194840"
+  },
+  "kdenlive": {
+   "found": true,
+   "version": null,
+   "status": "bereits_vorhanden"
+  },
+  "krita": {
+   "found": true,
+   "version": "5.3.4.1 (git bd6e8d0)",
+   "status": "getestet",
+   "evidence": "audit/evidence/smoke_cpu_20261025_194840"
+  },
+  "audacity": {
+   "found": true,
+   "version": "4.0.1",
+   "status": "manueller_schritt"
+  },
+  "natron": {
+   "found": false,
+   "version": null,
+   "status": "fehlt"
+  },
+  "opentimelineio": {
+   "found": false,
+   "version": null,
+   "status": "fehlt"
+  },
+  "piper_tts": {
+   "found": true,
+   "version": null,
+   "status": "getestet",
+   "evidence": "audit/evidence/smoke_cpu_20261025_194840"
+  },
+  "faster_whisper": {
+   "found": true,
+   "version": null,
+   "status": "getestet",
+   "evidence": "audit/evidence/smoke_cpu_20261025_194840"
+  },
+  "ace_step_1_5": {
+   "found": true,
+   "version": null,
+   "status": "bereits_vorhanden"
+  },
+  "chatterbox_tts": {
+   "found": true,
+   "version": null,
+   "status": "bereits_vorhanden"
+  },
+  "comfyui": {
+   "found": true,
+   "version": null,
+   "status": "bereits_vorhanden"
+  },
+  "ollama": {
+   "found": true,
+   "version": "ollama version is 0.40.11",
+   "status": "bereits_vorhanden"
+  },
+  "rhubarb": {
+   "found": false,
+   "version": null,
+   "status": "fehlt"
+  },
+  "material_maker": {
+   "found": false,
+   "version": null,
+   "status": "fehlt"
+  },
+  "freemocap": {
+   "found": false,
+   "version": null,
+   "status": "nicht_unterstuetzt"
+  },
+  "davinci_resolve": {
+   "found": false,
+   "version": null,
+   "status": "nicht_unterstuetzt"
+  },
+  "unreal_mcp": {
+   "found": true,
+   "status": "blockiert",
+   "note": "H-03"
+  }
+ }
+}

@@ -1,0 +1,17 @@
+{
+ "timestamp": "2026-10-25T19:46:34",
+ "method": "nvidia-smi, WMI (Win32_OperatingSystem/Processor), shutil.disk_usage",
+ "os": "Microsoft Windows 11 Pro Insider Preview",
+ "build": "26340",
+ "cpu": "AMD Ryzen 7 5700X 8-Core Processor",
+ "cores": "8",
+ "threads": "16",
+ "ram_gb": "31.9",
+ "gpu": "NVIDIA GeForce RTX 5070, 12227 MiB, 630.20",
+ "disks": {
+  "C:\\": {
+   "free_gb": 198.3,
+   "total_gb": 921.6
+  }
+ }
+}
