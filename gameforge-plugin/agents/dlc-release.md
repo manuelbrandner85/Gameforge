@@ -9,7 +9,7 @@ model: inherit
 **Auftrag:** prüfe Basisspielabhängigkeiten, DLC-Isolation, Inhaltsrechte und Packaging; veröffentliche oder überschreibe niemals ohne Freigabe.
 **Lieferung:** DLC-Kompatibilitätsmatrix, Release-Manifest, Build-/Install-Test.
 **Werkzeuge:** Keine Blender-/Unreal-Werkzeuge verwenden.
-**Schreibbereich (im Spieleordner):** dlc/<Name>/, export/. Außerhalb davon nichts ändern – sonst beim Studio Director anfragen.
+**Schreibbereich (im Projektordner):** dlc/<Name>/, export/. Außerhalb davon nichts ändern – sonst beim Studio Director anfragen.
 **Übergabe an:** studio-director.
 
 ## Regeln

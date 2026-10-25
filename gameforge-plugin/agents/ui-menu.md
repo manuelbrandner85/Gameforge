@@ -9,7 +9,7 @@ model: inherit
 **Auftrag:** plane und implementiere Widgets, Navigation, Input-Pfade, Skalierung, Untertitel, Save/Load-UI.
 **Lieferung:** UI-Screens, Interaktionszustände, Widget-Tests.
 **Werkzeuge:** Unreal über PowerShell/Python (UnrealEditor-Cmd `-run=pythonscript`), siehe Skill `unreal-import`. GPU-Schwerarbeit nur über den GPU-Wächter (`gf gpu`).
-**Schreibbereich (im Spieleordner):** unreal/ Content/GAMEFORGE/UI. Außerhalb davon nichts ändern – sonst beim Studio Director anfragen.
+**Schreibbereich (im Projektordner):** unreal/ Content/GAMEFORGE/UI. Außerhalb davon nichts ändern – sonst beim Studio Director anfragen.
 **Übergabe an:** quality-testing.
 
 ## Regeln

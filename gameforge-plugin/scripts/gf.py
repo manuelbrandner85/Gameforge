@@ -13,7 +13,10 @@ sys.path.insert(0, str(HERE))
 from gflib import art_direction, prompts, quality, imagecheck, comfy, hardware  # noqa: E402
 
 PLUGIN = HERE.parent
-HOME = PLUGIN.parent                                   # GAMEFORGE-Ordner (enthält engines/ mit ComfyUI)
+# GAMEFORGE-Ordner (enthält gameforge_core/ und engines/ mit ComfyUI). Das installierte Plugin liegt als Kopie
+# im Claude-Plugin-Speicher – dann gilt GAMEFORGE_HOME bzw. der bekannte Desktop-Ordner.
+HOME = next((d for d in (Path(os.environ['GAMEFORGE_HOME']) if os.environ.get('GAMEFORGE_HOME') else None, PLUGIN.parent,
+                         Path.home() / 'Desktop' / 'GAMEFORGE_GODMODE_v2_0') if d and (d / 'gameforge_core').is_dir()), PLUGIN.parent)
 
 sys.path.insert(0, str(HOME))
 try:                                                    # gemeinsamer Kern: Smart GPU Commander + Auftragswarteschlange
@@ -69,11 +72,16 @@ class _GpuGuard:
                 out(f'Gemessener zusätzlicher VRAM-Bedarf: {self._peak} MB (für künftige Planung gespeichert).')
         return self._cm.__exit__(et, ev, tb)
 
+# Projektordner legt GAMEFORGE nie selbst an: ein Projekt ist der Ordner, den der Nutzer in Claude geöffnet hat.
+# GAMES/FILMS sind nur noch frühere Sammelordner, die – falls vorhanden – mitgelesen werden.
 GAMES = Path(os.environ.get('GAMEFORGE_SPIELE') or Path.home() / 'Desktop' / 'GAMEFORGE Spiele')
 FILMS = Path(os.environ.get('GAMEFORGE_FILME') or GAMES.parent / 'GAMEFORGE Filme')
-REGISTRY = GAMES / '_projekte.json'          # extern liegende Projekte: nur Verweis, nie verschoben
-BACKUPS = GAMES / '_Sicherungen'
-TRASH = GAMES / '_Papierkorb'
+DATA = Path(os.environ.get('GAMEFORGE_DATA_DIR') or HOME / 'GAMEFORGE_DATA')   # GAMEFORGE-eigene Daten, kein Projektordner
+REGISTRY = DATA / 'projekte.json'            # bekannte Projektordner: nur Verweis, nie verschoben
+LEGACY_REGISTRY = GAMES / '_projekte.json'   # früherer Ort, nur gelesen
+BACKUPS = DATA / 'sicherungen'
+TRASH = DATA / 'papierkorb'
+LEGACY_BACKUPS, LEGACY_TRASH = GAMES / '_Sicherungen', GAMES / '_Papierkorb'
 
 FIELDS = [
     ('vision', 'Spielvision & Ziele'), ('game_rules', 'Spielregeln & Gameplay-Loop'), ('canon', 'Story-Kanon (verbindlich)'),
@@ -123,8 +131,6 @@ FILM_FIELDS = [
     ('edit', 'Schnitt & Länge'), ('render', 'Render & Technik (Unreal Sequencer / Blender)'), ('qa', 'Abnahme & Prüfungen'),
     ('rights', 'Rechte & Lizenzen')]
 FILM_REQUIRED = ['logline', 'treatment', 'script', 'characters', 'shotlist', 'look', 'music', 'render']
-FILM_DIRS = ('referenzen/entwuerfe', 'referenzen/freigegeben', 'storyboard', 'blender', 'twinmotion', 'unreal', 'schnitt', 'ton', 'renders', 'export', 'originale', 'versionen')
-STANDARD_DIRS = ('referenzen/entwuerfe', 'referenzen/freigegeben', 'blender', 'export', 'unreal', 'dlc', 'originale', 'versionen')
 TASK_STATES = ['Offen', 'In Arbeit', 'Umgesetzt', 'Getestet', 'Abgenommen']
 
 
@@ -172,14 +178,35 @@ def films():
     return _own(FILMS, 'film.json')
 
 
+def registry():
+    seen, res = set(), []
+    for x in (read_json(REGISTRY, []) or []) + (read_json(LEGACY_REGISTRY, []) or []):
+        k = str(Path(x.get('path', '')).resolve()).lower()
+        if k not in seen:
+            seen.add(k)
+            res.append(x)
+    return res
+
+
+def register(path, kind, title, note=''):
+    d = Path(path).resolve()
+    reg = [x for x in (read_json(REGISTRY, []) or []) if Path(x['path']).resolve() != d]
+    reg.append({'title': title or d.name, 'kind': kind, 'path': str(d), 'registered_at': now(), 'note': note})
+    write_json(REGISTRY, reg)
+
+
 def external():
-    return [x for x in (read_json(REGISTRY, []) or []) if Path(x.get('path', '')).is_dir()]
+    return [x for x in registry() if Path(x.get('path', '')).is_dir()]
 
 
 def all_projects():
     """(Anzeigename, Typ, Pfad, extern?) für alle bekannten Spiele und Filme."""
     out = [(g.name, 'spiel', g, False) for g in games()] + [(f.name, 'film', f, False) for f in films()]
-    out += [(x['title'], x['kind'], Path(x['path']), True) for x in external()]
+    known = {str(p[2].resolve()).lower() for p in out}
+    for x in external():
+        d = Path(x['path'])
+        if str(d.resolve()).lower() not in known:
+            out.append((x['title'], x['kind'], d, not is_gameforge(d)))
     return out
 
 
@@ -291,19 +318,37 @@ def film_md(title, data):
     return '\n'.join(lines)
 
 
-def create_film(title, idea='', style='', length='', fmt='', basis=''):
-    name = safe_name(title)
-    root = FILMS / name
-    if root.exists():
-        raise SystemExit(f'Es gibt bereits einen Filmordner „{name}“. Nichts überschrieben.')
-    for sub in FILM_DIRS:
-        (root / sub).mkdir(parents=True, exist_ok=True)
-    meta = {'id': hashlib.sha256((name + now()).encode()).hexdigest()[:12], 'kind': 'film', 'title': title, 'status': 'Idee', 'version': 'v0.1',
+def project_folder(folder):
+    """Prüft den Ordner, den der Nutzer in Claude geöffnet hat. GAMEFORGE legt ihn nicht an."""
+    root = Path(folder or '.').resolve()
+    if not root.is_dir():
+        raise SystemExit(f'Ordner „{root}“ gibt es nicht. GAMEFORGE legt keine Projektordner an – bitte den Projektordner in Claude öffnen und dort erneut fragen.')
+    home = Path.home().resolve()
+    forbidden = {home, home / 'Desktop', home / 'Documents', home / 'Downloads', home / 'OneDrive', Path(root.anchor), HOME.resolve(), DATA.resolve()}
+    if root in forbidden:
+        raise SystemExit(f'„{root}“ ist ein allgemeiner Ordner (Benutzer-, Desktop- oder Systemordner) – dort nichts einrichten. '
+                         'Bitte einen vorhandenen Projektordner nennen: gf neu … --ordner "<Pfad>"')
+    if is_gameforge(root):
+        raise SystemExit(f'In „{root}“ gibt es bereits ein Projekt. Nichts überschrieben.')
+    if (root / 'CLAUDE.md').is_file() or list(root.glob('*.uproject')) or list(root.glob('*/*.uproject')):
+        raise SystemExit(f'„{root}“ hat schon eigene Projektregeln bzw. ein Unreal-Projekt. Dort gelten dessen Regeln – GAMEFORGE legt nichts an. '
+                         'Zum Mitverwalten: gf registrieren --pfad "<Ordner>" --typ spiel|film')
+    reg = {Path(x['path']).resolve() for x in external()}
+    for parent in list(root.parents)[:6]:     # nur echte Projekte zählen, keine lose CLAUDE.md
+        if is_gameforge(parent) or parent in reg or list(parent.glob('*.uproject')):
+            raise SystemExit(f'„{root}“ liegt innerhalb des Projekts „{parent.name}“. Kein Projekt im Projekt.')
+    return root
+
+
+def create_film(title, idea='', style='', length='', fmt='', basis='', folder='.'):
+    root = project_folder(folder)
+    meta = {'id': hashlib.sha256((root.name + now()).encode()).hexdigest()[:12], 'kind': 'film', 'title': title, 'status': 'Idee', 'version': 'v0.1',
             'style': style, 'length': length, 'format': fmt, 'based_on': basis, 'engine': 'Unreal Engine 5 (Sequencer / Movie Render Queue)',
             'created_at': now(), 'updated_at': now()}
     write_json(root / 'film.json', meta)
     (root / 'FILM.md').write_text(film_md(title, {'treatment': idea, 'edit': ('Ziellänge: ' + length) if length else ''}), encoding='utf-8')
-    (root / 'CLAUDE.md').write_text(f'''# Film: {title}
+    if not (root / 'CLAUDE.md').exists():
+        (root / 'CLAUDE.md').write_text(f'''# Film: {title}
 
 Dieser Ordner gehört ausschließlich zum Film **{title}**{(' (basiert auf ' + basis + ')') if basis else ''}.
 - Verbindliche Filmbibel: `FILM.md` (Kanon nur nach ausdrücklicher Zustimmung ändern).
@@ -312,17 +357,13 @@ Dieser Ordner gehört ausschließlich zum Film **{title}**{(' (basiert auf ' + b
 ''', encoding='utf-8')
     prof = art_direction.build_profile({'title': title, 'style': style or 'cinematic', 'genre': 'Film', 'camera': '', 'engine': 'Unreal Engine 5', 'bible': {'vision': idea}})
     write_json(root / 'art-direction.json', {'profile': prof, 'source': 'automatisch', 'approved': False, 'updated_at': now()})
-    write_json(root / 'referenzen' / 'auftraege.json', [])
+    register(root, 'film', title)
     return root
 
 
-def create_game(title, vision='', genre='', style='', camera='', platform='', wishes='', summary='', engine='Unreal Engine 5', bible=None, extra=None):
-    name = safe_name(title)
-    root = GAMES / name
-    if root.exists():
-        raise SystemExit(f'Es gibt bereits einen Ordner „{name}“. Nichts überschrieben.')
-    for sub in STANDARD_DIRS:
-        (root / sub).mkdir(parents=True, exist_ok=True)
+def create_game(title, vision='', genre='', style='', camera='', platform='', wishes='', summary='', engine='Unreal Engine 5', bible=None, extra=None, folder='.'):
+    root = project_folder(folder)
+    name = root.name
     b = dict(bible or {})
     if vision and not b.get('vision'):
         b['vision'] = vision
@@ -336,32 +377,37 @@ def create_game(title, vision='', genre='', style='', camera='', platform='', wi
     meta.update(extra or {})
     write_json(root / 'spiel.json', meta)
     (root / 'SPIEL.md').write_text(bible_md(title, b), encoding='utf-8')
-    (root / 'CLAUDE.md').write_text(claude_md(title), encoding='utf-8')
+    if not (root / 'CLAUDE.md').exists():
+        (root / 'CLAUDE.md').write_text(claude_md(title), encoding='utf-8')
     prof = art_direction.build_profile({'title': title, 'style': style, 'genre': genre, 'camera': camera, 'engine': engine, 'bible': b})
     write_json(root / 'art-direction.json', {'profile': prof, 'source': 'automatisch', 'approved': False, 'updated_at': now()})
     write_json(root / 'aufgaben.json', [{'phase': p, 'title': t, 'acceptance': a, 'status': 'Offen', 'evidence': ''} for p, t, a in TASKS])
-    write_json(root / 'referenzen' / 'auftraege.json', [])
+    register(root, 'spiel', title)
     return root
 
 
 # ------------------------------------------------------------------ Befehle
 def cmd_neu(a):
     if a.typ == 'film':
-        root = create_film(a.titel, a.idee or '', a.stil or '', a.laenge or '', a.format or '', a.basis or '')
-        out(f'FILM ANGELEGT: {root}')
-        out('Enthalten: FILM.md (Logline, Treatment, Drehbuch, Shotliste, Look, Ton …), art-direction.json, Ordner storyboard/blender/twinmotion/unreal/schnitt/ton/renders/export, CLAUDE.md.')
+        had_md = (Path(a.ordner).resolve() / 'CLAUDE.md').exists()
+        root = create_film(a.titel, a.idee or '', a.stil or '', a.laenge or '', a.format or '', a.basis or '', a.ordner)
+        out(f'FILM EINGERICHTET im geöffneten Ordner: {root}')
+        out('Neu: FILM.md (Logline, Treatment, Drehbuch, Shotliste, Look, Ton …), film.json, art-direction.json' + ('' if had_md else ', CLAUDE.md') +
+            '. Keine Unterordner – sie entstehen erst, wenn wirklich etwas abgelegt wird.')
         return
-    root = create_game(a.titel, a.idee or '', a.genre or '', a.stil or '', a.perspektive or '', a.plattform or '', a.wuensche or '', a.kurz or '')
+    had_md = (Path(a.ordner).resolve() / 'CLAUDE.md').exists()
+    root = create_game(a.titel, a.idee or '', a.genre or '', a.stil or '', a.perspektive or '', a.plattform or '', a.wuensche or '', a.kurz or '', folder=a.ordner)
     prof = read_json(root / 'art-direction.json')['profile']
-    out(f'ANGELEGT: {root}')
+    out(f'SPIEL EINGERICHTET im geöffneten Ordner: {root}')
     out(f'Grafikstil erkannt: {prof["style_label"]} ({prof["style_reason"]}) · Qualität AUTO: {prof["quality_auto"]}')
-    out('Enthalten: SPIEL.md (Spielbibel), art-direction.json, aufgaben.json (21 Aufgaben), Ordner referenzen/blender/export/unreal/dlc/originale/versionen, CLAUDE.md.')
+    out('Neu: SPIEL.md (Spielbibel), spiel.json, art-direction.json, aufgaben.json (21 Aufgaben)' + ('' if had_md else ', CLAUDE.md') +
+        '. Keine Unterordner – sie entstehen erst, wenn wirklich etwas abgelegt wird.')
 
 
 def cmd_liste(a):
     ps = all_projects()
     if not ps:
-        out(f'Noch keine Projekte (Spiele: {GAMES}, Filme: {FILMS}).')
+        out('Noch keine Projekte bekannt. Projektordner in Claude öffnen und „neues Spiel“ bzw. „neuer Film“ sagen.')
         return
     for name, kind, path, ext in ps:
         m = read_json(path / ('spiel.json' if kind == 'spiel' else 'film.json'), {}) or {}
@@ -383,10 +429,7 @@ def cmd_registrieren(a):
     d = Path(a.pfad).resolve()
     if not d.is_dir():
         raise SystemExit('Ordner nicht gefunden.')
-    reg = [x for x in (read_json(REGISTRY, []) or []) if Path(x['path']).resolve() != d]
-    reg.append({'title': a.titel or d.name, 'kind': a.typ, 'path': str(d), 'registered_at': now(), 'note': a.notiz or ''})
-    GAMES.mkdir(parents=True, exist_ok=True)
-    write_json(REGISTRY, reg)
+    register(d, a.typ, a.titel or d.name, a.notiz or '')
     out(f'VERMERKT: {a.titel or d.name} ({a.typ}) → {d}  (nur Verweis – im Projekt wurde nichts verändert)')
 
 
@@ -536,7 +579,7 @@ def cmd_system(a):
     g = hardware.gpu_status()
     for x in g.get('gpus', []):
         out(f'Grafikkarte: {x["name"]} · VRAM {x.get("vram_used_mb")}/{x.get("vram_total_mb")} MB belegt')
-    out(f'Spieleordner: {GAMES} ({len(games())} Spiele)')
+    out(f'Projekte: {len(all_projects())} bekannt (Projektordner = der in Claude geöffnete Ordner; GAMEFORGE legt keine an)')
 
 
 def ref_orders(root):
@@ -736,7 +779,7 @@ def cmd_blender_test(a):
     b = shutil.which('blender') or next(iter(sorted(Path(os.environ.get('ProgramFiles', r'C:\Program Files'), 'Blender Foundation').glob('Blender*/blender.exe'), reverse=True)), None)
     if not b:
         raise SystemExit('Blender nicht gefunden.')
-    outdir = GAMES / '_Systemtest' / dt.datetime.now().strftime('%Y%m%d_%H%M%S')
+    outdir = DATA / 'tests' / ('blender_' + dt.datetime.now().strftime('%Y%m%d_%H%M%S'))
     outdir.mkdir(parents=True)
     script = outdir / 'test.py'; script.write_text(BLENDER_TEST, encoding='utf-8')
     with _GpuGuard('blender-test', 'blender_background', 1500):
@@ -752,8 +795,7 @@ def cmd_dlc(a):
     d = root / 'dlc' / safe_name(a.titel)
     if d.exists():
         raise SystemExit('DLC existiert bereits.')
-    for sub in ('referenzen/entwuerfe', 'referenzen/freigegeben', 'blender', 'export'):
-        (d / sub).mkdir(parents=True)
+    d.mkdir(parents=True)
     write_json(d / 'dlc.json', {'title': a.titel, 'base_game': root.name, 'requires_version': a.basisversion or read_json(root / 'spiel.json', {}).get('version'), 'status': 'Idee', 'created_at': now()})
     lines = [f'# DLC: {a.titel}', f'> Gehört zu {root.name}. Kanon des Hauptspiels gilt.', '']
     for _, label in DLC_FIELDS:
@@ -782,6 +824,7 @@ def cmd_sichern(a):
     BACKUPS.mkdir(parents=True, exist_ok=True)
     target = BACKUPS / f'{root.name}_{dt.datetime.now().strftime("%Y%m%d_%H%M%S")}.zip'
     n = zip_folder(root, target)
+    write_json(target.with_suffix('.json'), {'original_path': str(root), 'created_at': now()})
     out(f'GESICHERT: {target} ({n} Dateien, {target.stat().st_size // 1024} KB, geprüft)')
 
 
@@ -793,30 +836,29 @@ def cmd_loeschen(a):
     TRASH.mkdir(parents=True, exist_ok=True)
     target = TRASH / f'{root.name}_{dt.datetime.now().strftime("%Y%m%d_%H%M%S")}.zip'
     n = zip_folder(root, target)
+    write_json(target.with_suffix('.json'), {'original_path': str(root), 'created_at': now()})
     shutil.rmtree(root)
     out(f'IN DEN PAPIERKORB: {target} ({n} Dateien geprüft gesichert). Wiederherstellen: gf wiederherstellen "{target.name}"')
 
 
 def cmd_wiederherstellen(a):
-    p = TRASH / Path(a.datei).name
-    if not p.is_file():
-        p = BACKUPS / Path(a.datei).name
-    if not p.is_file():
+    p = next((d / Path(a.datei).name for d in (TRASH, BACKUPS, LEGACY_TRASH, LEGACY_BACKUPS) if (d / Path(a.datei).name).is_file()), None)
+    if not p:
         raise SystemExit('Datei weder im Papierkorb noch bei den Sicherungen gefunden.')
+    orig = (read_json(p.with_suffix('.json'), {}) or {}).get('original_path')
     with zipfile.ZipFile(p) as z:
         names = z.namelist()
         top = {n.split('/')[0] for n in names}
         if len(top) != 1 or any('..' in n.split('/') or n.startswith('/') or ':' in n for n in names):
             raise SystemExit('Unerwarteter Inhalt – Wiederherstellung abgebrochen.')
         top_name = top.pop()
-        base = FILMS if any(n == f'{top_name}/film.json' for n in names) else GAMES
-        base.mkdir(parents=True, exist_ok=True)
+        base = Path(a.ziel).resolve() if a.ziel else (Path(orig).parent if orig else None)
+        if not base or not base.is_dir():
+            raise SystemExit('Wohin? Bitte mit --ziel einen vorhandenen Ordner angeben (GAMEFORGE legt keine Ordner an).')
         dest = base / top_name
         if dest.exists():
-            raise SystemExit(f'„{dest.name}“ existiert bereits – nichts überschrieben. Vorher umbenennen.')
+            raise SystemExit(f'„{dest}“ existiert bereits – nichts überschrieben. Vorher umbenennen.')
         z.extractall(base)
-    for sub in (FILM_DIRS if base == FILMS else STANDARD_DIRS):
-        (dest / sub).mkdir(parents=True, exist_ok=True)
     out(f'WIEDERHERGESTELLT: {dest}')
 
 
@@ -849,10 +891,17 @@ def cmd_migrieren(a):
     con = sqlite3.connect(f'file:{db}?mode=ro', uri=True)
     con.row_factory = sqlite3.Row
     base = db.parent
+    ziel = Path(a.ziel).resolve()
+    if not ziel.is_dir():
+        raise SystemExit('Zielordner gibt es nicht – GAMEFORGE legt keine Ordner an.')
     for g in con.execute('SELECT * FROM games'):
         bible = json.loads(g['bible'] or '{}')
+        folder = ziel / safe_name(g['title'])
+        if not folder.is_dir():
+            out(f'ÜBERSPRUNGEN {g["title"]}: Ordner {folder} fehlt (bitte selbst anlegen).')
+            continue
         try:
-            root = create_game(g['title'], genre=g['genre'], style=g['style'], camera=g['camera'], summary=g['summary'], engine=g['engine'], bible=bible,
+            root = create_game(g['title'], folder=folder, genre=g['genre'], style=g['style'], camera=g['camera'], summary=g['summary'], engine=g['engine'], bible=bible,
                                extra={'status': g['status'], 'version': g['version'], 'migrated_from': f'GAMEFORGE-Datenbank ({g["id"]})'})
         except SystemExit as e:
             out(f'ÜBERSPRUNGEN {g["title"]}: {e}')
@@ -935,7 +984,8 @@ def main(argv=None):
     sp = p.add_subparsers(dest='cmd', required=True)
     x = sp.add_parser('neu'); x.add_argument('--titel', required=True); x.add_argument('--typ', default='spiel', choices=['spiel', 'film'])
     x.add_argument('--laenge'); x.add_argument('--format'); x.add_argument('--basis'); x.add_argument('--idee'); x.add_argument('--genre'); x.add_argument('--stil')
-    x.add_argument('--perspektive'); x.add_argument('--plattform'); x.add_argument('--wuensche'); x.add_argument('--kurz'); x.set_defaults(f=cmd_neu)
+    x.add_argument('--perspektive'); x.add_argument('--plattform'); x.add_argument('--wuensche'); x.add_argument('--kurz')
+    x.add_argument('--ordner', default='.', help='Projektordner (Standard: der in Claude geöffnete Ordner)'); x.set_defaults(f=cmd_neu)
     sp.add_parser('liste').set_defaults(f=cmd_liste)
     x = sp.add_parser('erkennen'); x.add_argument('pfad', nargs='?', default='.'); x.set_defaults(f=cmd_erkennen)
     x = sp.add_parser('registrieren'); x.add_argument('--pfad', required=True); x.add_argument('--typ', required=True, choices=['spiel', 'film'])
@@ -955,12 +1005,12 @@ def main(argv=None):
     x = sp.add_parser('dlc'); x.add_argument('spiel'); x.add_argument('--titel', required=True); x.add_argument('--idee'); x.add_argument('--basisversion'); x.set_defaults(f=cmd_dlc)
     x = sp.add_parser('sichern'); x.add_argument('spiel'); x.set_defaults(f=cmd_sichern)
     x = sp.add_parser('loeschen'); x.add_argument('spiel'); x.add_argument('--bestaetigen', required=True); x.set_defaults(f=cmd_loeschen)
-    x = sp.add_parser('wiederherstellen'); x.add_argument('datei'); x.set_defaults(f=cmd_wiederherstellen)
+    x = sp.add_parser('wiederherstellen'); x.add_argument('datei'); x.add_argument('--ziel'); x.set_defaults(f=cmd_wiederherstellen)
     x = sp.add_parser('comfy'); x.add_argument('aktion', choices=['start', 'stop', 'status']); x.set_defaults(f=cmd_comfy)
     sp.add_parser('gpu').set_defaults(f=cmd_gpu)
     x = sp.add_parser('jobs'); x.add_argument('aktion', nargs='?', default='liste', choices=['liste', 'arbeiten', 'abbrechen', 'erneut'])
     x.add_argument('id', nargs='?', type=int); x.add_argument('--projekt'); x.add_argument('--leerlauf', type=int, default=5); x.set_defaults(f=cmd_jobs)
-    x = sp.add_parser('migrieren'); x.add_argument('--db', required=True); x.set_defaults(f=cmd_migrieren)
+    x = sp.add_parser('migrieren'); x.add_argument('--db', required=True); x.add_argument('--ziel', required=True); x.set_defaults(f=cmd_migrieren)
     a = p.parse_args(argv)
     a.f(a)
 

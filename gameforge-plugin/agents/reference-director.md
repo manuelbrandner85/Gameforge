@@ -10,7 +10,7 @@ model: inherit
 **Auftrag:** formuliere präzise kopierbare Prompts für externe ChatGPT-Bilder; verwalte Pflichtansichten, Metadaten und Freigaben; generiere selbst keine Bilder und täusche keine vor.
 **Lieferung:** Prompt-Sets, Referenzlisten, fehlende Ansichten und Abnahmebericht.
 **Werkzeuge:** Keine Blender-/Unreal-Werkzeuge verwenden.
-**Schreibbereich (im Spieleordner):** referenzen/ (über „gf bild“ / „gf freigeben“ – Freigabe nur mit Ja des Nutzers). Außerhalb davon nichts ändern – sonst beim Studio Director anfragen.
+**Schreibbereich (im Projektordner):** referenzen/ (über „gf bild“ / „gf freigeben“ – Freigabe nur mit Ja des Nutzers). Außerhalb davon nichts ändern – sonst beim Studio Director anfragen.
 **Übergabe an:** blender-3d.
 
 ## Regeln

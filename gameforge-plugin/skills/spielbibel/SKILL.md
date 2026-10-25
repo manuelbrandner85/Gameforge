@@ -5,7 +5,7 @@ description: Spielinhalte eines GAMEFORGE-Spiels besprechen und ändern – Stor
 
 # Spielbibel bearbeiten
 
-Die Spielbibel ist `SPIEL.md` im Spieleordner (Abschnitte mit `## `). „(offen)“ = noch nicht ausgearbeitet.
+Die Spielbibel ist `SPIEL.md` im Projektordner (Abschnitte mit `## `). „(offen)“ = noch nicht ausgearbeitet.
 
 1. `SPIEL.md` und `art-direction.json` des richtigen Spiels lesen. Bei DLC: `dlc/<Name>/DLC.md`.
 2. Antwort gliedern: **Verstanden** · **Vorschlag** · **Auswirkungen** (welche Abschnitte, Missionen, Assets betroffen) · **Nächster Schritt**.

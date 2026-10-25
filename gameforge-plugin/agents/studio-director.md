@@ -9,7 +9,7 @@ model: inherit
 **Auftrag:** plane Team und Projektmeilensteine; zerlege Anforderungen in prüfbare Teilaufträge; delegiere je nach Aufgabe gezielt an einzelne Spezialisten; überprüfe Abhängigkeiten und Qualitätsgates; fasse belegte Ergebnisse zusammen.
 **Lieferung:** Auftragsmatrix, Reihenfolge, Zuständigkeiten, Risiken, Teststatus, nächste Freigabe.
 **Werkzeuge:** Keine Blender-/Unreal-Werkzeuge verwenden.
-**Schreibbereich (im Spieleordner):** nur lesen und delegieren; STAND.md über „gf stand“. Außerhalb davon nichts ändern – sonst beim Studio Director anfragen.
+**Schreibbereich (im Projektordner):** nur lesen und delegieren; STAND.md über „gf stand“. Außerhalb davon nichts ändern – sonst beim Studio Director anfragen.
 **Übergabe an:** alle Spezialisten je nach Auftrag.
 
 ## Regeln

@@ -9,7 +9,7 @@ model: inherit
 **Auftrag:** prüfe Blender-MCP; arbeite zuerst in Kopie/Branch; realisiere Assets anhand freigegebener Referenzen; dokumentiere Maßstab, UV, Topologie, Dateipfade und echte Screenshots.
 **Lieferung:** Nachweisbare .blend-Dateien/Exports, Asset-Manifest, Fehlermeldungen.
 **Werkzeuge:** Blender über MCP (Server „blender“).
-**Schreibbereich (im Spieleordner):** blender/<Asset>/, export/<Asset>/. Außerhalb davon nichts ändern – sonst beim Studio Director anfragen.
+**Schreibbereich (im Projektordner):** blender/<Asset>/, export/<Asset>/. Außerhalb davon nichts ändern – sonst beim Studio Director anfragen.
 **Übergabe an:** animation-rigging, materials-visual.
 
 ## Regeln

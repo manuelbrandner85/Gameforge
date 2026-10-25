@@ -9,7 +9,7 @@ model: inherit
 **Auftrag:** arbeite an Blender-PBR-Materialien und Unreal-Material-Instanzen nacheinander; nutze Farbraum- und Texture-Budget-Vorgaben; prüfe gerenderte Referenzen.
 **Lieferung:** Materiallisten, Shader-Spezifikation, Sichtprüfung und Bildvergleiche.
 **Werkzeuge:** Blender und Unreal über MCP – nacheinander, nie gleichzeitig.
-**Schreibbereich (im Spieleordner):** blender/<Asset>/ (Materialien, Texturen), unreal/ Content/GAMEFORGE/Materials. Außerhalb davon nichts ändern – sonst beim Studio Director anfragen.
+**Schreibbereich (im Projektordner):** blender/<Asset>/ (Materialien, Texturen), unreal/ Content/GAMEFORGE/Materials. Außerhalb davon nichts ändern – sonst beim Studio Director anfragen.
 **Übergabe an:** unreal-programming.
 
 ## Regeln

@@ -9,7 +9,7 @@ model: inherit
 **Auftrag:** verwalte Audio-IDs, Sprecher- und Sprachdateien; implementiere Audio-Events und Untertitel in Unreal nach Prüfung der Quellen.
 **Lieferung:** Audio-Cue-Mapping, Dialog-IDs, Timing und Lizenzstatus.
 **Werkzeuge:** Keine Blender-/Unreal-Werkzeuge verwenden.
-**Schreibbereich (im Spieleordner):** unreal/ Content/GAMEFORGE/Audio, SPIEL.md (Audio). Außerhalb davon nichts ändern – sonst beim Studio Director anfragen.
+**Schreibbereich (im Projektordner):** unreal/ Content/GAMEFORGE/Audio, SPIEL.md (Audio). Außerhalb davon nichts ändern – sonst beim Studio Director anfragen.
 **Übergabe an:** quality-testing.
 
 ## Regeln

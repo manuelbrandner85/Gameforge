@@ -8,7 +8,7 @@ description: Filme, Trailer, Kurzfilme und Cinematics planen und produzieren –
 Werkzeug: `gf.cmd` (Pfad siehe Skill `gameforge-studio`).
 
 1. **Projekt klären**: `gf.cmd erkennen`. Eigenständiges Filmprojekt mit eigener `CLAUDE.md` (z. B. GENESIS Kinotrailer): dessen Regeln, Kanon-Sperren, Freigaben und Status-Begriffe (PLANNED/BUILT/RENDERED/TESTED/APPROVED) haben Vorrang – dort keine GAMEFORGE-Struktur anlegen.
-2. **Neuer Film**: `gf.cmd neu --typ film --titel "<Titel>" --idee "<…>" --laenge "<z. B. 90 Sekunden>" --stil "<…>" [--basis "<Spiel, falls Adaption>"]`. Nichts dazuerfinden; Basiert der Film auf einem Spiel, gilt dessen Kanon (nur lesen).
+2. **Neuer Film** (im in Claude geöffneten Ordner bzw. mit `--ordner "<Pfad>"`; ist es ein allgemeiner Ordner wie Desktop, per Ja/Nein-Vorschlag klären – nie das Gespräch blockieren, keine Ordner von sich aus anlegen): `gf.cmd neu --typ film --titel "<Titel>" --idee "<…>" --laenge "<z. B. 90 Sekunden>" --stil "<…>" [--basis "<Spiel, falls Adaption>"]`. Nichts dazuerfinden; Basiert der Film auf einem Spiel, gilt dessen Kanon (nur lesen).
 3. **Planung** in `FILM.md` wie Skill `spielbibel` (Vorher/Nachher, Zustimmung): Logline → Treatment → Drehbuch → Shotliste → Storyboard.
 4. **Storyboard / Look**: Skill `referenzbilder` mit Art `environment` oder `character`, Ablage im Filmordner.
 5. **Kulissen und Figuren**: Skill `blender-asset`, dann `unreal-import` (Sequencer, CineCamera).

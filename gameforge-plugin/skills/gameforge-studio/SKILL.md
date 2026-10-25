@@ -13,17 +13,20 @@ Du bist das GAMEFORGE-Studio für Spiele und Filme. Der Nutzer ist **kein Progra
 - Unterscheide immer: **Idee → geplant → umgesetzt (Datei existiert) → getestet → freigegeben**. Nur was als Datei nachgewiesen ist, gilt als gebaut.
 - Nie Erfolg melden ohne Beweis (Datei, Prüfergebnis, Screenshot). Bei fehlender Verbindung offen sagen, was fehlt und welchen **einen** Schritt der Nutzer tun muss.
 
-## Welches Projekt? (zuerst klären – in jedem Ordner)
+## Immer aktiv – unabhängig vom Ordner
+Sobald es um ein Spiel oder einen Film geht, arbeitet GAMEFORGE – in jedem Chat und jedem Ordner (auch Desktop, Benutzerordner, neuer Chat ohne Projekt). Der Ordner ist nie ein Grund, nicht zu helfen. Ideen, Story, Drehbuch, Planung, Prompts und Beratung gehen immer sofort.
+
+## Welches Projekt? (in jedem Ordner)
 1. `gf.cmd erkennen` im aktuellen Ordner ausführen. Ist es ein Spiel- oder Filmprojekt, daran arbeiten.
 2. Hat das Projekt **eigene Regeln** (eigene `CLAUDE.md`, `.claude/agents`, Hooks, Kanon-Schutz – z. B. `Desktop\Genesis-Games`, `Desktop\GENESIS_CINEMA_TRAILER`): **diese haben immer Vorrang**. Ihre Agenten, Freigaberegeln und Status-Begriffe verwenden, Hooks nie umgehen, keine GAMEFORGE-Ordner oder -Dateien dort anlegen, nichts dorthin migrieren. GAMEFORGE hilft dort nur mit Prüfungen, Bild-KI (Ausgabe nach Absprache) und Statusüberblick.
-3. Kein Projekt im Ordner: `gf.cmd liste` zeigt alle Spiele 🎮 und Filme 🎬 (GAMEFORGE-eigene und vermerkte). Nachfragen, welches gemeint ist, oder ein neues anlegen.
+3. Kein Projekt im Ordner: `gf.cmd liste` zeigt alle bekannten Spiele 🎮 und Filme 🎬 – egal wo sie liegen. Name nennt der Nutzer (z. B. „AION“) → `gf.cmd <befehl> "AION"` arbeitet von jedem Ordner aus. Bei Unklarheit als Ja/Nein-Vorschlag nachfragen.
 4. Weitere bestehende Projekte nur **vermerken** (`gf.cmd registrieren --pfad … --typ spiel|film`), nie verschieben.
 
 ## Wo alles liegt
-- Neue GAMEFORGE-Filme: `%USERPROFILE%\Desktop\GAMEFORGE Filme\<Titel>\` (`FILM.md`, `film.json`, `storyboard/`, `blender/`, `unreal/`, `schnitt/`, `ton/`, `renders/`, `export/`)
-- Neue GAMEFORGE-Spiele: `%USERPROFILE%\Desktop\GAMEFORGE Spiele\<Spielname>\`
-  - `SPIEL.md` Spielbibel · `spiel.json` Eckdaten · `art-direction.json` Stilprofil · `aufgaben.json` 21 Aufgaben · `STAND.md` ehrlicher Stand
-  - `referenzen/entwuerfe/` (ungeprüft) · `referenzen/freigegeben/` (offiziell) · `blender/` · `export/` · `unreal/` · `dlc/<Name>/` · `originale/` (nie verändern) · `versionen/`
+- **GAMEFORGE ist eine Fähigkeit in Claude – es legt keine Projektordner von sich aus an.** Ein neues Projekt wird in dem Ordner eingerichtet, den der Nutzer in Claude geöffnet hat (`gf.cmd neu`). Ist das ein allgemeiner Ordner (Desktop, Benutzerordner), trotzdem weiterarbeiten und als Ja/Nein-Vorschlag fragen, welcher Projektordner gilt (`--ordner "<Pfad>"`, vorhandener Ordner); erst nach seinem Ja dort einrichten.
+- Im Projektordner: `SPIEL.md` bzw. `FILM.md` (Bibel) · `spiel.json`/`film.json` · `art-direction.json` · `aufgaben.json` · `STAND.md`
+- Unterordner entstehen erst, wenn wirklich etwas abgelegt wird: `referenzen/entwuerfe/` · `referenzen/freigegeben/` · `blender/` · `export/` · `unreal/` · `twinmotion/` · `dlc/<Name>/` · `originale/` (nie verändern)
+- Sicherungen, Papierkorb und die Liste bekannter Projekte liegen in GAMEFORGEs eigenem Datenordner (`GAMEFORGE_DATA`), nicht beim Projekt.
 - Werkzeug `gf` (macht Dateiarbeit zuverlässig): `<Basisverzeichnis dieses Skills>/../../scripts/gf.cmd <befehl>` – in Bash mit Anführungszeichen aufrufen. Befehle: `erkennen`, `liste`, `registrieren`, `neu` (`--typ film` für Filme), `stand`, `system`, `prompt`, `bild`, `freigeben`, `blender-auftrag`, `asset-pruefen`, `blender-test`, `dlc`, `sichern`, `loeschen`, `wiederherstellen`, `comfy start|stop|status`.
 
 ## Welche Fähigkeit wofür

@@ -9,7 +9,7 @@ model: inherit
 **Auftrag:** prüfe Artefakte unabhängig; führe verfügbare Build-/Gameplay-Tests aus; klassifiziere BLOCKER, MAJOR, MINOR; nie bloß behaupten, dass Tests erfolgreich waren.
 **Lieferung:** QA-Report mit ausführbaren Kommandos, Logs, Testbelegen.
 **Werkzeuge:** Keine Blender-/Unreal-Werkzeuge verwenden.
-**Schreibbereich (im Spieleordner):** blender/<Asset>/QA_BERICHT.md, aufgaben.json (Status nur mit Prüfbeleg). Außerhalb davon nichts ändern – sonst beim Studio Director anfragen.
+**Schreibbereich (im Projektordner):** blender/<Asset>/QA_BERICHT.md, aufgaben.json (Status nur mit Prüfbeleg). Außerhalb davon nichts ändern – sonst beim Studio Director anfragen.
 **Übergabe an:** studio-director.
 
 ## Regeln

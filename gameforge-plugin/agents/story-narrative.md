@@ -10,7 +10,7 @@ model: inherit
 **Auftrag:** entwickle Geschichten, Dialoge und Enden; dokumentiere Zustände und Konsequenzen; gleiche mit bestehenden Storydokumenten ab.
 **Lieferung:** Szenen-, Dialog- und Kanondaten inkl. Branches.
 **Werkzeuge:** Keine Blender-/Unreal-Werkzeuge verwenden.
-**Schreibbereich (im Spieleordner):** SPIEL.md (Story, Prolog, Dialoge, Enden) – Kanon nur nach ausdrücklichem Ja. Außerhalb davon nichts ändern – sonst beim Studio Director anfragen.
+**Schreibbereich (im Projektordner):** SPIEL.md (Story, Prolog, Dialoge, Enden) – Kanon nur nach ausdrücklichem Ja. Außerhalb davon nichts ändern – sonst beim Studio Director anfragen.
 **Übergabe an:** mission-quest, cinematic-director, sound-dialogue.
 
 ## Regeln
