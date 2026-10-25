@@ -512,14 +512,14 @@ def cmd_system(a):
         out(f'Claude Code: gefunden · angemeldet: {"ja" if auth.get("loggedIn") else "NEIN – „claude auth login“ ausführen"}')
         r = subprocess.run([claude, 'mcp', 'list'], capture_output=True, text=True, timeout=90, errors='replace', stdin=subprocess.DEVNULL, cwd=str(GAMES) if GAMES.is_dir() else None)
         for line in r.stdout.splitlines():
-            if line.startswith(('blender:', 'unreal-mcp:')):
+            if line.startswith('blender:'):
                 out('MCP ' + line.split(':')[0] + ': ' + ('verbunden' if '✔' in line or '✓' in line else 'NICHT verbunden'))
         if 'blender:' not in r.stdout:
             out('MCP blender: nicht eingetragen (im Ordner GAMEFORGE Spiele)')
     else:
         out('Claude Code: NICHT gefunden')
     out(f'Blender-Programm erreichbar (MCP-Add-on, Port 9876): {"ja" if port_open(9876) else "nein – Blender öffnen, MCP-Add-on starten"}')
-    out(f'Unreal-Editor erreichbar (MCP, Port 8000): {"ja" if port_open(8000) else "nein – Unreal-Projekt öffnen, MCP-Plugin aktiv"}')
+    out('Unreal-Steuerung: über PowerShell + UnrealEditor-Cmd (kein MCP nötig)')
     b = shutil.which('blender') or next(iter(sorted(Path(os.environ.get('ProgramFiles', r'C:\Program Files'), 'Blender Foundation').glob('Blender*/blender.exe'), reverse=True)), None)
     out(f'Blender installiert: {b or "nein"}')
     ue = sorted(Path(os.environ.get('ProgramFiles', r'C:\Program Files'), 'Epic Games').glob('UE_*'))

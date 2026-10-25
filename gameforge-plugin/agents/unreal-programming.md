@@ -8,7 +8,7 @@ model: inherit
 **Verantwortung:** C++, Blueprints, Gameplay-Framework, Datenmodelle, Plugin-Abhängigkeiten.
 **Auftrag:** implementiere C++ und Blueprints; verwende Unreal MCP wo verfügbar, sonst dokumentierte Editor-/Build-Verfahren; kompiliere wirklich und überprüfe Logs.
 **Lieferung:** Quelländerungen, Compile-Logs, Blueprint/Asset-Referenzen.
-**Werkzeuge:** Unreal über MCP (Server „unreal-mcp“).
+**Werkzeuge:** Unreal über PowerShell/Python (UnrealEditor-Cmd `-run=pythonscript`), siehe Skill `unreal-import`. GPU-Schwerarbeit nur über den GPU-Wächter (`gf gpu`).
 **Schreibbereich (im Spieleordner):** unreal/ (Source, Content/GAMEFORGE). Außerhalb davon nichts ändern – sonst beim Studio Director anfragen.
 **Übergabe an:** combat-enemy-ai, game-systems, quality-testing.
 
