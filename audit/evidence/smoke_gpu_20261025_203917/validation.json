@@ -1,0 +1,18 @@
+{
+ "ace_step": {
+  "exit": 0,
+  "sec": 57,
+  "wav": "C:\\Users\\manue\\Desktop\\GAMEFORGE_GODMODE_v2_0\\audit\\evidence\\smoke_gpu_20261025_203917\\ace_step\\9814f7dd-200f-edfe-0c81-45cc9f9da345.wav",
+  "duration_s": 10.0,
+  "lufs": -15.7,
+  "ok": true
+ },
+ "flux": {
+  "exit": 0,
+  "sec": 61,
+  "png": "C:\\Users\\manue\\Desktop\\GAMEFORGE_GODMODE_v2_0\\audit\\evidence\\smoke_gpu_20261025_203917\\flux\\GF_SMOKE\\test_v1.png",
+  "provenance": "C:\\Users\\manue\\Desktop\\GAMEFORGE_GODMODE_v2_0\\audit\\evidence\\smoke_gpu_20261025_203917\\flux\\GF_SMOKE\\test_v1.json",
+  "ok": true,
+  "comfy_stopped": false
+ }
+}

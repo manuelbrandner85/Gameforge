@@ -1,0 +1,4 @@
+{
+  "status": "failed",
+  "reason": "Fehlversuch: Smoke-Skript stuerzte beim Dekodieren der Ausgabe ab (WAV entstand trotzdem). Gueltiger Lauf: smoke_gpu_20261025_203917"
+}

@@ -40,5 +40,14 @@
       33420
     ],
     "passed": true
+  },
+  {
+    "id": "LIVE-11-05",
+    "title": "Echter Blender-Hintergrundjob wartet auf Token (ace_step_smoke, flux_smoke), startet erst bei genug VRAM",
+    "passed": true,
+    "start_condition": "6898 MB frei >= 1500 MB + 2445 MB Reserve",
+    "result": "BESTANDEN, Blender 5.2.3 LTS, .blend+.fbx geprueft",
+    "output": "C:\\Users\\manue\\Desktop\\GAMEFORGE Spiele\\_Systemtest\\20261025_210129",
+    "vram_peak": "kein messbarer Zusatzbedarf (<200 MB) – nicht kalibriert, Standardwert 1500 MB bleibt"
   }
 ]
