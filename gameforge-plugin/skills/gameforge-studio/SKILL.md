@@ -27,7 +27,7 @@ Sobald es um ein Spiel oder einen Film geht, arbeitet GAMEFORGE – in jedem Cha
 - Im Projektordner: `SPIEL.md` bzw. `FILM.md` (Bibel) · `spiel.json`/`film.json` · `art-direction.json` · `aufgaben.json` · `STAND.md`
 - Unterordner entstehen erst, wenn wirklich etwas abgelegt wird: `referenzen/entwuerfe/` · `referenzen/freigegeben/` · `blender/` · `export/` · `unreal/` · `twinmotion/` · `dlc/<Name>/` · `originale/` (nie verändern)
 - Sicherungen, Papierkorb und die Liste bekannter Projekte liegen in GAMEFORGEs eigenem Datenordner (`GAMEFORGE_DATA`), nicht beim Projekt.
-- Werkzeug `gf` (macht Dateiarbeit zuverlässig): `<Basisverzeichnis dieses Skills>/../../scripts/gf.cmd <befehl>` – in Bash mit Anführungszeichen aufrufen. Befehle: `erkennen`, `liste`, `registrieren`, `neu` (`--typ film` für Filme), `stand`, `system`, `prompt`, `bild`, `freigeben`, `blender-auftrag`, `asset-pruefen`, `blender-test`, `dlc`, `sichern`, `loeschen`, `wiederherstellen`, `comfy start|stop|status`.
+- Werkzeug `gf` (macht Dateiarbeit zuverlässig): `<Basisverzeichnis dieses Skills>/../../scripts/gf.cmd <befehl>` – in Bash mit Anführungszeichen aufrufen. Befehle: `erkennen`, `liste`, `registrieren`, `neu` (`--typ film` für Filme), `stand`, `system`, `prompt`, `bild`, `freigeben`, `blender-auftrag`, `asset-pruefen`, `blender-test`, `twinmotion status|start|vorbereiten|pruefen`, `gpu`, `jobs`, `dlc`, `sichern`, `loeschen`, `wiederherstellen`, `comfy start|stop|status`.
 
 ## Welche Fähigkeit wofür
 | Wunsch des Nutzers | Skill |

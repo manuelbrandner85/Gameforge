@@ -10,7 +10,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-from gflib import art_direction, prompts, quality, imagecheck, comfy, hardware  # noqa: E402
+from gflib import art_direction, prompts, quality, imagecheck, comfy, hardware, twinmotion  # noqa: E402
 
 PLUGIN = HERE.parent
 # GAMEFORGE-Ordner (enthält gameforge_core/ und engines/ mit ComfyUI). Das installierte Plugin liegt als Kopie
@@ -976,6 +976,49 @@ def cmd_jobs(a):
         out(f'#{a.id} → {gjobs.get(a.id)["status"]}')
 
 
+def cmd_twinmotion(a):
+    """Twinmotion-Brücke (Vorvisualisierung): Python erledigt alles außerhalb, Klicks macht die Computersteuerung."""
+    if a.aktion == 'status':
+        exe = twinmotion.find_exe()
+        out('Twinmotion: ' + (str(exe) if exe else 'nicht installiert'))
+        out('Läuft: ' + (', '.join(map(str, twinmotion.running())) or 'nein'))
+        if gc:
+            apps = [x['app'] for x in gc.gpu_apps()]
+            if 'Unreal Editor' in apps:
+                out('ACHTUNG: Unreal Editor ist offen – zusammen mit Twinmotion reicht der Grafikspeicher oft nicht, und Unreal holt sich den Vordergrund. Vorher speichern und schließen lassen.')
+            out(gc.status_text().splitlines()[1])
+        return
+    if a.aktion == 'start':
+        if gc:
+            ok, why, _ = gc.preflight('heavy', gc.estimate_need('twinmotion', 4000))
+            if not ok:
+                raise SystemExit('BLOCKIERT – ' + why)
+        out('Twinmotion gestartet.' if twinmotion.start() else 'Twinmotion läuft bereits.')
+        return
+    root = find_game(a.projekt)
+    if a.aktion == 'vorbereiten':
+        need_gameforge(root, 'Twinmotion-Vorbereitung')
+        asset_dir = safe_name(a.asset)
+        src = Path(a.datei) if a.datei else root / 'export' / asset_dir / f'{asset_dir}.fbx'
+        if not src.is_file():
+            raise SystemExit(f'Quelldatei fehlt: {src} – zuerst in Blender exportieren (Skill blender-asset) oder --datei angeben.')
+        d, order = twinmotion.prepare(root, asset_dir, src, video_seconds=a.sekunden)
+        out(f'VORBEREITET: {d}')
+        out(f'Import-Datei (fester Name, für Neu-Import): {order["twinmotion_import"]}')
+        out(f'Shots: {", ".join(x["name"] for x in order["shots"])} · Looks: {", ".join(order["looks"])} · Video {a.sekunden} s')
+        out('Nächster Schritt: Twinmotion per Computersteuerung bedienen (Klickweg steht in TWINMOTION_AUFTRAG.json).')
+    elif a.aktion == 'pruefen':
+        folder = root / 'twinmotion' / (safe_name(a.asset) if a.asset else '')
+        res = twinmotion.check_outputs(folder, gc.media_info if gc else (lambda p: None))
+        if not res:
+            out(f'KEINE EXPORTE gefunden in {folder} – in Twinmotion ist noch nichts nachweisbar exportiert.')
+        for r in res:
+            i = r['info'] or {}
+            out(('OK    ' if r['ok'] else 'FEHLT ') + f'{r["datei"]} · {i.get("width")}×{i.get("height")}' + (f' · {i["fps"]} fps' if i.get('fps') else '') + f' · {r["bytes"] // 1024} KB')
+        if res:
+            write_json(folder / 'PRUEFUNG.json', {'geprueft_am': now(), 'ergebnisse': res})
+
+
 def main(argv=None):
     for stream in (sys.stdout, sys.stderr):
         if stream.encoding and stream.encoding.lower() not in ('utf-8', 'utf8'):
@@ -1008,6 +1051,8 @@ def main(argv=None):
     x = sp.add_parser('wiederherstellen'); x.add_argument('datei'); x.add_argument('--ziel'); x.set_defaults(f=cmd_wiederherstellen)
     x = sp.add_parser('comfy'); x.add_argument('aktion', choices=['start', 'stop', 'status']); x.set_defaults(f=cmd_comfy)
     sp.add_parser('gpu').set_defaults(f=cmd_gpu)
+    x = sp.add_parser('twinmotion'); x.add_argument('aktion', choices=['status', 'start', 'vorbereiten', 'pruefen']); x.add_argument('projekt', nargs='?', default='.')
+    x.add_argument('--asset'); x.add_argument('--datei'); x.add_argument('--sekunden', type=int, default=5); x.set_defaults(f=cmd_twinmotion)
     x = sp.add_parser('jobs'); x.add_argument('aktion', nargs='?', default='liste', choices=['liste', 'arbeiten', 'abbrechen', 'erneut'])
     x.add_argument('id', nargs='?', type=int); x.add_argument('--projekt'); x.add_argument('--leerlauf', type=int, default=5); x.set_defaults(f=cmd_jobs)
     x = sp.add_parser('migrieren'); x.add_argument('--db', required=True); x.add_argument('--ziel', required=True); x.set_defaults(f=cmd_migrieren)
