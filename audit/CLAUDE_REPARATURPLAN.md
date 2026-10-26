@@ -1,0 +1,10 @@
+# Claude-Code-Reparaturplan (wartet auf Freigabe)
+
+Jede Reparatur: Sicherung → Minimal-Patch → isolierte Probe → Nachtest → Rückrollweg. Nichts davon ist ausgeführt.
+
+| ID | Vorschlag | Sicherung / Rückrollweg | Test nach dem Patch | Freigabe nötig |
+|---|---|---|---|---|
+| H-01 | Neue Datei `Desktop/.claude/settings.json` mit **denselben zwei GENESIS-Hooks**, aber nur für Pfade in `Genesis-Games` wirksam (Hook prüft den Zielpfad). Nutzer-Settings bleiben unverändert. Alternative ohne Änderung: GENESIS-Arbeit nur in Sitzungen mit Ordner `Genesis-Games` starten. | neue Datei; Rückroll = Datei löschen | Probe-Eingaben (Push, Canon-Schreiben, Installation) → Exit 2; normale Arbeit → Exit 0; keine Doppelausführung in Genesis-Sitzungen | **ja** (neue Projekt-Settings auf dem Desktop) |
+| H-02 | Hook-Regel präzisieren: `git push` auf `v4/neustart` ohne `--force` erlauben, Force-Push, `reset --hard`, `clean -f`, Repo-Löschen weiter sperren. Entspricht der Nutzerregel „immer pushen“. | Backup `claude_pretool_guard.py` + Hash; Rückroll = Backup zurück | Probe-Matrix: normaler Push → 0, Force-Push → 2, Canon-Schreiben → 2 | **ja** (Schutzregel im Spielprojekt) |
+| H-03 | Verwaisten Eintrag `unreal-mcp` entfernen (`claude mcp remove unreal-mcp -s user`); Unreal-Steuerung bleibt über die getestete Python-Remote-Execution bzw. Headless-Commandlet. Ein echter Unreal-MCP-Server wird erst eingerichtet, wenn ein geprüftes Plugin gewählt ist. | `claude mcp get unreal-mcp` vorher protokolliert; Rückroll = `claude mcp add --transport http unreal-mcp http://127.0.0.1:8000/mcp -s user` | `claude mcp list` ohne Fehler; `ue_remote.py` Probe | **ja** (Nutzer-Scope) |
+| H-04 | GAMEFORGE-Ressourcensperre (`RenderFarmLocal`): Lock-Dateien für GPU, Blender-GUI und Unreal-Editor unter `GAMEFORGE_DATA/locks`; GPU-Jobs prüfen vorher freien VRAM. Kein Eingriff in fremde Sitzungen. | reiner Code im GAMEFORGE-Zweig | zwei gleichzeitige Testjobs → zweiter wartet | nein (Code im neuen Workspace), Nutzung durch andere Sitzungen freiwillig |

@@ -1,0 +1,28 @@
+{
+ "project": "C:\\Users\\manue\\Desktop\\GAMEFORGE_GODMODE_v2_0\\projects\\_smoke\\UE_Smoke\\UE_Smoke.uproject",
+ "setup": {
+  "exit": 0,
+  "sec": 15,
+  "result": {
+   "world": "L_Smoke",
+   "import_size_cm": [
+    100.0,
+    100.0,
+    100.0
+   ],
+   "import_ok": true,
+   "level": "/Game/Smoke/L_Smoke",
+   "sequence": "/Game/Smoke/LS_Smoke.LS_Smoke",
+   "frames": 5,
+   "preset": "/Game/Smoke/MRQ_Smoke.MRQ_Smoke"
+  }
+ },
+ "render": {
+  "exit": 0,
+  "sec": 31,
+  "frames": 5,
+  "distinct": 5,
+  "finished": false
+ },
+ "ok": true
+}

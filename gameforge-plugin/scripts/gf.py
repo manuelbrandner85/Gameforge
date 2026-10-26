@@ -10,13 +10,78 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-from gflib import art_direction, prompts, quality, imagecheck, comfy, hardware  # noqa: E402
+from gflib import art_direction, prompts, quality, imagecheck, comfy, hardware, twinmotion  # noqa: E402
 
 PLUGIN = HERE.parent
-HOME = PLUGIN.parent                                   # GAMEFORGE-Ordner (enthält engines/ mit ComfyUI)
+# GAMEFORGE-Ordner (enthält gameforge_core/ und engines/ mit ComfyUI). Das installierte Plugin liegt als Kopie
+# im Claude-Plugin-Speicher – dann gilt GAMEFORGE_HOME bzw. der bekannte Desktop-Ordner.
+HOME = next((d for d in (Path(os.environ['GAMEFORGE_HOME']) if os.environ.get('GAMEFORGE_HOME') else None, PLUGIN.parent,
+                         Path.home() / 'Desktop' / 'GAMEFORGE_GODMODE_v2_0') if d and (d / 'gameforge_core').is_dir()), PLUGIN.parent)
+
+sys.path.insert(0, str(HOME))
+try:                                                    # gemeinsamer Kern: Smart GPU Commander + Auftragswarteschlange
+    from gameforge_core import gpu_commander as gc, jobs as gjobs  # noqa: E402
+except ImportError:                                     # Plugin ohne GAMEFORGE-Ordner: ohne Wächter, aber ehrlich gemeldet
+    gc = gjobs = None
+
+
+class _GpuGuard:
+    """Ein GPU-Schwerjob gleichzeitig: wartet auf Token + VRAM, misst den Spitzenbedarf und lernt ihn je Jobtyp."""
+
+    def __init__(self, name, job_type, default_mb, timeout_s=1800, make_room=None):
+        self.name, self.job_type, self.timeout_s, self.make_room = name, job_type, timeout_s, make_room
+        self.need = gc.estimate_need(job_type, default_mb) if gc else default_mb
+        self._last, self._peak, self._stop = 0.0, 0, None
+
+    def _wait(self, msg):
+        if time.time() - self._last > 60:
+            out('WARTET – ' + msg)
+            self._last = time.time()
+
+    def _sample(self, base):
+        while not self._stop.wait(2):
+            m = gc.measure()
+            if m['measured']:
+                self._peak = max(self._peak, m['vram_used_mb'] - base)
+
+    def __enter__(self):
+        if not gc:
+            out('Hinweis: GPU-Wächter nicht gefunden – Job läuft ohne Warteschlange.')
+            return self
+        import threading
+        self._cm = gc.gpu_slot(self.name, 'heavy', self.need, self.timeout_s, 15, self._wait, self.make_room)
+        try:
+            info = self._cm.__enter__()
+        except RuntimeError as e:
+            raise SystemExit('BLOCKIERT – ' + str(e).replace('RESOURCE_BLOCKED: ', '') + ' Die Qualität wird nicht automatisch gesenkt.')
+        before = info.get('before') or {}
+        out(f'GPU frei für „{self.name}“ ({info.get("preflight")}).')
+        if before.get('measured'):
+            self._stop = threading.Event()
+            self._t = threading.Thread(target=self._sample, args=(before['vram_used_mb'],), daemon=True)
+            self._t.start()
+        return self
+
+    def __exit__(self, et, ev, tb):
+        if not gc:
+            return False
+        if self._stop:
+            self._stop.set(); self._t.join(5)
+            if et is None and self._peak > 200:
+                gc.record_peak(self.job_type, self._peak)
+                out(f'Gemessener zusätzlicher VRAM-Bedarf: {self._peak} MB (für künftige Planung gespeichert).')
+        return self._cm.__exit__(et, ev, tb)
+
+# Projektordner legt GAMEFORGE nie selbst an: ein Projekt ist der Ordner, den der Nutzer in Claude geöffnet hat.
+# GAMES/FILMS sind nur noch frühere Sammelordner, die – falls vorhanden – mitgelesen werden.
 GAMES = Path(os.environ.get('GAMEFORGE_SPIELE') or Path.home() / 'Desktop' / 'GAMEFORGE Spiele')
-BACKUPS = GAMES / '_Sicherungen'
-TRASH = GAMES / '_Papierkorb'
+FILMS = Path(os.environ.get('GAMEFORGE_FILME') or GAMES.parent / 'GAMEFORGE Filme')
+DATA = Path(os.environ.get('GAMEFORGE_DATA_DIR') or HOME / 'GAMEFORGE_DATA')   # GAMEFORGE-eigene Daten, kein Projektordner
+REGISTRY = DATA / 'projekte.json'            # bekannte Projektordner: nur Verweis, nie verschoben
+LEGACY_REGISTRY = GAMES / '_projekte.json'   # früherer Ort, nur gelesen
+BACKUPS = DATA / 'sicherungen'
+TRASH = DATA / 'papierkorb'
+LEGACY_BACKUPS, LEGACY_TRASH = GAMES / '_Sicherungen', GAMES / '_Papierkorb'
 
 FIELDS = [
     ('vision', 'Spielvision & Ziele'), ('game_rules', 'Spielregeln & Gameplay-Loop'), ('canon', 'Story-Kanon (verbindlich)'),
@@ -59,7 +124,13 @@ TASKS = [
     ('09 Test & Optimierung', 'Performance', 'FPS-Ziele auf Zielhardware erreicht'),
     ('10 Release', 'Finaler Build und Installer', 'Installierbarer Build geprüft'),
     ('10 Release', 'Rechteprüfung und Abnahme', 'Release-Checkliste freigegeben')]
-STANDARD_DIRS = ('referenzen/entwuerfe', 'referenzen/freigegeben', 'blender', 'export', 'unreal', 'dlc', 'originale', 'versionen')
+FILM_FIELDS = [
+    ('logline', 'Logline (ein Satz)'), ('treatment', 'Treatment / Inhalt'), ('canon', 'Kanon & Vorgaben (verbindlich)'),
+    ('script', 'Drehbuch / Szenen'), ('characters', 'Figuren & Besetzung'), ('locations', 'Schauplätze'),
+    ('shotlist', 'Shotliste'), ('storyboard', 'Storyboard'), ('look', 'Look, Kamera & Farbe'), ('music', 'Musik, Ton & Sprache'),
+    ('edit', 'Schnitt & Länge'), ('render', 'Render & Technik (Unreal Sequencer / Blender)'), ('qa', 'Abnahme & Prüfungen'),
+    ('rights', 'Rechte & Lizenzen')]
+FILM_REQUIRED = ['logline', 'treatment', 'script', 'characters', 'shotlist', 'look', 'music', 'render']
 TASK_STATES = ['Offen', 'In Arbeit', 'Umgesetzt', 'Getestet', 'Abgenommen']
 
 
@@ -92,25 +163,113 @@ def write_json(p, data):
     os.replace(tmp, p)
 
 
-def games():
-    if not GAMES.is_dir():
+def _own(root, marker):
+    if not root.is_dir():
         return []
-    return sorted([d for d in GAMES.iterdir() if d.is_dir() and not d.name.startswith(('_', '.')) and (d / 'spiel.json').is_file()],
+    return sorted([d for d in root.iterdir() if d.is_dir() and not d.name.startswith(('_', '.')) and (d / marker).is_file()],
                   key=lambda d: d.name.lower())
 
 
+def games():
+    return _own(GAMES, 'spiel.json')
+
+
+def films():
+    return _own(FILMS, 'film.json')
+
+
+def registry():
+    seen, res = set(), []
+    for x in (read_json(REGISTRY, []) or []) + (read_json(LEGACY_REGISTRY, []) or []):
+        k = str(Path(x.get('path', '')).resolve()).lower()
+        if k not in seen:
+            seen.add(k)
+            res.append(x)
+    return res
+
+
+def register(path, kind, title, note=''):
+    d = Path(path).resolve()
+    reg = [x for x in (read_json(REGISTRY, []) or []) if Path(x['path']).resolve() != d]
+    reg.append({'title': title or d.name, 'kind': kind, 'path': str(d), 'registered_at': now(), 'note': note})
+    write_json(REGISTRY, reg)
+
+
+def external():
+    return [x for x in registry() if Path(x.get('path', '')).is_dir()]
+
+
+def all_projects():
+    """(Anzeigename, Typ, Pfad, extern?) für alle bekannten Spiele und Filme."""
+    out = [(g.name, 'spiel', g, False) for g in games()] + [(f.name, 'film', f, False) for f in films()]
+    known = {str(p[2].resolve()).lower() for p in out}
+    for x in external():
+        d = Path(x['path'])
+        if str(d.resolve()).lower() not in known:
+            out.append((x['title'], x['kind'], d, not is_gameforge(d)))
+    return out
+
+
+def detect(path):
+    """Erkennt, ob ein Ordner (oder ein übergeordneter) ein Spiel- oder Filmprojekt ist.
+    Reihenfolge: GAMEFORGE-Marker und vermerkte Projekte zuerst, dann Unreal-Projekt/CLAUDE.md."""
+    chain = [Path(path).resolve()]
+    chain += list(chain[0].parents)[:4]
+    reg = {Path(x['path']).resolve(): x for x in external()}
+    for d in chain:
+        if (d / 'spiel.json').is_file():
+            return d, 'spiel', 'GAMEFORGE-Spiel'
+        if (d / 'film.json').is_file():
+            return d, 'film', 'GAMEFORGE-Film'
+        if d in reg:
+            return d, reg[d]['kind'], 'vermerktes Projekt'
+    film_words = ('trailer', 'film', 'kino', 'cinema', 'movie render', 'drehbuch')
+    for i, d in enumerate(chain):
+        up = list(d.glob('*.uproject')) + list(d.glob('*/*.uproject'))
+        md = next((c / 'CLAUDE.md' for c in chain[i:] if (c / 'CLAUDE.md').is_file()), None)
+        text = md.read_text(encoding='utf-8', errors='replace')[:6000].lower() if md else ''
+        if not up and not (d / 'CLAUDE.md').is_file():
+            continue
+        root = md.parent if md and md.parent in chain[i:i + 3] and not up else d
+        film_score = sum(text.count(w) for w in film_words + ('sequencer', 'shot', 'szene', 'render'))
+        game_score = sum(text.count(w) for w in ('gameplay', 'spielbar', 'spielprojekt', 'level', 'quest', 'mission', 'savegame', 'menü'))
+        if film_score > game_score:
+            return root, 'film', 'Film-/Unreal-Projekt (eigene Regeln)'
+        if up or any(w in text for w in ('spiel', 'game', 'unreal')):
+            return root, 'spiel', 'Spiel-/Unreal-Projekt (eigene Regeln)'
+    return None, None, None
+
+
 def find_game(name):
-    name = (name or '').strip().lower()
-    gs = games()
-    exact = [g for g in gs if g.name.lower() == name]
-    if exact:
-        return exact[0]
-    part = [g for g in gs if name and name in g.name.lower()]
+    """Findet ein Projekt (Spiel oder Film) über Namen, Ordnerpfad oder „.“ (aktueller Ordner)."""
+    raw = (name or '').strip()
+    if raw in ('.', '') or Path(raw).is_absolute() or Path(raw).is_dir():
+        d, kind, _ = detect(raw or '.')
+        if d:
+            return d
+        if raw:
+            raise SystemExit(f'„{raw}“ ist kein erkennbares Spiel- oder Filmprojekt.')
+    name = raw.lower()
+    ps = all_projects()
+    exact = [p for p in ps if p[0].lower() == name]
+    if len(exact) == 1:
+        return exact[0][2]
+    part = [p for p in ps if name and name in p[0].lower()]
     if len(part) == 1:
-        return part[0]
-    if not gs:
-        raise SystemExit('Noch kein Spiel vorhanden. Mit „gf neu --titel …“ anlegen.')
-    raise SystemExit(f'Spiel „{name}“ nicht eindeutig gefunden. Vorhanden: ' + ', '.join(g.name for g in gs))
+        return part[0][2]
+    if not ps:
+        raise SystemExit('Noch kein Projekt vorhanden. Mit „gf neu --titel …“ anlegen.')
+    raise SystemExit(f'Projekt „{raw}“ nicht eindeutig gefunden. Vorhanden: ' + ', '.join(f'{p[0]} ({p[1]})' for p in ps))
+
+
+def is_gameforge(root):
+    return (root / 'spiel.json').is_file() or (root / 'film.json').is_file()
+
+
+def need_gameforge(root, what):
+    if not is_gameforge(root):
+        raise SystemExit(f'„{root.name}“ ist ein eigenständiges Projekt mit eigenen Regeln. {what} geht dort nur nach dessen CLAUDE.md – '
+                         'GAMEFORGE legt in fremden Projekten keine eigenen Ordner oder Dateien an.')
 
 
 # ------------------------------------------------------------------ Spielbibel (SPIEL.md)
@@ -151,13 +310,60 @@ Dieser Ordner gehört ausschließlich zum Spiel **{title}**. Nichts mit anderen 
 '''
 
 
-def create_game(title, vision='', genre='', style='', camera='', platform='', wishes='', summary='', engine='Unreal Engine 5', bible=None, extra=None):
-    name = safe_name(title)
-    root = GAMES / name
-    if root.exists():
-        raise SystemExit(f'Es gibt bereits einen Ordner „{name}“. Nichts überschrieben.')
-    for sub in STANDARD_DIRS:
-        (root / sub).mkdir(parents=True, exist_ok=True)
+def film_md(title, data):
+    lines = [f'# {title}', '', '> Filmbibel. Abschnitte mit „(offen)“ sind noch nicht ausgearbeitet – GAMEFORGE erfindet dort nichts.',
+             '> „Kanon & Vorgaben (verbindlich)“ wird nur nach ausdrücklicher Zustimmung geändert.', '']
+    for key, label in FILM_FIELDS:
+        lines += [f'## {label}', '', (data.get(key) or '').strip() or '(offen)', '']
+    return '\n'.join(lines)
+
+
+def project_folder(folder):
+    """Prüft den Ordner, den der Nutzer in Claude geöffnet hat. GAMEFORGE legt ihn nicht an."""
+    root = Path(folder or '.').resolve()
+    if not root.is_dir():
+        raise SystemExit(f'Ordner „{root}“ gibt es nicht. GAMEFORGE legt keine Projektordner an – bitte den Projektordner in Claude öffnen und dort erneut fragen.')
+    home = Path.home().resolve()
+    forbidden = {home, home / 'Desktop', home / 'Documents', home / 'Downloads', home / 'OneDrive', Path(root.anchor), HOME.resolve(), DATA.resolve()}
+    if root in forbidden:
+        raise SystemExit(f'„{root}“ ist ein allgemeiner Ordner (Benutzer-, Desktop- oder Systemordner) – dort nichts einrichten. '
+                         'Bitte einen vorhandenen Projektordner nennen: gf neu … --ordner "<Pfad>"')
+    if is_gameforge(root):
+        raise SystemExit(f'In „{root}“ gibt es bereits ein Projekt. Nichts überschrieben.')
+    if (root / 'CLAUDE.md').is_file() or list(root.glob('*.uproject')) or list(root.glob('*/*.uproject')):
+        raise SystemExit(f'„{root}“ hat schon eigene Projektregeln bzw. ein Unreal-Projekt. Dort gelten dessen Regeln – GAMEFORGE legt nichts an. '
+                         'Zum Mitverwalten: gf registrieren --pfad "<Ordner>" --typ spiel|film')
+    reg = {Path(x['path']).resolve() for x in external()}
+    for parent in list(root.parents)[:6]:     # nur echte Projekte zählen, keine lose CLAUDE.md
+        if is_gameforge(parent) or parent in reg or list(parent.glob('*.uproject')):
+            raise SystemExit(f'„{root}“ liegt innerhalb des Projekts „{parent.name}“. Kein Projekt im Projekt.')
+    return root
+
+
+def create_film(title, idea='', style='', length='', fmt='', basis='', folder='.'):
+    root = project_folder(folder)
+    meta = {'id': hashlib.sha256((root.name + now()).encode()).hexdigest()[:12], 'kind': 'film', 'title': title, 'status': 'Idee', 'version': 'v0.1',
+            'style': style, 'length': length, 'format': fmt, 'based_on': basis, 'engine': 'Unreal Engine 5 (Sequencer / Movie Render Queue)',
+            'created_at': now(), 'updated_at': now()}
+    write_json(root / 'film.json', meta)
+    (root / 'FILM.md').write_text(film_md(title, {'treatment': idea, 'edit': ('Ziellänge: ' + length) if length else ''}), encoding='utf-8')
+    if not (root / 'CLAUDE.md').exists():
+        (root / 'CLAUDE.md').write_text(f'''# Film: {title}
+
+Dieser Ordner gehört ausschließlich zum Film **{title}**{(' (basiert auf ' + basis + ')') if basis else ''}.
+- Verbindliche Filmbibel: `FILM.md` (Kanon nur nach ausdrücklicher Zustimmung ändern).
+- Stil: `art-direction.json`. Ehrlicher Stand: `gf stand "{title}"`.
+- Status nur mit Nachweis: geplant → gebaut → gerendert → geprüft → freigegeben.
+''', encoding='utf-8')
+    prof = art_direction.build_profile({'title': title, 'style': style or 'cinematic', 'genre': 'Film', 'camera': '', 'engine': 'Unreal Engine 5', 'bible': {'vision': idea}})
+    write_json(root / 'art-direction.json', {'profile': prof, 'source': 'automatisch', 'approved': False, 'updated_at': now()})
+    register(root, 'film', title)
+    return root
+
+
+def create_game(title, vision='', genre='', style='', camera='', platform='', wishes='', summary='', engine='Unreal Engine 5', bible=None, extra=None, folder='.'):
+    root = project_folder(folder)
+    name = root.name
     b = dict(bible or {})
     if vision and not b.get('vision'):
         b['vision'] = vision
@@ -171,31 +377,80 @@ def create_game(title, vision='', genre='', style='', camera='', platform='', wi
     meta.update(extra or {})
     write_json(root / 'spiel.json', meta)
     (root / 'SPIEL.md').write_text(bible_md(title, b), encoding='utf-8')
-    (root / 'CLAUDE.md').write_text(claude_md(title), encoding='utf-8')
+    if not (root / 'CLAUDE.md').exists():
+        (root / 'CLAUDE.md').write_text(claude_md(title), encoding='utf-8')
     prof = art_direction.build_profile({'title': title, 'style': style, 'genre': genre, 'camera': camera, 'engine': engine, 'bible': b})
     write_json(root / 'art-direction.json', {'profile': prof, 'source': 'automatisch', 'approved': False, 'updated_at': now()})
     write_json(root / 'aufgaben.json', [{'phase': p, 'title': t, 'acceptance': a, 'status': 'Offen', 'evidence': ''} for p, t, a in TASKS])
-    write_json(root / 'referenzen' / 'auftraege.json', [])
+    register(root, 'spiel', title)
     return root
 
 
 # ------------------------------------------------------------------ Befehle
 def cmd_neu(a):
-    root = create_game(a.titel, a.idee or '', a.genre or '', a.stil or '', a.perspektive or '', a.plattform or '', a.wuensche or '', a.kurz or '')
+    if a.typ == 'film':
+        had_md = (Path(a.ordner).resolve() / 'CLAUDE.md').exists()
+        root = create_film(a.titel, a.idee or '', a.stil or '', a.laenge or '', a.format or '', a.basis or '', a.ordner)
+        out(f'FILM EINGERICHTET im geöffneten Ordner: {root}')
+        out('Neu: FILM.md (Logline, Treatment, Drehbuch, Shotliste, Look, Ton …), film.json, art-direction.json' + ('' if had_md else ', CLAUDE.md') +
+            '. Keine Unterordner – sie entstehen erst, wenn wirklich etwas abgelegt wird.')
+        return
+    had_md = (Path(a.ordner).resolve() / 'CLAUDE.md').exists()
+    root = create_game(a.titel, a.idee or '', a.genre or '', a.stil or '', a.perspektive or '', a.plattform or '', a.wuensche or '', a.kurz or '', folder=a.ordner)
     prof = read_json(root / 'art-direction.json')['profile']
-    out(f'ANGELEGT: {root}')
+    out(f'SPIEL EINGERICHTET im geöffneten Ordner: {root}')
     out(f'Grafikstil erkannt: {prof["style_label"]} ({prof["style_reason"]}) · Qualität AUTO: {prof["quality_auto"]}')
-    out('Enthalten: SPIEL.md (Spielbibel), art-direction.json, aufgaben.json (21 Aufgaben), Ordner referenzen/blender/export/unreal/dlc/originale/versionen, CLAUDE.md.')
+    out('Neu: SPIEL.md (Spielbibel), spiel.json, art-direction.json, aufgaben.json (21 Aufgaben)' + ('' if had_md else ', CLAUDE.md') +
+        '. Keine Unterordner – sie entstehen erst, wenn wirklich etwas abgelegt wird.')
 
 
 def cmd_liste(a):
-    gs = games()
-    if not gs:
-        out(f'Noch keine Spiele in {GAMES}.')
+    ps = all_projects()
+    if not ps:
+        out('Noch keine Projekte bekannt. Projektordner in Claude öffnen und „neues Spiel“ bzw. „neuer Film“ sagen.')
         return
-    for g in gs:
-        m = read_json(g / 'spiel.json', {})
-        out(f'- {g.name} · {m.get("status", "?")} · {m.get("version", "")} · {m.get("style", "")}')
+    for name, kind, path, ext in ps:
+        m = read_json(path / ('spiel.json' if kind == 'spiel' else 'film.json'), {}) or {}
+        info = f'{m.get("status", "?")} · {m.get("version", "")}' if m else 'eigene Regeln (CLAUDE.md des Projekts)'
+        out(f'- {"🎮" if kind == "spiel" else "🎬"} {name} ({kind}) · {info} · {path}' + (' · extern vermerkt' if ext else ''))
+
+
+def cmd_erkennen(a):
+    d, kind, how = detect(a.pfad or '.')
+    if not d:
+        out('KEIN PROJEKT erkannt in diesem Ordner. Für Neues: „gf neu“ (Spiel) oder „gf neu --typ film“.')
+        return
+    rules = [x for x in ('CLAUDE.md', '.claude/agents', '.claude/settings.json', 'hooks') if (d / x).exists()]
+    out(f'PROJEKT: {d.name} · Typ: {kind} · erkannt als: {how} · Ordner: {d}')
+    out('Eigene Regeln vorhanden (haben Vorrang): ' + (', '.join(rules) if rules else 'keine'))
+
+
+def cmd_registrieren(a):
+    d = Path(a.pfad).resolve()
+    if not d.is_dir():
+        raise SystemExit('Ordner nicht gefunden.')
+    register(d, a.typ, a.titel or d.name, a.notiz or '')
+    out(f'VERMERKT: {a.titel or d.name} ({a.typ}) → {d}  (nur Verweis – im Projekt wurde nichts verändert)')
+
+
+def external_status(root):
+    """Nur lesender Überblick über ein eigenständiges Projekt."""
+    count = lambda pat: sum(1 for _ in root.rglob(pat)) if root.is_dir() else 0
+    up = list(root.glob('*.uproject')) + list(root.glob('*/*.uproject'))
+    branch = ''
+    try:
+        branch = subprocess.run(['git', '-C', str(root), 'branch', '--show-current'], capture_output=True, text=True, timeout=10).stdout.strip()
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+    lines = [f'# Stand: {root.name} (eigenständiges Projekt – nur gelesen)', '',
+             f'- Ordner: {root}' + (f' · Git-Zweig: {branch}' if branch else ''),
+             f'- Unreal-Projekt: {", ".join(p.name for p in up) or "keins"}',
+             f'- Unreal-Dateien (.umap / .uasset): {count("*.umap")} / {count("*.uasset")}',
+             f'- Blender-Dateien: {count("*.blend")} · FBX: {count("*.fbx")}',
+             f'- Videos (.mp4/.mov): {count("*.mp4") + count("*.mov")} · Audio (.wav): {count("*.wav")}',
+             f'- Eigene Regeln: ' + ', '.join(x for x in ('CLAUDE.md', '.claude', 'hooks') if (root / x).exists()), '',
+             'Die genauen Status-Regeln stehen in der CLAUDE.md des Projekts – sie haben Vorrang. Hier wurde nichts verändert.']
+    return '\n'.join(lines)
 
 
 def blend_ok(p):
@@ -234,8 +489,33 @@ def game_status(root):
             'uprojects': uprojects, 'uassets': uassets, 'tasks': tasks, 'builds': builds, 'dlcs': dlcs}
 
 
+def film_status(root):
+    sec = parse_md(root / 'FILM.md') if (root / 'FILM.md').is_file() else {}
+    labels = dict(FILM_FIELDS)
+    missing = [labels[k] for k in FILM_REQUIRED if not filled(sec.get(labels[k], ''))]
+    m = read_json(root / 'film.json', {})
+    count = lambda sub, *ext: sum(1 for p in (root / sub).rglob('*') if p.suffix.lower() in ext) if (root / sub).is_dir() else 0
+    lines = [f'# Stand: {root.name} (Film)', f'_Automatisch aus echten Dateien ermittelt am {dt.datetime.now().strftime("%d.%m.%Y %H:%M")}_', '',
+             f'- Status: {m.get("status")} · Version: {m.get("version")} · Ziellänge: {m.get("length") or "offen"}',
+             f'- Filmbibel: {len(FILM_REQUIRED) - len(missing)}/{len(FILM_REQUIRED)} Pflichtbereiche' + (f' – offen: {", ".join(missing)}' if missing else ''),
+             f'- Referenzen: {count("referenzen/freigegeben", ".png")} freigegeben, {count("referenzen/entwuerfe", ".png")} Entwürfe · Storyboard-Bilder: {count("storyboard", ".png", ".jpg")}',
+             f'- Unreal-Projekt: {"ja" if list((root / "unreal").rglob("*.uproject")) else "nein"} · Blender-Dateien: {count("blender", ".blend")}',
+             f'- Gerenderte Clips: {count("renders", ".mp4", ".mov", ".exr", ".png")} · Schnittdateien: {count("schnitt", ".mlt", ".otio", ".kdenlive")} · Ton: {count("ton", ".wav", ".flac")}',
+             f'- Fertige Fassungen in export/: {count("export", ".mp4", ".mov")}', '',
+             'Nur was als Datei nachgewiesen ist, gilt als gebaut bzw. gerendert.']
+    return '\n'.join(lines)
+
+
 def cmd_stand(a):
     root = find_game(a.spiel)
+    if not is_gameforge(root):
+        out(external_status(root))
+        return
+    if (root / 'film.json').is_file():
+        text = film_status(root)
+        (root / 'STAND.md').write_text(text + '\n', encoding='utf-8')
+        out(text)
+        return
     s = game_status(root)
     m = s['meta']
     t = s['tasks']
@@ -275,18 +555,22 @@ def cmd_system(a):
         out(f'Claude Code: gefunden · angemeldet: {"ja" if auth.get("loggedIn") else "NEIN – „claude auth login“ ausführen"}')
         r = subprocess.run([claude, 'mcp', 'list'], capture_output=True, text=True, timeout=90, errors='replace', stdin=subprocess.DEVNULL, cwd=str(GAMES) if GAMES.is_dir() else None)
         for line in r.stdout.splitlines():
-            if line.startswith(('blender:', 'unreal-mcp:')):
+            if line.startswith('blender:'):
                 out('MCP ' + line.split(':')[0] + ': ' + ('verbunden' if '✔' in line or '✓' in line else 'NICHT verbunden'))
         if 'blender:' not in r.stdout:
             out('MCP blender: nicht eingetragen (im Ordner GAMEFORGE Spiele)')
     else:
         out('Claude Code: NICHT gefunden')
     out(f'Blender-Programm erreichbar (MCP-Add-on, Port 9876): {"ja" if port_open(9876) else "nein – Blender öffnen, MCP-Add-on starten"}')
-    out(f'Unreal-Editor erreichbar (MCP, Port 8000): {"ja" if port_open(8000) else "nein – Unreal-Projekt öffnen, MCP-Plugin aktiv"}')
+    out(f'Unreal-MCP (nativ, 127.0.0.1:8000/mcp): {"läuft" if port_open(8000) else "aus – startet automatisch, sobald ein Unreal-Projekt im Editor offen ist"}')
+    wd = Path.home() / 'Documents' / 'Unreal Wachhund'
+    out('Unreal-Wachhund: ' + ('eingerichtet (' + str(wd) + ')' if wd.is_dir() else 'nicht gefunden'))
     b = shutil.which('blender') or next(iter(sorted(Path(os.environ.get('ProgramFiles', r'C:\Program Files'), 'Blender Foundation').glob('Blender*/blender.exe'), reverse=True)), None)
     out(f'Blender installiert: {b or "nein"}')
     ue = sorted(Path(os.environ.get('ProgramFiles', r'C:\Program Files'), 'Epic Games').glob('UE_*'))
     out('Unreal installiert: ' + (', '.join(p.name for p in ue) or 'nein'))
+    tm = sorted(Path(os.environ.get('ProgramFiles', r'C:\Program Files'), 'Epic Games').glob('Twinmotion*/Twinmotion/Binaries/Win64/TwinmotionCookedEditor-Win64-Shipping.exe'))
+    out('Twinmotion (Film-Vorvisualisierung, Bedienung von Hand): ' + (tm[-1].parents[3].name if tm else 'nicht installiert'))
     root = comfy.find_root(HOME)
     c = comfy.Comfy(HOME, HOME / 'engines' / 'logs')
     out(f'ComfyUI (lokale Bild-KI): {"installiert" if root else "NICHT installiert"}{" · läuft" if c.online() else ""}')
@@ -297,7 +581,7 @@ def cmd_system(a):
     g = hardware.gpu_status()
     for x in g.get('gpus', []):
         out(f'Grafikkarte: {x["name"]} · VRAM {x.get("vram_used_mb")}/{x.get("vram_total_mb")} MB belegt')
-    out(f'Spieleordner: {GAMES} ({len(games())} Spiele)')
+    out(f'Projekte: {len(all_projects())} bekannt (Projektordner = der in Claude geöffnete Ordner; GAMEFORGE legt keine an)')
 
 
 def ref_orders(root):
@@ -318,6 +602,7 @@ def _next_version(folder, view):
 
 
 def cmd_bild(a):
+    need_gameforge(find_game(a.spiel), 'Bilder ablegen')
     """Erzeugt Referenzbilder lokal über ComfyUI (127.0.0.1). Ein Bild nach dem anderen."""
     root = find_game(a.spiel)
     prof = read_json(root / 'art-direction.json')['profile']
@@ -332,7 +617,20 @@ def cmd_bild(a):
     out(f'Stil: {prof["style_label"]} · Qualität: {q} ({qp["label"]}) · Ansichten: {", ".join(views)}')
     if started:
         out('ComfyUI wird gestartet (nur lokal, 127.0.0.1) …')
-    c.start()
+    def _room():                                       # nur ComfyUIs eigene Modelle entladen, wenn dort nichts läuft
+        q_ = c.queue_state() or {}
+        return not q_.get('queue_running') and not q_.get('queue_pending') and c.free()
+    guard = _GpuGuard(f'bild:{root.name}/{a.asset}', 'comfy_flux2_klein', 7000, make_room=_room)
+    guard.__enter__()
+    try:
+        c.start()
+        _bild_views(a, root, prof, q, qp, views, asset_dir, c, post)
+    finally:
+        guard.__exit__(*sys.exc_info())
+    out('Alle Bilder brauchen deine Sichtprüfung (Anatomie, Design, Kanon). Freigeben mit: gf freigeben "<Spiel>" "<Bildpfad>"')
+
+
+def _bild_views(a, root, prof, q, qp, views, asset_dir, c, post):
     orders = ref_orders(root)
     for view in views:
         approved = root / 'referenzen' / 'freigegeben' / asset_dir / f'{view}.png'
@@ -365,7 +663,9 @@ def cmd_bild(a):
                 if not hist or hist['status'].get('status_str') == 'error':
                     msgs = [m for m in (hist or {}).get('status', {}).get('messages', []) if m[0] == 'execution_error']
                     err = msgs[0][1].get('exception_message', '') if msgs else 'keine Antwort'
-                    raise SystemExit(f'FEHLER bei {view}: {err[:400]}' + (' – Grafikspeicher reicht nicht, niedrigere Qualität wählen oder Unreal/Blender schließen.' if 'memory' in err.lower() else ''))
+                    if gc and gc.detect_oom(err):
+                        raise SystemExit(f'BLOCKIERT bei {view}: Grafikspeicher voll ({err[:200]}). Die Qualität wird NICHT automatisch gesenkt – Unreal/Blender speichern und schließen oder warten, dann erneut starten.')
+                    raise SystemExit(f'FEHLER bei {view}: {err[:400]}')
                 imgs = [im for o in hist.get('outputs', {}).values() for im in o.get('images', [])]
                 data = c.fetch_image(imgs[0]['filename'], imgs[0].get('subfolder', ''), imgs[0].get('type', 'output'))
                 target = folder / f'{view}_v{ver}.png'
@@ -386,10 +686,10 @@ def cmd_bild(a):
                 out('  Technische Prüfung nicht bestanden – neuer Versuch mit anderem Seed …' if attempt + 1 < qp['max_attempts'] else '  Technische Prüfung endgültig nicht bestanden.')
             orders = [o for o in orders if not (o['asset'] == a.asset and o['view'] == view)] + [{'asset': a.asset, 'type': a.art, 'view': view, 'details': a.details or '', 'state': 'Entwurf' if ok else 'Fehlerhaft', 'updated_at': now()}]
     write_json(root / 'referenzen' / 'auftraege.json', orders)
-    out('Alle Bilder brauchen deine Sichtprüfung (Anatomie, Design, Kanon). Freigeben mit: gf freigeben "<Spiel>" "<Bildpfad>"')
 
 
 def cmd_freigeben(a):
+    need_gameforge(find_game(a.spiel), 'Freigeben')
     root = find_game(a.spiel)
     src = (root / a.bild).resolve() if not Path(a.bild).is_absolute() else Path(a.bild).resolve()
     if root.resolve() not in src.parents or not src.is_file():
@@ -419,6 +719,7 @@ def cmd_freigeben(a):
 
 
 def cmd_blender_auftrag(a):
+    need_gameforge(find_game(a.spiel), 'Ein Blender-Auftrag')
     root = find_game(a.spiel)
     prof = read_json(root / 'art-direction.json')['profile']
     asset_dir = safe_name(a.asset)
@@ -480,22 +781,23 @@ def cmd_blender_test(a):
     b = shutil.which('blender') or next(iter(sorted(Path(os.environ.get('ProgramFiles', r'C:\Program Files'), 'Blender Foundation').glob('Blender*/blender.exe'), reverse=True)), None)
     if not b:
         raise SystemExit('Blender nicht gefunden.')
-    outdir = GAMES / '_Systemtest' / dt.datetime.now().strftime('%Y%m%d_%H%M%S')
+    outdir = DATA / 'tests' / ('blender_' + dt.datetime.now().strftime('%Y%m%d_%H%M%S'))
     outdir.mkdir(parents=True)
     script = outdir / 'test.py'; script.write_text(BLENDER_TEST, encoding='utf-8')
-    r = subprocess.run([str(b), '-b', '--factory-startup', '--python', str(script), '--', str(outdir)], capture_output=True, text=True, timeout=600, errors='replace', stdin=subprocess.DEVNULL)
+    with _GpuGuard('blender-test', 'blender_background', 1500):
+        r = subprocess.run([str(b), '-b', '--factory-startup', '--python', str(script), '--', str(outdir)], capture_output=True, text=True, timeout=600, errors='replace', stdin=subprocess.DEVNULL)
     m = re.search(r'GF_RESULT=(\{.*\})', r.stdout)
     ok = bool(m) and blend_ok(outdir / 'GF_TestCrate.blend') and fbx_ok(outdir / 'GF_TestCrate.fbx')
     out(('BESTANDEN' if ok else 'FEHLGESCHLAGEN') + f' – Blender-Hintergrundtest in {outdir}' + (f' · {json.loads(m.group(1))}' if m else '\n' + (r.stdout + r.stderr)[-1500:]))
 
 
 def cmd_dlc(a):
+    need_gameforge(find_game(a.spiel), 'Ein DLC')
     root = find_game(a.spiel)
     d = root / 'dlc' / safe_name(a.titel)
     if d.exists():
         raise SystemExit('DLC existiert bereits.')
-    for sub in ('referenzen/entwuerfe', 'referenzen/freigegeben', 'blender', 'export'):
-        (d / sub).mkdir(parents=True)
+    d.mkdir(parents=True)
     write_json(d / 'dlc.json', {'title': a.titel, 'base_game': root.name, 'requires_version': a.basisversion or read_json(root / 'spiel.json', {}).get('version'), 'status': 'Idee', 'created_at': now()})
     lines = [f'# DLC: {a.titel}', f'> Gehört zu {root.name}. Kanon des Hauptspiels gilt.', '']
     for _, label in DLC_FIELDS:
@@ -524,37 +826,41 @@ def cmd_sichern(a):
     BACKUPS.mkdir(parents=True, exist_ok=True)
     target = BACKUPS / f'{root.name}_{dt.datetime.now().strftime("%Y%m%d_%H%M%S")}.zip'
     n = zip_folder(root, target)
+    write_json(target.with_suffix('.json'), {'original_path': str(root), 'created_at': now()})
     out(f'GESICHERT: {target} ({n} Dateien, {target.stat().st_size // 1024} KB, geprüft)')
 
 
 def cmd_loeschen(a):
     root = find_game(a.spiel)
+    need_gameforge(root, 'Löschen')
     if a.bestaetigen != root.name:
         raise SystemExit(f'Zum Löschen muss --bestaetigen exakt „{root.name}“ lauten.')
     TRASH.mkdir(parents=True, exist_ok=True)
     target = TRASH / f'{root.name}_{dt.datetime.now().strftime("%Y%m%d_%H%M%S")}.zip'
     n = zip_folder(root, target)
+    write_json(target.with_suffix('.json'), {'original_path': str(root), 'created_at': now()})
     shutil.rmtree(root)
     out(f'IN DEN PAPIERKORB: {target} ({n} Dateien geprüft gesichert). Wiederherstellen: gf wiederherstellen "{target.name}"')
 
 
 def cmd_wiederherstellen(a):
-    p = TRASH / Path(a.datei).name
-    if not p.is_file():
-        p = BACKUPS / Path(a.datei).name
-    if not p.is_file():
+    p = next((d / Path(a.datei).name for d in (TRASH, BACKUPS, LEGACY_TRASH, LEGACY_BACKUPS) if (d / Path(a.datei).name).is_file()), None)
+    if not p:
         raise SystemExit('Datei weder im Papierkorb noch bei den Sicherungen gefunden.')
+    orig = (read_json(p.with_suffix('.json'), {}) or {}).get('original_path')
     with zipfile.ZipFile(p) as z:
         names = z.namelist()
         top = {n.split('/')[0] for n in names}
         if len(top) != 1 or any('..' in n.split('/') or n.startswith('/') or ':' in n for n in names):
             raise SystemExit('Unerwarteter Inhalt – Wiederherstellung abgebrochen.')
-        dest = GAMES / top.pop()
+        top_name = top.pop()
+        base = Path(a.ziel).resolve() if a.ziel else (Path(orig).parent if orig else None)
+        if not base or not base.is_dir():
+            raise SystemExit('Wohin? Bitte mit --ziel einen vorhandenen Ordner angeben (GAMEFORGE legt keine Ordner an).')
+        dest = base / top_name
         if dest.exists():
-            raise SystemExit(f'„{dest.name}“ existiert bereits – nichts überschrieben. Vorher umbenennen.')
-        z.extractall(GAMES)
-    for sub in STANDARD_DIRS:
-        (dest / sub).mkdir(parents=True, exist_ok=True)
+            raise SystemExit(f'„{dest}“ existiert bereits – nichts überschrieben. Vorher umbenennen.')
+        z.extractall(base)
     out(f'WIEDERHERGESTELLT: {dest}')
 
 
@@ -587,10 +893,17 @@ def cmd_migrieren(a):
     con = sqlite3.connect(f'file:{db}?mode=ro', uri=True)
     con.row_factory = sqlite3.Row
     base = db.parent
+    ziel = Path(a.ziel).resolve()
+    if not ziel.is_dir():
+        raise SystemExit('Zielordner gibt es nicht – GAMEFORGE legt keine Ordner an.')
     for g in con.execute('SELECT * FROM games'):
         bible = json.loads(g['bible'] or '{}')
+        folder = ziel / safe_name(g['title'])
+        if not folder.is_dir():
+            out(f'ÜBERSPRUNGEN {g["title"]}: Ordner {folder} fehlt (bitte selbst anlegen).')
+            continue
         try:
-            root = create_game(g['title'], genre=g['genre'], style=g['style'], camera=g['camera'], summary=g['summary'], engine=g['engine'], bible=bible,
+            root = create_game(g['title'], folder=folder, genre=g['genre'], style=g['style'], camera=g['camera'], summary=g['summary'], engine=g['engine'], bible=bible,
                                extra={'status': g['status'], 'version': g['version'], 'migrated_from': f'GAMEFORGE-Datenbank ({g["id"]})'})
         except SystemExit as e:
             out(f'ÜBERSPRUNGEN {g["title"]}: {e}')
@@ -633,15 +946,120 @@ def cmd_migrieren(a):
     out('Die alte Datenbank wurde nur gelesen, nicht verändert.')
 
 
+def cmd_gpu(a):
+    if not gc:
+        raise SystemExit('GPU-Wächter (gameforge_core) nicht gefunden.')
+    out(gc.status_text())
+
+
+def cmd_jobs(a):
+    if not gjobs:
+        raise SystemExit('Auftragskern (gameforge_core) nicht gefunden.')
+    if a.aktion == 'liste':
+        rows = gjobs.listing(a.projekt)
+        if not rows:
+            out('Keine Aufträge in der Warteschlange.')
+        for r in rows:
+            out(f'#{r["id"]} {r["status"]:<12} {r["project"]} · {r["title"]}' + (f' – {r["reason"]}' if r['reason'] else ''))
+    elif a.aktion == 'arbeiten':
+        n = gjobs.recover()
+        if n:
+            out(f'{n} abgebrochene Aufträge wieder eingereiht.')
+        gjobs.work('gf', on_wait=lambda m: out('WARTET – ' + m), on_done=lambda r: out(f'#{r["id"]} → {r["status"]}' + (f' ({r["reason"]})' if r['reason'] else '')), max_idle_s=a.leerlauf)
+    elif a.aktion in ('abbrechen', 'erneut'):
+        if not a.id:
+            raise SystemExit('Bitte Auftragsnummer angeben, z. B. gf jobs abbrechen 3')
+        if not gjobs.get(a.id):
+            raise SystemExit(f'Auftrag #{a.id} nicht gefunden.')
+        try:
+            (gjobs.cancel if a.aktion == 'abbrechen' else gjobs.retry)(a.id)
+        except ValueError as e:
+            raise SystemExit(str(e))
+        out(f'#{a.id} → {gjobs.get(a.id)["status"]}')
+
+
+UE_EDITOR_ONLY = ['PythonScriptPlugin', 'EditorScriptingUtilities', 'ModelContextProtocol', 'ToolsetRegistry', 'EditorToolset', 'AllToolsets', 'VibeUE']
+UE_RUNTIME = ['PCG', 'Niagara', 'Metasound', 'MovieRenderPipeline']
+UE_SETUP = 'py "C:/Users/manue/Documents/Unreal Projects/_Claude-Standard/claude_unreal_standard.py"'
+
+
+def cmd_unreal_pruefen(a):
+    """Prüft (nur lesend), ob ein Unreal-Projekt dem Standard entspricht: Pflicht-Plugins aktiv."""
+    base = Path(a.pfad).resolve()
+    ups = [base] if base.suffix == '.uproject' else sorted(base.glob('*.uproject')) + sorted(base.glob('*/*.uproject')) + sorted(base.glob('unreal/*/*.uproject'))
+    if not ups:
+        raise SystemExit(f'Kein Unreal-Projekt (.uproject) gefunden in {base}.')
+    for up in ups:
+        try:
+            data = json.loads(up.read_text(encoding='utf-8-sig'))
+        except (OSError, ValueError) as e:
+            out(f'FEHLER {up}: {e}')
+            continue
+        on = {x['Name'] for x in data.get('Plugins', []) if x.get('Enabled')}
+        missing = [n for n in UE_EDITOR_ONLY + UE_RUNTIME if n not in on]
+        out(f'{"STANDARD OK" if not missing else "UNVOLLSTÄNDIG"}: {up} · Engine {data.get("EngineAssociation", "?")}')
+        if missing:
+            out('  Fehlende Pflicht-Plugins: ' + ', '.join(missing))
+            out(f'  Einrichten (im offenen Editor, danach Neustart): {UE_SETUP}')
+
+
+def cmd_twinmotion(a):
+    """Twinmotion-Brücke (Vorvisualisierung): Python erledigt alles außerhalb, Klicks macht die Computersteuerung."""
+    if a.aktion == 'status':
+        exe = twinmotion.find_exe()
+        out('Twinmotion: ' + (str(exe) if exe else 'nicht installiert'))
+        out('Läuft: ' + (', '.join(map(str, twinmotion.running())) or 'nein'))
+        if gc:
+            apps = [x['app'] for x in gc.gpu_apps()]
+            if 'Unreal Editor' in apps:
+                out('ACHTUNG: Unreal Editor ist offen – zusammen mit Twinmotion reicht der Grafikspeicher oft nicht, und Unreal holt sich den Vordergrund. Vorher speichern und schließen lassen.')
+            out(gc.status_text().splitlines()[1])
+        return
+    if a.aktion == 'start':
+        if gc:
+            ok, why, _ = gc.preflight('heavy', gc.estimate_need('twinmotion', 4000))
+            if not ok:
+                raise SystemExit('BLOCKIERT – ' + why)
+        out('Twinmotion gestartet.' if twinmotion.start() else 'Twinmotion läuft bereits.')
+        return
+    root = find_game(a.projekt)
+    if a.aktion == 'vorbereiten':
+        need_gameforge(root, 'Twinmotion-Vorbereitung')
+        asset_dir = safe_name(a.asset)
+        src = Path(a.datei) if a.datei else root / 'export' / asset_dir / f'{asset_dir}.fbx'
+        if not src.is_file():
+            raise SystemExit(f'Quelldatei fehlt: {src} – zuerst in Blender exportieren (Skill blender-asset) oder --datei angeben.')
+        d, order = twinmotion.prepare(root, asset_dir, src, video_seconds=a.sekunden)
+        out(f'VORBEREITET: {d}')
+        out(f'Import-Datei (fester Name, für Neu-Import): {order["twinmotion_import"]}')
+        out(f'Shots: {", ".join(x["name"] for x in order["shots"])} · Looks: {", ".join(order["looks"])} · Video {a.sekunden} s')
+        out('Nächster Schritt: Twinmotion per Computersteuerung bedienen (Klickweg steht in TWINMOTION_AUFTRAG.json).')
+    elif a.aktion == 'pruefen':
+        folder = root / 'twinmotion' / (safe_name(a.asset) if a.asset else '')
+        res = twinmotion.check_outputs(folder, gc.media_info if gc else (lambda p: None))
+        if not res:
+            out(f'KEINE EXPORTE gefunden in {folder} – in Twinmotion ist noch nichts nachweisbar exportiert.')
+        for r in res:
+            i = r['info'] or {}
+            out(('OK    ' if r['ok'] else 'FEHLT ') + f'{r["datei"]} · {i.get("width")}×{i.get("height")}' + (f' · {i["fps"]} fps' if i.get('fps') else '') + f' · {r["bytes"] // 1024} KB')
+        if res:
+            write_json(folder / 'PRUEFUNG.json', {'geprueft_am': now(), 'ergebnisse': res})
+
+
 def main(argv=None):
     for stream in (sys.stdout, sys.stderr):
         if stream.encoding and stream.encoding.lower() not in ('utf-8', 'utf8'):
             stream.reconfigure(encoding='utf-8')
     p = argparse.ArgumentParser(prog='gf', description='GAMEFORGE-Werkzeug')
     sp = p.add_subparsers(dest='cmd', required=True)
-    x = sp.add_parser('neu'); x.add_argument('--titel', required=True); x.add_argument('--idee'); x.add_argument('--genre'); x.add_argument('--stil')
-    x.add_argument('--perspektive'); x.add_argument('--plattform'); x.add_argument('--wuensche'); x.add_argument('--kurz'); x.set_defaults(f=cmd_neu)
+    x = sp.add_parser('neu'); x.add_argument('--titel', required=True); x.add_argument('--typ', default='spiel', choices=['spiel', 'film'])
+    x.add_argument('--laenge'); x.add_argument('--format'); x.add_argument('--basis'); x.add_argument('--idee'); x.add_argument('--genre'); x.add_argument('--stil')
+    x.add_argument('--perspektive'); x.add_argument('--plattform'); x.add_argument('--wuensche'); x.add_argument('--kurz')
+    x.add_argument('--ordner', default='.', help='Projektordner (Standard: der in Claude geöffnete Ordner)'); x.set_defaults(f=cmd_neu)
     sp.add_parser('liste').set_defaults(f=cmd_liste)
+    x = sp.add_parser('erkennen'); x.add_argument('pfad', nargs='?', default='.'); x.set_defaults(f=cmd_erkennen)
+    x = sp.add_parser('registrieren'); x.add_argument('--pfad', required=True); x.add_argument('--typ', required=True, choices=['spiel', 'film'])
+    x.add_argument('--titel'); x.add_argument('--notiz'); x.set_defaults(f=cmd_registrieren)
     x = sp.add_parser('stand'); x.add_argument('spiel'); x.set_defaults(f=cmd_stand)
     sp.add_parser('system').set_defaults(f=cmd_system)
     x = sp.add_parser('prompt'); x.add_argument('spiel'); x.add_argument('--asset', required=True); x.add_argument('--art', default='character', choices=list(VIEWS))
@@ -657,9 +1075,15 @@ def main(argv=None):
     x = sp.add_parser('dlc'); x.add_argument('spiel'); x.add_argument('--titel', required=True); x.add_argument('--idee'); x.add_argument('--basisversion'); x.set_defaults(f=cmd_dlc)
     x = sp.add_parser('sichern'); x.add_argument('spiel'); x.set_defaults(f=cmd_sichern)
     x = sp.add_parser('loeschen'); x.add_argument('spiel'); x.add_argument('--bestaetigen', required=True); x.set_defaults(f=cmd_loeschen)
-    x = sp.add_parser('wiederherstellen'); x.add_argument('datei'); x.set_defaults(f=cmd_wiederherstellen)
+    x = sp.add_parser('wiederherstellen'); x.add_argument('datei'); x.add_argument('--ziel'); x.set_defaults(f=cmd_wiederherstellen)
     x = sp.add_parser('comfy'); x.add_argument('aktion', choices=['start', 'stop', 'status']); x.set_defaults(f=cmd_comfy)
-    x = sp.add_parser('migrieren'); x.add_argument('--db', required=True); x.set_defaults(f=cmd_migrieren)
+    sp.add_parser('gpu').set_defaults(f=cmd_gpu)
+    x = sp.add_parser('unreal-pruefen'); x.add_argument('pfad', nargs='?', default='.'); x.set_defaults(f=cmd_unreal_pruefen)
+    x = sp.add_parser('twinmotion'); x.add_argument('aktion', choices=['status', 'start', 'vorbereiten', 'pruefen']); x.add_argument('projekt', nargs='?', default='.')
+    x.add_argument('--asset'); x.add_argument('--datei'); x.add_argument('--sekunden', type=int, default=5); x.set_defaults(f=cmd_twinmotion)
+    x = sp.add_parser('jobs'); x.add_argument('aktion', nargs='?', default='liste', choices=['liste', 'arbeiten', 'abbrechen', 'erneut'])
+    x.add_argument('id', nargs='?', type=int); x.add_argument('--projekt'); x.add_argument('--leerlauf', type=int, default=5); x.set_defaults(f=cmd_jobs)
+    x = sp.add_parser('migrieren'); x.add_argument('--db', required=True); x.add_argument('--ziel', required=True); x.set_defaults(f=cmd_migrieren)
     a = p.parse_args(argv)
     a.f(a)
 

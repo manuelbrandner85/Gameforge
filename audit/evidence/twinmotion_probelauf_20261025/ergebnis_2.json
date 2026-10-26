@@ -1,0 +1,39 @@
+{
+  "datum": "2026-10-25 22:05-22:11",
+  "bedingung": "Unreal vom Nutzer geschlossen (später von der GENESIS-Sitzung für Editor-Tests wieder gestartet)",
+  "schritte": [
+    {
+      "schritt": "gf twinmotion vorbereiten (Python)",
+      "ok": true
+    },
+    {
+      "schritt": "Twinmotion: neue Szene + FBX-Import per Computersteuerung",
+      "ok": true
+    },
+    {
+      "schritt": "Bild anlegen + Export (Ordner per Doppelklick ansteuern; Tippen im Ordnerfeld ist gesperrt)",
+      "ok": true,
+      "beleg": "twinmotion/Testobjekt/export/Image1.png · 1920×1080 · 2,1 MB · per gf twinmotion pruefen bestätigt, Bild visuell geprüft"
+    },
+    {
+      "schritt": "Modell in Blender geändert (Kugel dazu), Datei unter gleichem Namen ersetzt (Python)",
+      "ok": true
+    },
+    {
+      "schritt": "Neu-Import über das ⟳-Symbol am Import",
+      "ok": false,
+      "grund": "Klick ohne sichtbare Wirkung; Szenenbaum zeigt weiterhin nur „Kiste“"
+    },
+    {
+      "schritt": "Ausweich: erneuter Import",
+      "ok": false,
+      "grund": "Import-Knopf reagierte nicht mehr; parallel startete die GENESIS-Sitzung Unreal (Editor-Tests)"
+    },
+    {
+      "schritt": "Video",
+      "ok": false,
+      "grund": "nicht erreicht"
+    }
+  ],
+  "ergebnis": "TEILWEISE: Import und Bild-Export funktionieren nachweisbar; Neu-Import und Video nicht nachgewiesen"
+}

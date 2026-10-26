@@ -1,0 +1,11 @@
+{
+  "success": true,
+  "error": null,
+  "files": [
+    "C:\\Users\\manue\\Desktop\\GAMEFORGE_GODMODE_v2_0\\audit\\evidence\\smoke_gpu_20261025_203917\\ace_step\\9814f7dd-200f-edfe-0c81-45cc9f9da345.wav"
+  ],
+  "init_s": 14.4,
+  "generate_s": 19.7,
+  "max_vram_gb": 7.29,
+  "model": "ACE-Step/Ace-Step1.5 acestep-v15-turbo, seed 2026"
+}

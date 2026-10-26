@@ -1,0 +1,17 @@
+{
+  "nvidia_smi": {
+    "path": "C:\\WINDOWS\\system32\\nvidia-smi.EXE",
+    "version_line": [
+      "NVIDIA-SMI version  : 630.20",
+      "NVML version        : 630.20"
+    ]
+  },
+  "measure_source": "nvidia-smi",
+  "process_probe": "PowerShell Win32_Process (nur lesen)",
+  "apps_detected": [
+    "Unreal Editor"
+  ],
+  "lock_file": "C:\\Users\\manue\\Desktop\\GAMEFORGE_GODMODE_v2_0\\GAMEFORGE_DATA\\locks\\gpu.lock",
+  "compatible_with": "gameforge_core/gpu_lock.py (Phase 0)",
+  "kills_processes": false
+}

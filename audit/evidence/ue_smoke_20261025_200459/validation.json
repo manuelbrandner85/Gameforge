@@ -1,0 +1,26 @@
+{
+ "project": "C:\\Users\\manue\\Desktop\\GAMEFORGE_GODMODE_v2_0\\projects\\_smoke\\UE_Smoke\\UE_Smoke.uproject",
+ "setup": {
+  "exit": 4294967295,
+  "sec": 10,
+  "result": null
+ },
+ "render": {
+  "exit": 3,
+  "sec": 35,
+  "frames": 0,
+  "distinct": 0,
+  "finished": false
+ },
+ "package": {
+  "exit": 1,
+  "sec": 5,
+  "exe": [],
+  "ok": false,
+  "tail": [
+   "AutomationTool exiting with ExitCode=1 (Error_Unknown)",
+   "BUILD FAILED"
+  ]
+ },
+ "ok": false
+}

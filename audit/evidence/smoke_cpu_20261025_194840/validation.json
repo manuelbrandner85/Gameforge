@@ -1,0 +1,93 @@
+{
+ "timestamp": "20261025_194840",
+ "out": "C:\\Users\\manue\\Desktop\\GAMEFORGE_GODMODE_v2_0\\audit\\evidence\\smoke_cpu_20261025_194840",
+ "results": {
+  "blender": {
+   "status": "getestet",
+   "evidence": {
+    "exit": 0,
+    "files": {
+     "bl_smoke.blend": true,
+     "bl_smoke.glb": true,
+     "bl_smoke.fbx": true,
+     "bl_render.png": true
+    },
+    "glb_magic": true,
+    "cube_dims_m": [
+     1.0,
+     1.0,
+     1.0
+    ]
+   }
+  },
+  "ffmpeg_ffprobe": {
+   "status": "getestet",
+   "evidence": {
+    "exit": 0,
+    "codecs": [
+     "prores",
+     "pcm_s24le"
+    ],
+    "duration_s": "2.000000"
+   }
+  },
+  "mlt_melt": {
+   "status": "getestet",
+   "evidence": {
+    "exit": 0,
+    "frames": 96,
+    "expected_frames": 96,
+    "duration_s": "4.010000",
+    "cut_frames_differ": true,
+    "note": "melt muss mit Arbeitsordner Kdenlive\\bin laufen (DLL-Suche)"
+   }
+  },
+  "krita": {
+   "status": "getestet",
+   "evidence": {
+    "exit": 0,
+    "png": true
+   }
+  },
+  "piper_tts": {
+   "status": "getestet",
+   "evidence": {
+    "exit": 0,
+    "voice": "de_DE-thorsten-high",
+    "wav": {
+     "programs": [],
+     "stream_groups": [],
+     "streams": [
+      {
+       "codec_name": "pcm_s16le",
+       "sample_rate": "22050",
+       "r_frame_rate": "0/0"
+      }
+     ],
+     "format": {
+      "duration": "2.333605"
+     }
+    }
+   }
+  },
+  "faster_whisper": {
+   "status": "getestet",
+   "evidence": {
+    "exit": 0,
+    "heard": "Dies ist ein Test der deutschen Sprachausgabe.",
+    "word_match": 1.0
+   }
+  },
+  "audio_cleanup_ffmpeg": {
+   "status": "getestet",
+   "evidence": {
+    "exit": 0,
+    "integrated_lufs": -23.0,
+    "true_peak_dbfs": -5.2,
+    "target": "-23 LUFS / -2 dBTP"
+   }
+  }
+ },
+ "passed": 7,
+ "total": 7
+}

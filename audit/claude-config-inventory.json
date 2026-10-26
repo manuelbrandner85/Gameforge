@@ -1,0 +1,682 @@
+{
+ "timestamp": "2026-10-25T19:46:34",
+ "claude_config_dir": "(nicht gesetzt: ~/.claude)",
+ "scopes": {
+  "user": {
+   "base": "C:\\Users\\manue",
+   "claude_md": false,
+   "settings.json": {
+    "path": "C:\\Users\\manue\\.claude\\settings.json",
+    "valid_json": true,
+    "keys": [
+     "agentPushNotifEnabled",
+     "autoMode",
+     "autoUpdatesChannel",
+     "enabledPlugins",
+     "extraKnownMarketplaces",
+     "inputNeededNotifEnabled",
+     "pluginConfigs",
+     "theme"
+    ],
+    "hooks": [],
+    "permissions": {
+     "allow": 0,
+     "deny": 0,
+     "defaultMode": null
+    }
+   },
+   "agents": [],
+   "skills": [
+    {
+     "dir": "maximum-realism-visual-fidelity",
+     "name": "maximum-realism-visual-fidelity",
+     "error": null
+    },
+    {
+     "dir": "reverse-engineer-anything",
+     "name": "reverse-engineer-anything",
+     "error": null
+    }
+   ],
+   "mcp_json": false
+  },
+  "desktop": {
+   "base": "C:\\Users\\manue\\Desktop",
+   "claude_md": false,
+   "agents": [],
+   "skills": [],
+   "mcp_json": false
+  },
+  "genesis_game": {
+   "base": "C:\\Users\\manue\\Desktop\\Genesis-Games",
+   "claude_md": true,
+   "settings.json": {
+    "path": "C:\\Users\\manue\\Desktop\\Genesis-Games\\.claude\\settings.json",
+    "valid_json": true,
+    "keys": [
+     "hooks"
+    ],
+    "hooks": [
+     {
+      "event": "PreToolUse",
+      "matcher": "Bash|Write|Edit|MultiEdit|NotebookEdit",
+      "timeout": 10,
+      "script": [
+       "${CLAUDE_PROJECT_DIR}/tools/v4/hooks/claude_pretool_guard.py"
+      ]
+     },
+     {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "timeout": 10,
+      "script": [
+       "${CLAUDE_PROJECT_DIR}/tools/v4_1/hooks/free_ai_pretool_guard.py"
+      ]
+     }
+    ],
+    "permissions": {
+     "allow": 0,
+     "deny": 0,
+     "defaultMode": null
+    }
+   },
+   "agents": [
+    {
+     "file": "genesis-asset-licensing.md",
+     "name": "genesis-asset-licensing",
+     "has_description": true,
+     "error": null
+    },
+    {
+     "file": "genesis-audio-director.md",
+     "name": "genesis-audio-director",
+     "has_description": true,
+     "error": null
+    },
+    {
+     "file": "genesis-character-artist.md",
+     "name": "genesis-character-artist",
+     "has_description": true,
+     "error": null
+    },
+    {
+     "file": "genesis-cinematic-director.md",
+     "name": "genesis-cinematic-director",
+     "has_description": true,
+     "error": null
+    },
+    {
+     "file": "genesis-environment-artist.md",
+     "name": "genesis-environment-artist",
+     "has_description": true,
+     "error": null
+    },
+    {
+     "file": "genesis-face-voice-sync.md",
+     "name": "genesis-face-voice-sync",
+     "has_description": true,
+     "error": null
+    },
+    {
+     "file": "genesis-life-soul-rebirth.md",
+     "name": "genesis-life-soul-rebirth",
+     "has_description": true,
+     "error": null
+    },
+    {
+     "file": "genesis-master-director.md",
+     "name": "genesis-master-director",
+     "has_description": true,
+     "error": null
+    },
+    {
+     "file": "genesis-mission-events.md",
+     "name": "genesis-mission-events",
+     "has_description": true,
+     "error": null
+    },
+    {
+     "file": "genesis-motion-specialist.md",
+     "name": "genesis-motion-specialist",
+     "has_description": true,
+     "error": null
+    },
+    {
+     "file": "genesis-npc-intelligence.md",
+     "name": "genesis-npc-intelligence",
+     "has_description": true,
+     "error": null
+    },
+    {
+     "file": "genesis-open-world.md",
+     "name": "genesis-open-world",
+     "has_description": true,
+     "error": null
+    },
+    {
+     "file": "genesis-pbr-specialist.md",
+     "name": "genesis-pbr-specialist",
+     "has_description": true,
+     "error": null
+    },
+    {
+     "file": "genesis-performance-specialist.md",
+     "name": "genesis-performance-specialist",
+     "has_description": true,
+     "error": null
+    },
+    {
+     "file": "genesis-production-planner.md",
+     "name": "genesis-production-planner",
+     "has_description": true,
+     "error": null
+    },
+    {
+     "file": "genesis-qa-release.md",
+     "name": "genesis-qa-release",
+     "has_description": true,
+     "error": null
+    },
+    {
+     "file": "genesis-reference-director.md",
+     "name": "genesis-reference-director",
+     "has_description": true,
+     "error": null
+    },
+    {
+     "file": "genesis-rigging-specialist.md",
+     "name": "genesis-rigging-specialist",
+     "has_description": true,
+     "error": null
+    },
+    {
+     "file": "genesis-script-guardian.md",
+     "name": "genesis-script-guardian",
+     "has_description": true,
+     "error": null
+    },
+    {
+     "file": "genesis-society-economy.md",
+     "name": "genesis-society-economy",
+     "has_description": true,
+     "error": null
+    },
+    {
+     "file": "genesis-tool-integration.md",
+     "name": "genesis-tool-integration",
+     "has_description": true,
+     "error": null
+    },
+    {
+     "file": "genesis-ui-accessibility.md",
+     "name": "genesis-ui-accessibility",
+     "has_description": true,
+     "error": null
+    },
+    {
+     "file": "genesis-unreal-core.md",
+     "name": "genesis-unreal-core",
+     "has_description": true,
+     "error": null
+    },
+    {
+     "file": "genesis-vehicles-travel.md",
+     "name": "genesis-vehicles-travel",
+     "has_description": true,
+     "error": null
+    }
+   ],
+   "skills": [
+    {
+     "dir": "genesis-agent-map",
+     "name": "genesis-agent-map",
+     "error": null
+    },
+    {
+     "dir": "genesis-audit",
+     "name": "genesis-audit",
+     "error": null
+    },
+    {
+     "dir": "genesis-blender",
+     "name": "genesis-blender",
+     "error": null
+    },
+    {
+     "dir": "genesis-character",
+     "name": "genesis-character",
+     "error": null
+    },
+    {
+     "dir": "genesis-cinematics",
+     "name": "genesis-cinematics",
+     "error": null
+    },
+    {
+     "dir": "genesis-free-ai-3d",
+     "name": "genesis-free-ai-3d",
+     "error": null
+    },
+    {
+     "dir": "genesis-free-ai-approval",
+     "name": "genesis-free-ai-approval",
+     "error": null
+    },
+    {
+     "dir": "genesis-free-ai-license",
+     "name": "genesis-free-ai-license",
+     "error": null
+    },
+    {
+     "dir": "genesis-free-ai-music",
+     "name": "genesis-free-ai-music",
+     "error": null
+    },
+    {
+     "dir": "genesis-free-ai-preflight",
+     "name": "genesis-free-ai-preflight",
+     "error": null
+    },
+    {
+     "dir": "genesis-free-ai-references",
+     "name": "genesis-free-ai-references",
+     "error": null
+    },
+    {
+     "dir": "genesis-free-ai-register",
+     "name": "genesis-free-ai-register",
+     "error": null
+    },
+    {
+     "dir": "genesis-free-ai-voice",
+     "name": "genesis-free-ai-voice",
+     "error": null
+    },
+    {
+     "dir": "genesis-gameplay-feel",
+     "name": "genesis-gameplay-feel",
+     "error": null
+    },
+    {
+     "dir": "genesis-gold-slice",
+     "name": "genesis-gold-slice",
+     "error": null
+    },
+    {
+     "dir": "genesis-living-world",
+     "name": "genesis-living-world",
+     "error": null
+    },
+    {
+     "dir": "genesis-missions",
+     "name": "genesis-missions",
+     "error": null
+    },
+    {
+     "dir": "genesis-physics",
+     "name": "genesis-physics",
+     "error": null
+    },
+    {
+     "dir": "genesis-playtest",
+     "name": "genesis-playtest",
+     "error": null
+    },
+    {
+     "dir": "genesis-qa",
+     "name": "genesis-qa",
+     "error": null
+    },
+    {
+     "dir": "genesis-rebirth-check",
+     "name": "genesis-rebirth-check",
+     "error": null
+    },
+    {
+     "dir": "genesis-reference",
+     "name": "genesis-reference",
+     "error": null
+    },
+    {
+     "dir": "genesis-release-gate",
+     "name": "genesis-release-gate",
+     "error": null
+    },
+    {
+     "dir": "genesis-status",
+     "name": "genesis-status",
+     "error": null
+    },
+    {
+     "dir": "genesis-unreal",
+     "name": "genesis-unreal",
+     "error": null
+    },
+    {
+     "dir": "genesis-v4-2-audio",
+     "name": "genesis-v4-2-audio",
+     "error": null
+    },
+    {
+     "dir": "genesis-v4-2-cinematic",
+     "name": "genesis-v4-2-cinematic",
+     "error": null
+    },
+    {
+     "dir": "genesis-v4-2-handoff",
+     "name": "genesis-v4-2-handoff",
+     "error": null
+    },
+    {
+     "dir": "genesis-v4-2-menu",
+     "name": "genesis-v4-2-menu",
+     "error": null
+    },
+    {
+     "dir": "genesis-v4-2-qa",
+     "name": "genesis-v4-2-qa",
+     "error": null
+    },
+    {
+     "dir": "genesis-v4-blender-unreal-smoke",
+     "name": "genesis-v4-blender-unreal-smoke",
+     "error": null
+    },
+    {
+     "dir": "genesis-v4-canon-lock",
+     "name": "genesis-v4-canon-lock",
+     "error": null
+    },
+    {
+     "dir": "genesis-v4-gold-slice",
+     "name": "genesis-v4-gold-slice",
+     "error": null
+    },
+    {
+     "dir": "genesis-v4-newgame",
+     "name": "genesis-v4-newgame",
+     "error": null
+    },
+    {
+     "dir": "genesis-v4-story-audit",
+     "name": "genesis-v4-story-audit",
+     "error": null
+    },
+    {
+     "dir": "genesis-visual-review",
+     "name": "genesis-visual-review",
+     "error": null
+    }
+   ],
+   "mcp_json": false
+  },
+  "gameforge": {
+   "base": "C:\\Users\\manue\\Desktop\\GAMEFORGE_GODMODE_v2_0",
+   "claude_md": false,
+   "agents": [],
+   "skills": [],
+   "mcp_json": false
+  },
+  "genesis_trailer": {
+   "base": "C:\\Users\\manue\\Desktop\\GENESIS_CINEMA_TRAILER",
+   "claude_md": true,
+   "agents": [],
+   "skills": [],
+   "mcp_json": false
+  },
+  "aion_game": {
+   "base": "C:\\Users\\manue\\Desktop\\Aion-Game",
+   "claude_md": false,
+   "agents": [],
+   "skills": [],
+   "mcp_json": false
+  },
+  "aion_v21": {
+   "base": "C:\\Users\\manue\\Desktop\\AION_2026_V21",
+   "claude_md": true,
+   "agents": [],
+   "skills": [],
+   "mcp_json": false
+  }
+ },
+ "plugins": {
+  "vecom-analyse@vecom-mods": {
+   "version": "0.1.0",
+   "enabled": false,
+   "agents": [],
+   "skills": [],
+   "hooks": true,
+   "mcp_json": false
+  },
+  "vecom-3d@vecom-mods": {
+   "version": "0.1.0",
+   "enabled": false,
+   "agents": [],
+   "skills": [],
+   "hooks": true,
+   "mcp_json": false
+  },
+  "gameforge@gameforge-lokal": {
+   "version": "3.0.0",
+   "enabled": true,
+   "agents": [
+    {
+     "file": "animation-rigging.md",
+     "name": "animation-rigging",
+     "error": null
+    },
+    {
+     "file": "blender-3d.md",
+     "name": "blender-3d",
+     "error": null
+    },
+    {
+     "file": "character-boss.md",
+     "name": "character-boss",
+     "error": null
+    },
+    {
+     "file": "cinematic-director.md",
+     "name": "cinematic-director",
+     "error": null
+    },
+    {
+     "file": "combat-enemy-ai.md",
+     "name": "combat-enemy-ai",
+     "error": null
+    },
+    {
+     "file": "dlc-release.md",
+     "name": "dlc-release",
+     "error": null
+    },
+    {
+     "file": "game-design-director.md",
+     "name": "game-design-director",
+     "error": null
+    },
+    {
+     "file": "game-systems.md",
+     "name": "game-systems",
+     "error": null
+    },
+    {
+     "file": "materials-visual.md",
+     "name": "materials-visual",
+     "error": null
+    },
+    {
+     "file": "mission-quest.md",
+     "name": "mission-quest",
+     "error": null
+    },
+    {
+     "file": "performance.md",
+     "name": "performance",
+     "error": null
+    },
+    {
+     "file": "physics-vehicle.md",
+     "name": "physics-vehicle",
+     "error": null
+    },
+    {
+     "file": "quality-testing.md",
+     "name": "quality-testing",
+     "error": null
+    },
+    {
+     "file": "reference-director.md",
+     "name": "reference-director",
+     "error": null
+    },
+    {
+     "file": "sound-dialogue.md",
+     "name": "sound-dialogue",
+     "error": null
+    },
+    {
+     "file": "story-narrative.md",
+     "name": "story-narrative",
+     "error": null
+    },
+    {
+     "file": "studio-director.md",
+     "name": "studio-director",
+     "error": null
+    },
+    {
+     "file": "ui-menu.md",
+     "name": "ui-menu",
+     "error": null
+    },
+    {
+     "file": "unreal-programming.md",
+     "name": "unreal-programming",
+     "error": null
+    },
+    {
+     "file": "world-building.md",
+     "name": "world-building",
+     "error": null
+    }
+   ],
+   "skills": [
+    {
+     "dir": "blender-asset",
+     "name": "blender-asset"
+    },
+    {
+     "dir": "dlc",
+     "name": "dlc"
+    },
+    {
+     "dir": "gameforge-studio",
+     "name": "gameforge-studio"
+    },
+    {
+     "dir": "neues-spiel",
+     "name": "neues-spiel"
+    },
+    {
+     "dir": "projektstand",
+     "name": "projektstand"
+    },
+    {
+     "dir": "referenzbilder",
+     "name": "referenzbilder"
+    },
+    {
+     "dir": "sichern-und-loeschen",
+     "name": "sichern-und-loeschen"
+    },
+    {
+     "dir": "spielbibel",
+     "name": "spielbibel"
+    },
+    {
+     "dir": "system-check",
+     "name": "system-check"
+    },
+    {
+     "dir": "unreal-import",
+     "name": "unreal-import"
+    }
+   ],
+   "hooks": false,
+   "mcp_json": false
+  }
+ },
+ "mcp": [
+  {
+   "name": "claude.ai Claude Docs",
+   "target": "https://api.anthropic.com/v1/pages/mcp",
+   "status": "✔ Connected"
+  },
+  {
+   "name": "claude.ai Gmail",
+   "target": "https://gmailmcp.googleapis.com/mcp/v1",
+   "status": "✔ Connected"
+  },
+  {
+   "name": "claude.ai Netlify",
+   "target": "https://netlify-mcp.netlify.app/mcp",
+   "status": "✔ Connected"
+  },
+  {
+   "name": "claude.ai HyperFrames by HeyGen",
+   "target": "https://mcp.heygen.com/mcp/hyperframes",
+   "status": "! Needs authentication"
+  },
+  {
+   "name": "claude.ai Higgsfield",
+   "target": "https://mcp.higgsfield.ai/mcp",
+   "status": "✔ Connected"
+  },
+  {
+   "name": "claude.ai Canva",
+   "target": "https://mcp.canva.com/mcp",
+   "status": "! Needs authentication"
+  },
+  {
+   "name": "claude.ai Supermetrics Marketing Analytics",
+   "target": "https://mcp.supermetrics.com/mcp",
+   "status": "✔ Connected"
+  },
+  {
+   "name": "claude.ai Supabase",
+   "target": "https://mcp.supabase.com/mcp",
+   "status": "✔ Connected"
+  },
+  {
+   "name": "claude.ai Amplitude",
+   "target": "https://mcp.eu.amplitude.com/mcp",
+   "status": "! Needs authentication"
+  },
+  {
+   "name": "claude.ai Cloudflare Developer Platform",
+   "target": "https://bindings.mcp.cloudflare.com/mcp",
+   "status": "! Needs authentication"
+  },
+  {
+   "name": "claude.ai Google Drive",
+   "target": "https://drivemcp.googleapis.com/mcp/v1",
+   "status": "✔ Connected"
+  },
+  {
+   "name": "blender",
+   "target": "C:\\Users\\manue\\AppData\\Roaming\\Claude\\Claude Extensions\\ant.dir.gh.blender.blender-mcp\\.venv\\Scripts\\blender-mcp.exe ",
+   "status": "✔ Connected"
+  },
+  {
+   "name": "unreal-mcp",
+   "target": "http://127.0.0.1:8000/mcp (HTTP)",
+   "status": "✘ Failed to connect — ECONNREFUSED: ECONNREFUSED: Unable to connect. Is the computer able to access the url?"
+  },
+  {
+   "name": "rea",
+   "target": "cmd.exe /d /c npx -y rea-agents@6.7.0 mcp",
+   "status": "✔ Connected"
+  }
+ ]
+}

@@ -1,0 +1,37 @@
+{
+  "time": "2026-10-25T21:00:52.610686",
+  "os": "Windows-11-10.0.26340-SP0",
+  "python": "3.13.15 (tags/v3.13.15:4061bc4, Aug  5 2026, 13:05:39) [MSC v.1944 64 bit (AMD64)]",
+  "gpu": {
+    "vendor": "NVIDIA",
+    "name": "NVIDIA GeForce RTX 5070",
+    "vram_total_mb": 12227,
+    "vram_used_mb": 10728,
+    "vram_free_mb": 1499,
+    "util_pct": 94,
+    "temp_c": 50,
+    "driver": "630.20",
+    "source": "nvidia-smi",
+    "measured": true
+  },
+  "gpu_apps": [
+    {
+      "pid": 30820,
+      "app": "Unreal Editor",
+      "ram_mb": 3201,
+      "mode": "Fenster (Editor)"
+    },
+    {
+      "pid": 33420,
+      "app": "ComfyUI",
+      "ram_mb": 3993,
+      "mode": "Server"
+    }
+  ],
+  "token_holder": {
+    "pid": 17148,
+    "job": "ace_step_smoke",
+    "since": 1792957580.2009525,
+    "alive": true
+  }
+}

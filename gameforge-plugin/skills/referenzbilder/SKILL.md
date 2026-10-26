@@ -1,6 +1,6 @@
 ---
 name: referenzbilder
-description: Referenzbilder und Konzeptbilder für ein GAMEFORGE-Spiel erzeugen, prüfen und freigeben (Charaktere, Bosse, Kreaturen, Waffen, Gebäude, Umgebungen, UI). Erzeugt lokal auf der Grafikkarte mit ComfyUI + FLUX.2 klein – ohne Cloud und ohne Kosten.
+description: Referenz-, Konzept- und Storyboardbilder für ein Spiel oder einen Film erzeugen, prüfen und freigeben (Figuren, Bosse, Kreaturen, Waffen, Gebäude, Umgebungen, Szenen, UI). Lokal auf der Grafikkarte mit ComfyUI + FLUX.2 klein – ohne Cloud und ohne Kosten.
 ---
 
 # Referenzbilder

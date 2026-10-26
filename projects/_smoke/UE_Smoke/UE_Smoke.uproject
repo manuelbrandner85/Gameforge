@@ -1,0 +1,12 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "5.8",
+	"Category": "",
+	"Description": "GAMEFORGE Unreal-Smoke-Test (Level, Mesh-Import, Level Sequence, MRQ-Render, Packaging)",
+	"Plugins": [
+		{ "Name": "PythonScriptPlugin", "Enabled": true },
+		{ "Name": "EditorScriptingUtilities", "Enabled": true },
+		{ "Name": "SequencerScripting", "Enabled": true },
+		{ "Name": "MovieRenderPipeline", "Enabled": true }
+	]
+}

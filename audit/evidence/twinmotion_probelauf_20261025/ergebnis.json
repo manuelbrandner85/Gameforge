@@ -1,0 +1,56 @@
+{
+  "datum": "2026-10-25",
+  "werkzeug": "Twinmotion 2026.2 (Bedienung per Claude-Computersteuerung)",
+  "ergebnis": "NICHT BESTANDEN – kein Bild und kein Video exportiert",
+  "schritte": [
+    {
+      "schritt": "Twinmotion starten",
+      "ok": true
+    },
+    {
+      "schritt": "Neue Szene",
+      "ok": true
+    },
+    {
+      "schritt": "FBX-Import GF_TestCrate.fbx",
+      "ok": true,
+      "beleg": "Objekt im Viewport sichtbar, Titel „New project*“"
+    },
+    {
+      "schritt": "Himmel auf Realistic",
+      "ok": true
+    },
+    {
+      "schritt": "Bild (Media → Image) anlegen, 1920×1080",
+      "ok": true
+    },
+    {
+      "schritt": "Export-Optionen gefunden: Real time / Lumen / Path tracer, PNG/JPG/EXR, Render-Layer, Cryptomatte",
+      "ok": true
+    },
+    {
+      "schritt": "Start export + Zielordner",
+      "ok": false,
+      "grund": "Unreal Editor holt sich wiederholt den Vordergrund (auch nach Minimieren); danach reagierte das Export-Panel nicht, keine Datei im Zielordner"
+    },
+    {
+      "schritt": "Video",
+      "ok": false,
+      "grund": "nicht erreicht"
+    }
+  ],
+  "gpu_waechter": "Token für den Export verweigert: Unreal + Twinmotion belegen zusammen ~10,9 von 12,2 GB VRAM, Last 97 % – korrekt blockiert (Überlast-Schutz)",
+  "gpu_jetzt": {
+    "vendor": "NVIDIA",
+    "name": "NVIDIA GeForce RTX 5070",
+    "vram_total_mb": 12227,
+    "vram_used_mb": 8559,
+    "vram_free_mb": 3668,
+    "util_pct": 8,
+    "temp_c": 45,
+    "driver": "630.20",
+    "source": "nvidia-smi",
+    "measured": true
+  },
+  "bewertung": "Twinmotion als zweiter Final-Renderer per Computersteuerung ist mit gleichzeitig offenem Unreal Editor auf 12 GB VRAM nicht verlässlich. Möglich nur, wenn Unreal währenddessen geschlossen ist; Wiederholung nötig, bevor es als Ablauf freigegeben wird."
+}

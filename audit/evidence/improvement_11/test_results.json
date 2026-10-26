@@ -1,0 +1,53 @@
+[
+  {
+    "id": "LIVE-11-01",
+    "passed": true,
+    "error": "RESOURCE_BLOCKED: GPU-Token seit 21 s belegt durch ace_step_smoke",
+    "waits": [
+      "GPU-Token belegt durch GAMEFORGE-Job „ace_step_smoke“ (PID 17148)",
+      "GPU-Token belegt durch GAMEFORGE-Job „ace_step_smoke“ (PID 17148)",
+      "GPU-Token belegt durch GAMEFORGE-Job „ace_step_smoke“ (PID 17148)"
+    ],
+    "seconds": 21.7,
+    "title": "Schwerjob wartet, solange das GPU-Token belegt ist (keine Überlappung)"
+  },
+  {
+    "id": "LIVE-11-02",
+    "title": "Zu wenig freier VRAM wird erkannt, Belegung benannt, nichts geschlossen",
+    "need_mb": 3670,
+    "free_mb": 3170,
+    "ok_to_start": false,
+    "why": "zu wenig VRAM frei: 3170 MB frei, benötigt 3670 MB + 2445 MB Reserve. Belegt durch: Unreal Editor (Fenster (Editor), PID 30820), ComfyUI (Server, PID 33420). GAMEFORGE schließt nichts – bitte speichern und schließen oder warten.",
+    "passed": true
+  },
+  {
+    "id": "LIVE-11-03",
+    "title": "Kleiner Bedarf passt in freien VRAM -> Start erlaubt",
+    "ok_to_start": true,
+    "why": "3170 MB frei ≥ 200 MB + 2445 MB Reserve",
+    "passed": true,
+    "applicable": true
+  },
+  {
+    "id": "LIVE-11-04",
+    "title": "Offene Editoren/Server wurden nicht beendet",
+    "pids_before": [
+      30820,
+      33420
+    ],
+    "pids_after": [
+      30820,
+      33420
+    ],
+    "passed": true
+  },
+  {
+    "id": "LIVE-11-05",
+    "title": "Echter Blender-Hintergrundjob wartet auf Token (ace_step_smoke, flux_smoke), startet erst bei genug VRAM",
+    "passed": true,
+    "start_condition": "6898 MB frei >= 1500 MB + 2445 MB Reserve",
+    "result": "BESTANDEN, Blender 5.2.3 LTS, .blend+.fbx geprueft",
+    "output": "C:\\Users\\manue\\Desktop\\GAMEFORGE Spiele\\_Systemtest\\20261025_210129",
+    "vram_peak": "kein messbarer Zusatzbedarf (<200 MB) – nicht kalibriert, Standardwert 1500 MB bleibt"
+  }
+]

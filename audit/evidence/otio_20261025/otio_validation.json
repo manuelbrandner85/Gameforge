@@ -1,0 +1,13 @@
+{
+ "otio_version": "0.18.1",
+ "otio_file": "C:\\Users\\manue\\Desktop\\GAMEFORGE_GODMODE_v2_0\\audit\\evidence\\otio_20261025\\smoke_timeline.otio",
+ "timeline_frames": 72,
+ "melt_exit": 0,
+ "rendered_frames": 72,
+ "adapters": [
+  "otio_json",
+  "otiod",
+  "otioz"
+ ],
+ "ok": true
+}
