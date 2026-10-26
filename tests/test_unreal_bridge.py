@@ -8,7 +8,7 @@ BRIDGE = Path(__file__).resolve().parents[1] / 'gameforge_core' / 'unreal_mcp_br
 class UnrealBridge(unittest.TestCase):
     def run_bridge(self, lines, cwd):
         env = dict(os.environ, GAMEFORGE_DATA_DIR=self.data, GAMEFORGE_UNREAL_MCP_URL='http://127.0.0.1:8999/mcp',
-                   GAMEFORGE_UNREAL_PROJEKT='', PYTHONIOENCODING='utf-8')
+                   GAMEFORGE_UNREAL_PROJEKT='', LOCALAPPDATA=self.data, PYTHONIOENCODING='utf-8')
         r = subprocess.run([sys.executable, '-u', str(BRIDGE)], input='\n'.join(json.dumps(x) for x in lines) + '\n',
                            capture_output=True, text=True, encoding='utf-8', env=env, cwd=cwd, timeout=60)
         return {m['id']: m for m in map(json.loads, r.stdout.splitlines()) if 'id' in m}

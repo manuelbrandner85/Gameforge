@@ -10,7 +10,7 @@ Projektwahl: Werkzeug „unreal_starten“ (Argument projekt) > GAMEFORGE_UNREAL
 Nur Python-Standardbibliothek.
 """
 from __future__ import annotations
-import json, os, socket, subprocess, sys, threading, time, urllib.error, urllib.request
+import json, os, re, socket, subprocess, sys, threading, time, urllib.error, urllib.request
 from pathlib import Path
 
 URL = os.environ.get('GAMEFORGE_UNREAL_MCP_URL', 'http://127.0.0.1:8000/mcp')
@@ -27,6 +27,7 @@ START_TOOL = {
                    'Unreal-MCP (inkl. VibeUE) bereit ist. Ohne projekt: Projekt aus dem Arbeitsordner bzw. das zuletzt benutzte.',
     'inputSchema': {'type': 'object', 'properties': {'projekt': {'type': 'string', 'description': 'Pfad zur .uproject oder zum Projektordner'}}},
 }
+FORWARD = {'tools', 'resources', 'prompts', 'completion', 'logging'}   # MCP-Bereiche, die Unreal beantwortet
 _lock = threading.Lock()
 _state = {'sid': None, 'proto': '2025-06-18', 'client_init': None}
 
@@ -71,7 +72,23 @@ def find_project(hint=None):
             return p
     except (OSError, ValueError, KeyError):
         pass
-    return None
+    return unreal_recent()
+
+
+def unreal_recent():
+    """Zuletzt in Unreal geöffnetes, noch vorhandenes Projekt (Unreals eigene Liste RecentlyOpenedProjectFiles)."""
+    base = Path(os.environ.get('LOCALAPPDATA', '')) / 'UnrealEngine'
+    best = None
+    for ini in base.glob('*/Saved/Config/WindowsEditor/EditorSettings.ini'):
+        try:
+            text = ini.read_text(encoding='utf-8', errors='replace')
+        except OSError:
+            continue
+        for m in re.finditer(r'RecentlyOpenedProjectFiles=\(ProjectName="([^"]+)",LastOpenTime=([\d.\-]+)\)', text):
+            p = Path(m.group(1))
+            if p.is_file() and (best is None or m.group(2) > best[1]):
+                best = (p, m.group(2))
+    return best[0] if best else None
 
 
 def start_unreal(project, timeout=420):
@@ -191,6 +208,8 @@ def handle(msg):
         return None
     if method == 'ping':
         return {'jsonrpc': '2.0', 'id': mid, 'result': {}}
+    if not method or method.split('/')[0] not in FORWARD:   # z. B. server/discover: nicht an Unreal weiterreichen
+        return {'jsonrpc': '2.0', 'id': mid, 'error': {'code': -32601, 'message': f'Methode nicht unterstützt: {method}'}}
     if method == 'tools/list':
         tools = cached_tools()
         if port_open():
