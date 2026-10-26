@@ -52,3 +52,4 @@ Beendet alle 2 Minuten hängende Unreal-SDK-Prüfungen (cmd.exe mit ValidatePlat
 ## Ergänzung durch GAMEFORGE (kein Widerspruch zum Standard)
 - GPU-Schwerarbeit (Movie Render Queue, Blender-Render, Bild-KI, Twinmotion) läuft über den Smart GPU Commander (`gf gpu`): immer nur ein Schwerjob, offene Editoren werden nie geschlossen, Final-Qualität wird nie still gesenkt.
 - Twinmotion nur zur Vorvisualisierung, nie als Final-Renderer.
+- Blender wird immer **sichtbar** geöffnet (normal starten, keine Bildschirmsteuerung) und über den Blender-MCP im Fenster bedient, damit Manuel zusehen kann.

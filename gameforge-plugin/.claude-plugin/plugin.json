@@ -1,6 +1,6 @@
 {
   "name": "gameforge",
-  "version": "3.5.0",
+  "version": "3.6.0",
   "description": "GAMEFORGE – KI-Studio für Spiele und Filme in Claude Code: immer aktiv, sobald es um ein Spiel oder einen Film geht (in jedem Ordner). Referenzbilder lokal, Blender/Unreal/Twinmotion, Smart GPU Commander, 20 Agenten.",
   "author": {
     "name": "GAMEFORGE"
