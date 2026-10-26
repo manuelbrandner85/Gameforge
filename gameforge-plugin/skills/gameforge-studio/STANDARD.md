@@ -9,6 +9,8 @@
 - In der Claude-Desktop-App ist der lokale MCP-Server „Unreal“ eingetragen: command `cmd`, args `["/c","npx","-y","mcp-remote","http://127.0.0.1:8000/mcp"]`. Blender ist ebenfalls per MCP verbunden.
 - **VibeUE** (Fab, in Engine 5.8 installiert) erweitert den Unreal-MCP um ~35 Dienste: Landscape, Foliage, Map Blockout, Animation, Niagara-Tiefe, MetaSound/SoundCue, UMG/MVVM, StateTree, Performance-Messung, Undo-Transaktionen, Python-Ausführung.
 - Unreal muss mit einem Projekt geöffnet sein, damit die KI es steuern kann.
+- **GAMEFORGE-Unreal-Brücke (seit 27.10.2026)**: Der MCP-Server „Unreal“ in Claude Code und in der Claude-App ist `gameforge_core/unreal_mcp_bridge.py`. Sie ist immer verbunden und leitet 1:1 an den nativen Unreal-MCP inkl. VibeUE weiter. Läuft Unreal nicht, startet sie es beim ersten Unreal-Werkzeug automatisch mit dem passenden Projekt (oder gezielt mit dem Werkzeug `unreal_starten`, Argument `projekt`) und verbindet sich neu – kein Neustart in der Claude-App nötig.
+- **Unreal öffnen/schließen**: Öffnen übernimmt die Brücke (Bildschirmsteuerung nur noch als Notlösung). Schließen ebenfalls per Bildschirmsteuerung, vorher alles per MCP speichern. Bildschirmsteuerung nur zum Öffnen/Schließen – alle eigentliche Arbeit in Unreal per MCP. (Ein vom Nutzer geöffnetes Unreal schließt die KI nicht ungefragt.)
 
 ## 2. Pflicht-Plugins in JEDEM Unreal-Projekt
 - Editor-only (`TargetAllowList ["Editor"]`): PythonScriptPlugin, EditorScriptingUtilities, ModelContextProtocol, ToolsetRegistry, EditorToolset, AllToolsets, VibeUE
