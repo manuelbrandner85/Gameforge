@@ -562,7 +562,9 @@ def cmd_system(a):
     else:
         out('Claude Code: NICHT gefunden')
     out(f'Blender-Programm erreichbar (MCP-Add-on, Port 9876): {"ja" if port_open(9876) else "nein – Blender öffnen, MCP-Add-on starten"}')
-    out('Unreal-Steuerung: über PowerShell + UnrealEditor-Cmd (kein MCP nötig)')
+    out(f'Unreal-MCP (nativ, 127.0.0.1:8000/mcp): {"läuft" if port_open(8000) else "aus – startet automatisch, sobald ein Unreal-Projekt im Editor offen ist"}')
+    wd = Path.home() / 'Documents' / 'Unreal Wachhund'
+    out('Unreal-Wachhund: ' + ('eingerichtet (' + str(wd) + ')' if wd.is_dir() else 'nicht gefunden'))
     b = shutil.which('blender') or next(iter(sorted(Path(os.environ.get('ProgramFiles', r'C:\Program Files'), 'Blender Foundation').glob('Blender*/blender.exe'), reverse=True)), None)
     out(f'Blender installiert: {b or "nein"}')
     ue = sorted(Path(os.environ.get('ProgramFiles', r'C:\Program Files'), 'Epic Games').glob('UE_*'))
@@ -976,6 +978,31 @@ def cmd_jobs(a):
         out(f'#{a.id} → {gjobs.get(a.id)["status"]}')
 
 
+UE_EDITOR_ONLY = ['PythonScriptPlugin', 'EditorScriptingUtilities', 'ModelContextProtocol', 'ToolsetRegistry', 'EditorToolset', 'AllToolsets', 'VibeUE']
+UE_RUNTIME = ['PCG', 'Niagara', 'Metasound', 'MovieRenderPipeline']
+UE_SETUP = 'py "C:/Users/manue/Documents/Unreal Projects/_Claude-Standard/claude_unreal_standard.py"'
+
+
+def cmd_unreal_pruefen(a):
+    """Prüft (nur lesend), ob ein Unreal-Projekt dem Standard entspricht: Pflicht-Plugins aktiv."""
+    base = Path(a.pfad).resolve()
+    ups = [base] if base.suffix == '.uproject' else sorted(base.glob('*.uproject')) + sorted(base.glob('*/*.uproject')) + sorted(base.glob('unreal/*/*.uproject'))
+    if not ups:
+        raise SystemExit(f'Kein Unreal-Projekt (.uproject) gefunden in {base}.')
+    for up in ups:
+        try:
+            data = json.loads(up.read_text(encoding='utf-8-sig'))
+        except (OSError, ValueError) as e:
+            out(f'FEHLER {up}: {e}')
+            continue
+        on = {x['Name'] for x in data.get('Plugins', []) if x.get('Enabled')}
+        missing = [n for n in UE_EDITOR_ONLY + UE_RUNTIME if n not in on]
+        out(f'{"STANDARD OK" if not missing else "UNVOLLSTÄNDIG"}: {up} · Engine {data.get("EngineAssociation", "?")}')
+        if missing:
+            out('  Fehlende Pflicht-Plugins: ' + ', '.join(missing))
+            out(f'  Einrichten (im offenen Editor, danach Neustart): {UE_SETUP}')
+
+
 def cmd_twinmotion(a):
     """Twinmotion-Brücke (Vorvisualisierung): Python erledigt alles außerhalb, Klicks macht die Computersteuerung."""
     if a.aktion == 'status':
@@ -1051,6 +1078,7 @@ def main(argv=None):
     x = sp.add_parser('wiederherstellen'); x.add_argument('datei'); x.add_argument('--ziel'); x.set_defaults(f=cmd_wiederherstellen)
     x = sp.add_parser('comfy'); x.add_argument('aktion', choices=['start', 'stop', 'status']); x.set_defaults(f=cmd_comfy)
     sp.add_parser('gpu').set_defaults(f=cmd_gpu)
+    x = sp.add_parser('unreal-pruefen'); x.add_argument('pfad', nargs='?', default='.'); x.set_defaults(f=cmd_unreal_pruefen)
     x = sp.add_parser('twinmotion'); x.add_argument('aktion', choices=['status', 'start', 'vorbereiten', 'pruefen']); x.add_argument('projekt', nargs='?', default='.')
     x.add_argument('--asset'); x.add_argument('--datei'); x.add_argument('--sekunden', type=int, default=5); x.set_defaults(f=cmd_twinmotion)
     x = sp.add_parser('jobs'); x.add_argument('aktion', nargs='?', default='liste', choices=['liste', 'arbeiten', 'abbrechen', 'erneut'])

@@ -8,7 +8,7 @@ model: inherit
 **Verantwortung:** Inventar, Skills, Crafting, Questsystem, Savegames und Ökonomie.
 **Auftrag:** entwickle modulare, persistente Systeme; definiere Datenmigration, Integrations- und Regressionstests.
 **Lieferung:** Spielsystem-Code, Datenstrukturen, Save/Load-Tests.
-**Werkzeuge:** Unreal über PowerShell/Python (UnrealEditor-Cmd `-run=pythonscript`), siehe Skill `unreal-import`. GPU-Schwerarbeit nur über den GPU-Wächter (`gf gpu`).
+**Werkzeuge:** Unreal über den nativen Unreal-MCP (erst `list_toolsets`/`describe_toolset`, dann aufrufen; Undo-Transaktionen), siehe Skill `unreal-import` und `STANDARD.md`. Unreal zuerst, Blender danach; Assets nur nach Freigabe importieren/löschen/überschreiben. GPU-Schwerarbeit nur über den GPU-Wächter (`gf gpu`).
 **Schreibbereich (im Projektordner):** unreal/ (Inventar, Quests, Speichern). Außerhalb davon nichts ändern – sonst beim Studio Director anfragen.
 **Übergabe an:** quality-testing.
 

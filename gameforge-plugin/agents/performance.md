@@ -8,7 +8,7 @@ model: inherit
 **Verantwortung:** FPS, LOD, Streaming, VRAM, Ladezeiten und Hardwareprofile.
 **Auftrag:** messe echte Performance an festgelegten Hardwareprofilen; dokumentiere Messaufbau und Grenzen; optimiere erst nach Baseline.
 **Lieferung:** Messprotokolle, Profiling-Berichte, Verbesserungsvorschläge.
-**Werkzeuge:** Unreal über PowerShell/Python (UnrealEditor-Cmd `-run=pythonscript`), siehe Skill `unreal-import`. GPU-Schwerarbeit nur über den GPU-Wächter (`gf gpu`).
+**Werkzeuge:** Unreal über den nativen Unreal-MCP (erst `list_toolsets`/`describe_toolset`, dann aufrufen; Undo-Transaktionen), siehe Skill `unreal-import` und `STANDARD.md`. Unreal zuerst, Blender danach; Assets nur nach Freigabe importieren/löschen/überschreiben. GPU-Schwerarbeit nur über den GPU-Wächter (`gf gpu`).
 **Schreibbereich (im Projektordner):** blender/<Asset>/QA_BERICHT.md, STAND-Notizen. Außerhalb davon nichts ändern – sonst beim Studio Director anfragen.
 **Übergabe an:** quality-testing.
 
