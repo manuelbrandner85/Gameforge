@@ -10,7 +10,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-from gflib import art_direction, prompts, quality, imagecheck, comfy, hardware, twinmotion  # noqa: E402
+from gflib import art_direction, prompts, quality, imagecheck, comfy, hardware, twinmotion, cc0  # noqa: E402
 
 PLUGIN = HERE.parent
 # GAMEFORGE-Ordner (enthält gameforge_core/ und engines/ mit ComfyUI). Das installierte Plugin liegt als Kopie
@@ -1003,6 +1003,45 @@ def cmd_unreal_pruefen(a):
             out(f'  Einrichten (im offenen Editor, danach Neustart): {UE_SETUP}')
 
 
+ASSET_ROOT = DATA / 'assets' / 'cc0'          # Blender-Asset-Bibliothek „GAMEFORGE CC0“
+
+
+def cmd_assets(a):
+    """Kostenlose CC0-Assets (Poly Haven, ambientCG): suchen, laden, als Blender-Asset bereitstellen."""
+    if a.aktion == 'liste':
+        found = sorted(ASSET_ROOT.glob('*/*/LIZENZ.json')) if ASSET_ROOT.is_dir() else []
+        if not found:
+            out(f'Noch keine Assets in {ASSET_ROOT}.')
+        for f in found:
+            m = read_json(f, {}) or {}
+            out(f'- {m.get("quelle")} · {m.get("id")} · {m.get("typ")} · {m.get("aufloesung")} · {m.get("mb")} MB · {m.get("lizenz")} · {f.parent}')
+        return
+    if not a.quelle:
+        raise SystemExit('Quelle angeben: polyhaven oder ambientcg')
+    if a.aktion == 'suchen':
+        hits = cc0.ph_search(a.begriff, a.typ) if a.quelle == 'polyhaven' else cc0.acg_search(a.begriff)
+        if not hits:
+            out('Keine Treffer.')
+        for h in hits:
+            out(f'- {h["id"]} · {h["name"]} · {h["typ"]} · {h["downloads"]} Downloads · {h["lizenz"]} · {h["url"]}')
+        return
+    # laden
+    aid, res = a.begriff, a.aufloesung.lower()
+    if a.quelle == 'polyhaven':
+        main, size = cc0.ph_fetch(aid, a.typ, res, ASSET_ROOT)
+        folder = main.parent
+        if a.typ != 'hdri':
+            cc0.mark_assets('ph', main, main, aid, DATA / 'tmp')
+    else:
+        folder, size = cc0.acg_fetch(aid, res, ASSET_ROOT)
+        main = cc0.mark_assets('acg', folder, folder / f'{aid}.blend', aid, DATA / 'tmp')
+    lic = {'quelle': a.quelle, 'id': aid, 'typ': a.typ, 'aufloesung': res, 'mb': round(size / 1e6, 1), 'lizenz': 'CC0 1.0 (keine Einschränkung, auch kommerziell und mit KI)',
+           'herkunft': f'https://polyhaven.com/a/{aid}' if a.quelle == 'polyhaven' else f'https://ambientcg.com/a/{aid}', 'geladen_am': now(), 'datei': str(main)}
+    write_json(folder / 'LIZENZ.json', lic)
+    out(f'GELADEN: {aid} ({a.quelle}, {res}, {lic["mb"]} MB, CC0) → {main}')
+    out('In Blender: Asset-Browser → Bibliothek „GAMEFORGE CC0“.')
+
+
 def cmd_twinmotion(a):
     """Twinmotion-Brücke (Vorvisualisierung): Python erledigt alles außerhalb, Klicks macht die Computersteuerung."""
     if a.aktion == 'status':
@@ -1078,6 +1117,9 @@ def main(argv=None):
     x = sp.add_parser('wiederherstellen'); x.add_argument('datei'); x.add_argument('--ziel'); x.set_defaults(f=cmd_wiederherstellen)
     x = sp.add_parser('comfy'); x.add_argument('aktion', choices=['start', 'stop', 'status']); x.set_defaults(f=cmd_comfy)
     sp.add_parser('gpu').set_defaults(f=cmd_gpu)
+    x = sp.add_parser('assets'); x.add_argument('aktion', choices=['suchen', 'laden', 'liste']); x.add_argument('quelle', nargs='?', choices=['polyhaven', 'ambientcg'])
+    x.add_argument('begriff', nargs='?', default=''); x.add_argument('--typ', default='textur', choices=['textur', 'modell', 'hdri'])
+    x.add_argument('--aufloesung', default='4k', choices=['1k', '2k', '4k', '8k']); x.set_defaults(f=cmd_assets)
     x = sp.add_parser('unreal-pruefen'); x.add_argument('pfad', nargs='?', default='.'); x.set_defaults(f=cmd_unreal_pruefen)
     x = sp.add_parser('twinmotion'); x.add_argument('aktion', choices=['status', 'start', 'vorbereiten', 'pruefen']); x.add_argument('projekt', nargs='?', default='.')
     x.add_argument('--asset'); x.add_argument('--datei'); x.add_argument('--sekunden', type=int, default=5); x.set_defaults(f=cmd_twinmotion)
