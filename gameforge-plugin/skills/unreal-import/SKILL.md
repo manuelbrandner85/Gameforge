@@ -6,7 +6,7 @@ description: Blender-Exporte in Unreal Engine 5 importieren, prüfen und in eine
 # Unreal-Import
 
 1. **Voraussetzungen prüfen**: Liegt ein Unreal-Projekt (`.uproject`) im Ordner `unreal/` des Spiels? Existiert der Export (`gf.cmd asset-pruefen "<Spiel>" --asset "<Name>"` → „Datei erstellt“)? Wenn nicht: zuerst Skill `blender-asset`.
-2. **Verbindung (nativer Unreal-MCP)**: Unreal muss mit dem Projekt geöffnet sein (MCP-Server startet dann automatisch auf `127.0.0.1:8000/mcp`). Prüfen mit `mcp__Unreal__list_toolsets`. Antwortet er nicht („fetch failed“): dem Nutzer sagen *„Bitte das Unreal-Projekt im Editor öffnen.“* – nichts als importiert melden.
+2. **Verbindung (nativer Unreal-MCP)**: Unreal muss mit dem Projekt geöffnet sein (MCP-Server startet dann automatisch auf `127.0.0.1:8000/mcp`). Der MCP-Server „Unreal“ ist die GAMEFORGE-Brücke: Läuft Unreal nicht, startet sie es selbst. Gezielt mit Projekt: Werkzeug `unreal_starten` (`projekt` = Pfad zur .uproject). Danach `list_toolsets`. Meldet die Brücke einen Fehler, diesen wörtlich nennen – nichts als importiert melden.
    - Neues Projekt ohne Pflicht-Plugins: einmalig `py "C:/Users/manue/Documents/Unreal Projects/_Claude-Standard/claude_unreal_standard.py"` (per `execute_python_code` oder Unreal-Konsole), danach Editor-Neustart durch den Nutzer.
    - Ablauf: erst `list_toolsets`/`describe_toolset`, dann `call_tool`; Python nur über `execute_python_code` (`import unreal`). Größere Änderungen als **eine Undo-Transaktion** bündeln. Sichtbeleg mit `capture_image`.
    - Ohne offenen Editor (z. B. Stapelarbeit) ausnahmsweise: `UnrealEditor-Cmd.exe "<Projekt>.uproject" -run=pythonscript -script="<skript>.py" -unattended` – nie parallel zu einem offenen Editor desselben Projekts.

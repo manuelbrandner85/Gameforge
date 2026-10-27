@@ -8,7 +8,7 @@ description: Prüfen, ob die Werkzeuge für Spiel- und Filmproduktion funktionie
 1. `gf.cmd system` ausführen und Ergebnis einfach erklären (grün = geprüft ok, sonst der eine nötige Schritt).
 2. Typische Lösungen:
    - **Blender nicht erreichbar (Port 9876)**: Blender öffnen → Bearbeiten → Einstellungen → Add-ons → „MCP“ → Server starten; „Autostart“ anhaken, dann klappt es künftig von selbst.
-   - **Unreal (nativer MCP, Port 8000)**: Unreal-Projekt im Editor öffnen – der MCP-Server startet dann automatisch. Fehlen im Projekt die Pflicht-Plugins: Setup-Skript aus `STANDARD.md` (Skill `gameforge-studio`) ausführen, Editor neu starten.
+   - **Unreal (nativer MCP, Port 8000, über die GAMEFORGE-Brücke)**: Die Brücke ist immer verbunden und startet Unreal bei Bedarf selbst (`unreal_starten`). Protokoll: `GAMEFORGE_DATA\logs\unreal_mcp_bridge.log`. Fehlen im Projekt die Pflicht-Plugins: Setup-Skript aus `STANDARD.md` (Skill `gameforge-studio`) ausführen, Editor neu starten.
    - **Unreal hängt minutenlang im Ladebildschirm**: Unreal-Wachhund einschalten (`Dokumente\Unreal Wachhund\wachhund-einschalten.cmd`) – nur nach Zustimmung des Nutzers.
    - **MCP in Claude Code fehlt**: Die Verbindung `blender` ist für alle Ordner eingetragen; Blender muss offen sein und das Add-on den Server gestartet haben.
    - **Claude nicht angemeldet**: `claude auth login` in einer Eingabeaufforderung.

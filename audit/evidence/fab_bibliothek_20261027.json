@@ -1,0 +1,29 @@
+{
+  "datum": "2026-10-27",
+  "weg": "Browser-Bereich der Claude-App, Konto von Manuel (selbst angemeldet)",
+  "pruefung_je_eintrag": "kein Lizenz-Auswahlfeld, Preis kostenlos, Lizenzbedingungen gelesen; Klick 'Add to My Library'; danach 'View in My Library' bestätigt",
+  "hinzugefuegt": [
+    "Megaplants: Norway Spruce",
+    "Megaplants: Baltic Pine",
+    "Megaplants: Silver Birch",
+    "Megaplants: English Oak",
+    "Megaplants: European Beech",
+    "Megaplants: European Hornbeam",
+    "Megaplants: Common Hazel",
+    "Megaplants: Common Heather",
+    "Megaplants: Bilberry",
+    "Megaplants: Elder (war schon vorhanden)",
+    "Megaplants: Goat Willow",
+    "Megaplants: Rowan Saplings",
+    "M5 VFX Vol2. Fire and Flames (Niagara)",
+    "Medieval Village Megascans Sample",
+    "Electric Dreams Env",
+    "Forest ground soil pine – free (CC BY 4.0, Autor matousekfoto)"
+  ],
+  "gegenprobe": "fab.com/library: 16/16 gefunden",
+  "hinweise": [
+    "Megaplants brauchen die experimentellen Unreal-Plugins 'Procedural Vegetation Editor' und 'Nanite Foliage (Experimental)'",
+    "Fab-Inhalte mit NoAI nie als Vorlage in die Bild-KI geben",
+    "CC-BY-Waldboden: Namensnennung in GAMEFORGE_DATA/assets/cc0/CREDITS.md"
+  ]
+}

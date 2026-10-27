@@ -26,5 +26,5 @@ Werkzeug: `gf.cmd` (Pfad siehe Skill `gameforge-studio`).
    - Twinmotion belegt viel Grafikspeicher: der GPU-Wächter (`gf.cmd gpu`) erkennt es als offenes Programm, schließt es nie, und lässt Schwerjobs warten, solange der Speicher nicht reicht.
    - Lizenz: kostenlos nur bei unter 1 Mio. US-$ Jahresumsatz; Content aus der Twinmotion-Bibliothek nur nach Lizenzprüfung in finale Renders übernehmen.
 6. **Rendern**: nur nach Zustimmung (lange GPU-Last; ComfyUI vorher mit `gf.cmd comfy stop` beenden). Ergebnis nach `renders/`, Status erst „gerendert“, wenn die Datei existiert und mit ffprobe geprüft ist.
-7. **Schnitt und Ton**: Werkzeuge vorher mit `gf.cmd system` bzw. `where ffmpeg` prüfen; Fassungen nach `export/`. Nie Erfolg ohne geprüfte Datei melden.
+7. **Schnitt und Ton** (freie Geräusche/Musik: `gf.cmd assets suchen alle "<Begriff>" --typ sound|musik` – Freesound braucht einen kostenlosen Schlüssel FREESOUND_KEY): Werkzeuge vorher mit `gf.cmd system` bzw. `where ffmpeg` prüfen; Fassungen nach `export/`. Nie Erfolg ohne geprüfte Datei melden.
 8. Agenten: `gameforge:cinematic-director`, `gameforge:story-narrative`, `gameforge:sound-dialogue`, `gameforge:materials-visual`, `gameforge:quality-testing`.

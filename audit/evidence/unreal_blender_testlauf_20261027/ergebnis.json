@@ -1,0 +1,56 @@
+{
+  "datum": "2026-10-27",
+  "projekt": "UEIntroProject (Testlevel /Game/_ClaudeTest/L_ClaudeTest)",
+  "schritte": [
+    {
+      "schritt": "Unreal-MCP nativ + VibeUE erreichbar (list_toolsets, ActorService)",
+      "ok": true
+    },
+    {
+      "schritt": "Blockout per MCP: BLOCK_TestKiste (100 cm), Boden, Licht – eine Undo-Transaktion",
+      "ok": true,
+      "beleg": "unreal_blockout.png"
+    },
+    {
+      "schritt": "Blender per Blender-MCP: SM_TestKiste 100×100×100 cm, UV, M_TestKiste, UCX_SM_TestKiste, FBX (cm, X vor, Z oben)",
+      "ok": true
+    },
+    {
+      "schritt": "Import in Unreal per MCP nach /Game/_ClaudeTest, Platzhalter ersetzt, alles gespeichert",
+      "ok": true,
+      "beleg": "unreal_sm_testkiste.png",
+      "messung": {
+        "masse_cm": [
+          100.0,
+          100.0,
+          100.0
+        ],
+        "pivot_z_min": 0.0,
+        "material": "M_TestKiste"
+      }
+    },
+    {
+      "schritt": "Kollision UCX_ übernommen",
+      "ok": false,
+      "befund": "0 einfache Kollisionskörper nach Interchange-Import – UCX-Übernahme muss nachgebessert werden"
+    },
+    {
+      "schritt": "Blender nach Gebrauch per MCP gespeichert und beendet",
+      "ok": true
+    },
+    {
+      "schritt": "Unreal per Bildschirmsteuerung schließen",
+      "ok": false,
+      "befund": "Datei-Menü öffnete sich per Klick nicht; Unreal blieb offen (alles gespeichert)"
+    },
+    {
+      "schritt": "GAMEFORGE-Unreal-Brücke: weiterleiten an laufendes Unreal (Tools, Python, VibeUE)",
+      "ok": true
+    },
+    {
+      "schritt": "Brücke ohne laufendes Unreal: verbindet trotzdem, ehrliche Fehlermeldung, automatischer Test",
+      "ok": true
+    }
+  ],
+  "nicht_getestet": "Automatischer Unreal-Start durch die Brücke (erst testbar, wenn Unreal geschlossen ist)"
+}

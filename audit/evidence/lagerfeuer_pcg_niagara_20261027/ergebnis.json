@@ -1,0 +1,25 @@
+{
+  "datum": "2026-10-27",
+  "projekt": "UEIntroProject, Level /Game/_ClaudeTest/L_Lagerfeuer (Testordner, nichts Fremdes verändert)",
+  "aufbau": {
+    "landschaft": "252 × 252 m, zwei Rauschebenen, Lichtung geebnet, Material aus 3 Rauschebenen",
+    "licht": "SkyAtmosphere + Sonne 4 lx/3200 K knapp über Horizont, SkyLight Echtzeit, Höhennebel volumetrisch, manuelle Belichtung -1,8 EV, Feuerlicht 650 lm/1900 K/Quellradius 25 cm",
+    "blender": "10 Modelle sichtbar per Blender-MCP: 4 Felsen (20.480 Dreiecke, Nanite), 3 Feuersteine, 2 Holzscheite, 1 Ast; Pivot am Aufstellpunkt; FBX in cm",
+    "pcg": "PCG_Lichtung: Landschaft → Oberflächen-Sampler 0,22/m² → Perlin-Cluster → Dichtefilter → Differenz (Feuer-Aussparung per Tag) → Transform → Selbst-Pruning → gewichteter Mesh-Spawner; 320 Instanzen, 0 im Feuerkreis",
+    "niagara": "NS_Lagerfeuer: Flammen (160/s, 0,35–0,75 s, HDR), Funken (14/s, geschwindigkeitsausgerichtet), Rauch (9/s, 4–6,5 s, beleuchtet); 0 Fehler, 0 Warnungen"
+  },
+  "behobene_fehler": [
+    "Glut auf ganzer Scheitfläche → Höhen- und Rissmaske",
+    "Scheite drehten um Mitte (halb im Boden) → Position vom unteren Ende berechnet",
+    "Licht zwischen den Scheiten → harte Strahlenschatten; über die Scheite gesetzt",
+    "Überbelichtung → Licht 2000→650 lm, Belichtung -1,8 EV",
+    "Partikel-Alpha falsch verdrahtet → Ersatzmaterial; über Ausgang A verbunden",
+    "Landschaft kariert → Level neu geladen",
+    "PCG 0 Instanzen → falscher Pin-Name 'In Filter' statt 'Out'",
+    "Flammen unsichtbar → Viewport simulierte nicht; Simulation für Prüfung gestartet"
+  ],
+  "reality_check": {
+    "glaubwuerdig_real": "TEILWEISE – Lichtstimmung, Maßstab, Lichtabfall, Rauch und Funken glaubwürdig; Felsen/Boden ohne Fototexturen wirken wie Ton, keine Vegetation, Flammen ohne Flipbook-Texturen nur leuchtende Kerne, Feuerlicht flackert nicht",
+    "hoechste_sinnvolle_qualitaet": "NEIN – dafür fehlen gescannte Texturen/Modelle (Fab/Megascans: Felsen, Waldboden, Gras, Bäume) und Flammen-Flipbooks; Download braucht Manuels Freigabe"
+  }
+}
