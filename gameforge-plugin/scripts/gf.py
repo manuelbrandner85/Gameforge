@@ -10,7 +10,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-from gflib import art_direction, prompts, quality, imagecheck, comfy, hardware, twinmotion, cc0  # noqa: E402
+from gflib import art_direction, prompts, quality, imagecheck, comfy, hardware, twinmotion, cc0, quellen, blender_setup  # noqa: E402
 
 PLUGIN = HERE.parent
 # GAMEFORGE-Ordner (enthält gameforge_core/ und engines/ mit ComfyUI). Das installierte Plugin liegt als Kopie
@@ -1006,40 +1006,117 @@ def cmd_unreal_pruefen(a):
 ASSET_ROOT = DATA / 'assets' / 'cc0'          # Blender-Asset-Bibliothek „GAMEFORGE CC0“
 
 
+def _credit(entry):
+    """CC-BY u. ä.: Namensnennung festhalten (gilt für jedes Spiel/jeden Film, der das Asset nutzt)."""
+    f = ASSET_ROOT / 'CREDITS.md'
+    f.parent.mkdir(parents=True, exist_ok=True)
+    line = f"- {entry['name']} – {entry.get('autor') or 'Autor siehe Link'} – {entry['lizenz']} – {entry['herkunft']}\n"
+    old = f.read_text(encoding='utf-8') if f.is_file() else '# Namensnennungen (CC-BY u. ä.)\n\nIn Abspann/Credits des Spiels bzw. Films übernehmen.\n\n'
+    if line not in old:
+        f.write_text(old + line, encoding='utf-8')
+
+
 def cmd_assets(a):
-    """Kostenlose CC0-Assets (Poly Haven, ambientCG): suchen, laden, als Blender-Asset bereitstellen."""
+    try:
+        _cmd_assets(a)
+    except (ValueError, PermissionError, FileNotFoundError, IOError) as e:
+        raise SystemExit('NICHT GELADEN – ' + str(e))
+
+
+def _cmd_assets(a):
+    """Kostenlose Assets aus dem Internet (Spiel und Film): suchen, Lizenz prüfen, laden, in Blender bereitstellen."""
+    if a.aktion == 'quellen':
+        for k, q in quellen.QUELLEN.items():
+            out(f"- {k:15} {q['name']} · {q['inhalt']} · Lizenz: {q['lizenz']} · Zugang: {q['zugang']} · {q['url']}" + (f" · braucht {q['schluessel']}" if q.get('schluessel') else ''))
+        return
     if a.aktion == 'liste':
         found = sorted(ASSET_ROOT.glob('*/*/LIZENZ.json')) if ASSET_ROOT.is_dir() else []
         if not found:
             out(f'Noch keine Assets in {ASSET_ROOT}.')
         for f in found:
             m = read_json(f, {}) or {}
-            out(f'- {m.get("quelle")} · {m.get("id")} · {m.get("typ")} · {m.get("aufloesung")} · {m.get("mb")} MB · {m.get("lizenz")} · {f.parent}')
+            out(f'- {m.get("quelle")} · {m.get("id")} · {m.get("typ")} · {m.get("aufloesung", "")} · {m.get("mb")} MB · {m.get("lizenz")} · {f.parent}')
         return
-    if not a.quelle:
-        raise SystemExit('Quelle angeben: polyhaven oder ambientcg')
+    quelle = a.quelle or 'alle'
     if a.aktion == 'suchen':
-        hits = cc0.ph_search(a.begriff, a.typ) if a.quelle == 'polyhaven' else cc0.acg_search(a.begriff)
-        if not hits:
-            out('Keine Treffer.')
-        for h in hits:
-            out(f'- {h["id"]} · {h["name"]} · {h["typ"]} · {h["downloads"]} Downloads · {h["lizenz"]} · {h["url"]}')
+        if not a.begriff:
+            raise SystemExit('Suchbegriff fehlt, z. B. gf assets suchen alle "mossy rock"')
+        searchers = {
+            'polyhaven': lambda: cc0.ph_search(a.begriff, a.typ if a.typ in ('textur', 'modell', 'hdri') else 'modell'),
+            'ambientcg': lambda: cc0.acg_search(a.begriff) if a.typ in ('textur', 'alle') else [],
+            'kenney': lambda: quellen.kenney_search(a.begriff),
+            'opengameart': lambda: quellen.oga_search(a.begriff, {'modell': '3d', 'textur': 'textur', 'sound': 'sound', 'musik': 'musik'}.get(a.typ, '3d')),
+            'sketchfab': lambda: quellen.sketchfab_search(a.begriff) if a.typ in ('modell', 'alle') else [],
+            'freesound': lambda: quellen.freesound_search(a.begriff) if a.typ in ('sound', 'alle') else [],
+        }
+        for name, fn in searchers.items():
+            if quelle not in ('alle', name):
+                continue
+            try:
+                hits = fn()
+            except PermissionError as e:
+                out(f'[{name}] übersprungen: {e}')
+                continue
+            except Exception as e:                       # noqa: BLE001 – eine Quelle darf die Suche nicht abbrechen
+                out(f'[{name}] nicht erreichbar: {str(e)[:120]}')
+                continue
+            for h in hits[:a.anzahl]:
+                extra = ' · '.join(x for x in (h.get('autor') and f"von {h['autor']}", h.get('dreiecke') and f"{h['dreiecke']} Dreiecke") if x)
+                out(f"[{name}] {h['id']} · {h['name']} · {h['typ']} · {h['lizenz']}" + (f' · {extra}' if extra else '') + f" · {h['url']}")
+        if quelle == 'alle':
+            out('Ohne Schnittstelle (von Hand bzw. im Browser prüfen): ' + ', '.join(f"{q['name']} ({q['lizenz']})" for k, q in quellen.QUELLEN.items() if q['zugang'] in ('manuell', 'browser')))
         return
     # laden
+    if quelle == 'alle':
+        raise SystemExit('Zum Laden die Quelle angeben, z. B. gf assets laden polyhaven rock_moss_set_02 --typ modell')
     aid, res = a.begriff, a.aufloesung.lower()
-    if a.quelle == 'polyhaven':
-        main, size = cc0.ph_fetch(aid, a.typ, res, ASSET_ROOT)
-        folder = main.parent
+    lic, autor, main = 'CC0 1.0 (keine Einschränkung, auch kommerziell und mit KI)', '', None
+    if quelle == 'polyhaven':
+        main, size = cc0.ph_fetch(aid, a.typ, res, ASSET_ROOT); folder = main.parent
         if a.typ != 'hdri':
             cc0.mark_assets('ph', main, main, aid, DATA / 'tmp')
-    else:
+        herkunft = f'https://polyhaven.com/a/{aid}'
+    elif quelle == 'ambientcg':
         folder, size = cc0.acg_fetch(aid, res, ASSET_ROOT)
-        main = cc0.mark_assets('acg', folder, folder / f'{aid}.blend', aid, DATA / 'tmp')
-    lic = {'quelle': a.quelle, 'id': aid, 'typ': a.typ, 'aufloesung': res, 'mb': round(size / 1e6, 1), 'lizenz': 'CC0 1.0 (keine Einschränkung, auch kommerziell und mit KI)',
-           'herkunft': f'https://polyhaven.com/a/{aid}' if a.quelle == 'polyhaven' else f'https://ambientcg.com/a/{aid}', 'geladen_am': now(), 'datei': str(main)}
-    write_json(folder / 'LIZENZ.json', lic)
-    out(f'GELADEN: {aid} ({a.quelle}, {res}, {lic["mb"]} MB, CC0) → {main}')
-    out('In Blender: Asset-Browser → Bibliothek „GAMEFORGE CC0“.')
+        main = cc0.mark_assets('acg', folder, folder / f'{aid}.blend', aid, DATA / 'tmp'); herkunft = f'https://ambientcg.com/a/{aid}'
+    elif quelle == 'kenney':
+        folder, size = quellen.kenney_fetch(aid, ASSET_ROOT, a.max_mb); herkunft = f'https://kenney.nl/assets/{aid}'
+    elif quelle == 'opengameart':
+        folder, size = quellen.oga_fetch(aid, ASSET_ROOT, a.max_mb); herkunft = f'https://opengameart.org/content/{aid}'
+    elif quelle == 'sketchfab':
+        folder, size, lic, autor = quellen.sketchfab_fetch(aid, ASSET_ROOT); herkunft = f'https://sketchfab.com/3d-models/{aid}'
+    else:
+        raise SystemExit(f'Laden aus {quelle} ist nicht automatisiert – siehe gf assets quellen.')
+    entry = {'quelle': quelle, 'id': aid, 'name': aid, 'typ': a.typ, 'aufloesung': res if quelle in ('polyhaven', 'ambientcg') else '', 'mb': round(size / 1e6, 1),
+             'lizenz': lic, 'autor': autor, 'herkunft': herkunft, 'geladen_am': now(), 'datei': str(main or folder)}
+    write_json(folder / 'LIZENZ.json', entry)
+    if 'BY' in lic.upper():
+        _credit(entry)
+        out(f'NAMENSNENNUNG nötig ({lic}) – eingetragen in {ASSET_ROOT / "CREDITS.md"}')
+    out(f'GELADEN: {aid} ({quelle}, {entry["mb"]} MB, {lic}) → {main or folder}')
+    if main:
+        out('In Blender: Asset-Browser → Bibliothek „GAMEFORGE CC0“.')
+
+
+def cmd_blender_einrichten(a):
+    """Kostenlose Blender-Grundausstattung sicherstellen (Add-ons + Asset-Bibliothek). Idempotent."""
+    code = blender_setup.setup_code(str(ASSET_ROOT))
+    script = DATA / 'tmp' / 'gf_blender_setup.py'
+    script.parent.mkdir(parents=True, exist_ok=True)
+    script.write_text(code, encoding='utf-8')
+    if a.nur_code:
+        out(str(script))          # Claude führt diese Datei im offenen Blender über den Blender-MCP aus
+        return
+    running = subprocess.run(['powershell', '-NoProfile', '-Command', "(Get-Process blender -ErrorAction SilentlyContinue | Where-Object MainWindowTitle -ne '').Count"],
+                             capture_output=True, text=True, timeout=20).stdout.strip()
+    if running not in ('', '0'):
+        raise SystemExit(f'Blender ist offen – bitte im offenen Blender über den Blender-MCP einrichten (Code: {script}), damit sich die Einstellungen nicht gegenseitig überschreiben.')
+    exe = cc0.blender_exe()
+    if not exe:
+        raise SystemExit('Blender nicht gefunden.')
+    r = subprocess.run([str(exe), '-b', '--online-mode', '--python', str(script)], capture_output=True, text=True, errors='replace', timeout=1800, stdin=subprocess.DEVNULL)
+    m = re.search(r'GF_SETUP (.*)', r.stdout)
+    out(('EINGERICHTET: ' + m.group(1)) if m else 'FEHLER: ' + (r.stdout + r.stderr)[-1500:])
 
 
 def cmd_twinmotion(a):
@@ -1117,9 +1194,11 @@ def main(argv=None):
     x = sp.add_parser('wiederherstellen'); x.add_argument('datei'); x.add_argument('--ziel'); x.set_defaults(f=cmd_wiederherstellen)
     x = sp.add_parser('comfy'); x.add_argument('aktion', choices=['start', 'stop', 'status']); x.set_defaults(f=cmd_comfy)
     sp.add_parser('gpu').set_defaults(f=cmd_gpu)
-    x = sp.add_parser('assets'); x.add_argument('aktion', choices=['suchen', 'laden', 'liste']); x.add_argument('quelle', nargs='?', choices=['polyhaven', 'ambientcg'])
-    x.add_argument('begriff', nargs='?', default=''); x.add_argument('--typ', default='textur', choices=['textur', 'modell', 'hdri'])
-    x.add_argument('--aufloesung', default='4k', choices=['1k', '2k', '4k', '8k']); x.set_defaults(f=cmd_assets)
+    x = sp.add_parser('blender-einrichten'); x.add_argument('--nur-code', action='store_true'); x.set_defaults(f=cmd_blender_einrichten)
+    x = sp.add_parser('assets'); x.add_argument('aktion', choices=['suchen', 'laden', 'liste', 'quellen'])
+    x.add_argument('quelle', nargs='?', choices=['alle', 'polyhaven', 'ambientcg', 'kenney', 'opengameart', 'sketchfab', 'freesound'])
+    x.add_argument('begriff', nargs='?', default=''); x.add_argument('--typ', default='alle', choices=['alle', 'textur', 'modell', 'hdri', 'sound', 'musik', 'paket'])
+    x.add_argument('--aufloesung', default='4k', choices=['1k', '2k', '4k', '8k']); x.add_argument('--anzahl', type=int, default=5); x.add_argument('--max-mb', type=int, default=300); x.set_defaults(f=cmd_assets)
     x = sp.add_parser('unreal-pruefen'); x.add_argument('pfad', nargs='?', default='.'); x.set_defaults(f=cmd_unreal_pruefen)
     x = sp.add_parser('twinmotion'); x.add_argument('aktion', choices=['status', 'start', 'vorbereiten', 'pruefen']); x.add_argument('projekt', nargs='?', default='.')
     x.add_argument('--asset'); x.add_argument('--datei'); x.add_argument('--sekunden', type=int, default=5); x.set_defaults(f=cmd_twinmotion)
