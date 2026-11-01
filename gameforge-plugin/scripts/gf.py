@@ -1183,7 +1183,7 @@ def cmd_godot(a):
         exe = godot.find_exe(DATA)
         out('Godot: ' + (f'{exe} · {godot.version(exe) or "Version unbekannt"}' if exe else f'nicht installiert (vorgesehen: {godot.VERSION}, „gf godot installieren“)'))
         out('Läuft: ' + (', '.join(map(str, godot.running())) or 'nein'))
-        out(f'Node.js für den Godot-MCP: {shutil.which("npx") or "FEHLT"} · Paket {godot.MCP_PACKAGE}')
+        out(f'Node.js: {shutil.which("node") or "FEHLT"} · Godot-MCP {godot.MCP_PACKAGE}: ' + ('installiert' if godot.mcp_script(DATA).is_file() else 'nicht installiert („gf godot mcp-einrichten“)'))
         if gc:
             out(gc.status_text().splitlines()[1])
         return
@@ -1194,11 +1194,13 @@ def cmd_godot(a):
         return
     if a.aktion == 'mcp-einrichten':
         exe = _godot_exe()
-        if not shutil.which('npx'):
-            raise SystemExit('Node.js (npx) fehlt – der Godot-MCP braucht es.')
-        claude = shutil.which('claude') or 'claude'
-        godot.register_mcp(exe, claude)
-        out(f'MCP „godot“ eingetragen (Claude Code, benutzerweit): {godot.MCP_PACKAGE}, GODOT_PATH={exe}')
+        node, npm = shutil.which('node'), shutil.which('npm')
+        if not node or not npm:
+            raise SystemExit('Node.js (node/npm) fehlt – der Godot-MCP braucht es.')
+        script, neu = godot.install_mcp(DATA, npm)
+        out(('Godot-MCP installiert: ' if neu else 'Godot-MCP schon installiert: ') + str(script))
+        godot.register_mcp(exe, script, shutil.which('claude') or 'claude', node)
+        out(f'MCP „godot“ eingetragen (Claude Code, benutzerweit): {godot.MCP_PACKAGE} über {node}, GODOT_PATH={exe}')
         out('Wirksam in neuen Claude-Code-Sitzungen bzw. nach Neuladen der MCP-Server.')
         return
     root = find_game(a.projekt)

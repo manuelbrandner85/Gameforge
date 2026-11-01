@@ -13,7 +13,7 @@ Werkzeug: `gf.cmd` (Pfad siehe Skill `gameforge-studio`). Godot ist die **zweite
 - Unklar? Als Ja/Nein-Vorschlag fragen, Empfehlung zuerst mit einem Satz Begründung. Nie heimlich wechseln.
 
 ## Ablauf
-1. **Godot vorhanden?** `gf.cmd godot status`. Fehlt Godot: Zustimmung holen (offizielles Release von GitHub, ca. 85 MB, MIT), dann `gf.cmd godot installieren` (SHA512-geprüft, nach `GAMEFORGE_DATA/tools/godot/`). Danach einmalig `gf.cmd godot mcp-einrichten` (Godot-MCP `@coding-solo/godot-mcp`, MIT, läuft lokal über Node) – wirkt in neuen Claude-Code-Sitzungen.
+1. **Godot vorhanden?** `gf.cmd godot status`. Fehlt Godot: Zustimmung holen (offizielles Release von GitHub, ca. 85 MB, MIT), dann `gf.cmd godot installieren` (SHA512-geprüft, nach `GAMEFORGE_DATA/tools/godot/`). Danach einmalig `gf.cmd godot mcp-einrichten` (Godot-MCP `@coding-solo/godot-mcp`, MIT, wird fest nach `GAMEFORGE_DATA/tools/godot-mcp` installiert und direkt über Node gestartet) – wirkt in neuen Claude-Code-Sitzungen.
 2. **Neues Spiel mit Godot**: `gf.cmd neu --titel "<Name>" --engine godot …` (wie Skill `neues-spiel`), dann `gf.cmd godot projekt "<Spiel>" --profil 3d|2d|pixel|web` → `godot/project.godot`.
    - `3d`: Forward+, Jolt-Physik, MSAA 4x, 8K-Schatten (höchste sinnvolle Qualität). `2d`: Forward+. `pixel`: scharfe Pixel (Nearest-Filter), Viewport-Skalierung. `web`: Compatibility-Renderer für Browser/schwache Geräte.
    - Bestehendes Godot-Projekt (Ordner mit `project.godot`): eigene Regeln/CLAUDE.md haben Vorrang, nichts anlegen.

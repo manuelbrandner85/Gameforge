@@ -33,3 +33,11 @@ Vor Unreal-/Blender-Arbeit lesen. Jede Falle ist echt aufgetreten; die Lösung i
 
 ## Windows / Werkzeuge
 - Der Unreal-MCP läuft über die GAMEFORGE-Brücke (`gameforge_core/unreal_mcp_bridge.py`); Protokoll in `GAMEFORGE_DATA/logs/unreal_mcp_bridge.log`.
+
+## Godot (geprüft am 01.11.2026, Godot 4.7.1)
+- Godot-MCP **nicht über `npx` starten**: Der erste Start lädt das Paket und überschreitet das 30-s-Verbindungslimit von Claude Code, ein abgebrochener Download hinterlässt einen kaputten npx-Zwischenspeicher (`ENOENT … package.json`). Deshalb fest installiert (`gf godot mcp-einrichten` → `GAMEFORGE_DATA/tools/godot-mcp`, Start direkt über `node`, 0,8 s).
+- Godot schreibt beim Beenden ohne Fenster `ERROR: … RID allocations … were leaked at exit` – harmlos, kein Projektfehler (`gf godot pruefen` wertet es als Warnung).
+- Szenen-Prüfung: `--headless --import` lädt Szenen und Skripte nicht vollständig. Spielbares immer zusätzlich starten (`run_project` + `get_debug_output`, oder Spiel mit Beleg-Skript) und das Bild ansehen.
+- **Kenney-Modelle sind nicht in echten Metern** (Baum `tree_cone` = 1,43 m, Gras 0,25 m): für realistische Maße skalieren (Faktor messen, nicht raten – Begrenzungsbox im Spiel ausgeben lassen).
+- **Kenney-GLB-Farben** liegen als sRGB-Werte im linearen `baseColorFactor` → wirken in Godot/Blender blasser und türkiser als Kenneys Vorschaubilder. Godot zeigt die Datei korrekt; bei Bedarf Farben in Blender korrigieren (Wert^2,2), bevor exportiert wird.
+- Die MCP-Werkzeuge `create_scene`/`add_node` speichern nur einfache Eigenschaften (bool, Zahl). Transformationen, Ressourcen (Environment, Mesh, Material) und Instanzen von `.glb` direkt in die `.tscn` schreiben – Textformat, danach prüfen.

@@ -1,0 +1,72 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/lichtung.gd" id="1_skript"]
+[ext_resource type="PackedScene" path="res://assets/tree_cone/tree_cone.glb" id="2_baum"]
+[ext_resource type="PackedScene" path="res://assets/rock_largeA/rock_largeA.glb" id="3_fels"]
+[ext_resource type="PackedScene" path="res://assets/campfire_stones/campfire_stones.glb" id="4_feuer"]
+[ext_resource type="PackedScene" path="res://assets/log_large/log_large.glb" id="5_stamm"]
+[ext_resource type="PackedScene" path="res://assets/grass_large/grass_large.glb" id="6_gras"]
+
+[sub_resource type="ProceduralSkyMaterial" id="himmel_material"]
+sky_top_color = Color(0.3, 0.47, 0.74, 1)
+sky_horizon_color = Color(0.7, 0.76, 0.82, 1)
+ground_bottom_color = Color(0.2, 0.17, 0.13, 1)
+ground_horizon_color = Color(0.7, 0.76, 0.82, 1)
+
+[sub_resource type="Sky" id="himmel"]
+sky_material = SubResource("himmel_material")
+
+[sub_resource type="Environment" id="umgebung"]
+background_mode = 2
+sky = SubResource("himmel")
+ambient_light_source = 3
+reflected_light_source = 2
+tonemap_mode = 4
+ssao_enabled = true
+sdfgi_enabled = true
+glow_enabled = true
+glow_intensity = 0.3
+
+[sub_resource type="StandardMaterial3D" id="boden_material"]
+albedo_color = Color(0.33, 0.45, 0.22, 1)
+roughness = 0.95
+
+[sub_resource type="PlaneMesh" id="boden_mesh"]
+material = SubResource("boden_material")
+size = Vector2(40, 40)
+
+[node name="Lichtung" type="Node3D"]
+script = ExtResource("1_skript")
+
+[node name="Sonne" type="DirectionalLight3D" parent="."]
+shadow_enabled = true
+
+[node name="Kamera" type="Camera3D" parent="."]
+current = true
+fov = 50.0
+
+[node name="Umgebung" type="WorldEnvironment" parent="."]
+environment = SubResource("umgebung")
+
+[node name="Boden" type="MeshInstance3D" parent="."]
+mesh = SubResource("boden_mesh")
+
+[node name="Baum" parent="." instance=ExtResource("2_baum")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4, 0, -1.6)
+
+[node name="Fels" parent="." instance=ExtResource("3_fels")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 0, -1.2)
+
+[node name="Lagerfeuer" parent="." instance=ExtResource("4_feuer")]
+
+[node name="Stamm" parent="." instance=ExtResource("5_stamm")]
+transform = Transform3D(0.7071, 0, 0.7071, 0, 1, 0, -0.7071, 0, 0.7071, 0.9, 0, 0.7)
+
+[node name="Gras1" parent="." instance=ExtResource("6_gras")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9, 0, 0.9)
+
+[node name="Gras2" parent="." instance=ExtResource("6_gras")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -2.1, 0, -0.2)
+
+[node name="Gras3" parent="." instance=ExtResource("6_gras")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.3, 0, 0.4)

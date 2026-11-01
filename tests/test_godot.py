@@ -67,16 +67,25 @@ class Godot(unittest.TestCase):
         self.assertEqual(len(r['fehler']), 2)
         self.assertEqual(len(r['warnungen']), 1)
         self.assertTrue(godot.parse_log('Godot Engine v4.7.1\nalles gut')['ok'])
+        echt = "ERROR: 1 RID allocations of type 'N17RendererSceneCull6CameraE' were leaked at exit."   # echte Godot-4.7.1-Ausgabe
+        self.assertTrue(godot.parse_log(echt)['ok'])
 
     def test_pruefung_wertet_exitcode(self):
         fake = lambda *a, **k: subprocess.CompletedProcess(a, 1, 'ok', '')
         self.assertFalse(godot.check_project(Path('godot.exe'), Path('.'), run=fake)['ok'])
 
     def test_mcp_eintrag(self):
-        e = godot.mcp_entry(Path(r'C:\g\Godot.exe'))
-        self.assertIn(godot.MCP_PACKAGE, e['args'])
+        e = godot.mcp_entry(Path(r'C:\g\Godot.exe'), Path(r'C:\d\index.js'), 'node.exe')
+        self.assertEqual((e['command'], e['args']), ('node.exe', [r'C:\d\index.js']))
         self.assertEqual(e['env']['GODOT_PATH'], r'C:\g\Godot.exe')
         self.assertRegex(godot.MCP_PACKAGE, r'@\d+\.\d+\.\d+$')      # feste Version, kein „latest“
+
+    def test_mcp_installation_meldet_fehler(self):
+        fail = lambda *a, **k: subprocess.CompletedProcess(a, 1, '', 'npm ERR! 404')
+        with tempfile.TemporaryDirectory() as d:
+            with self.assertRaises(RuntimeError) as e:
+                godot.install_mcp(Path(d), run=fail)
+            self.assertIn('404', str(e.exception))
 
     def test_neues_godot_spiel_per_kommandozeile(self):
         with tempfile.TemporaryDirectory() as d:

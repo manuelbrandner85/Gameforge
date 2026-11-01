@@ -1,7 +1,7 @@
 """Godot-Brücke: Godot 4 (MIT, kostenlos) als zweite Spiel-Engine neben Unreal.
 
 - Godot hat eine vollwertige Kommandozeile (--headless, --path, --import, -e). Damit erledigt Python
-  Einrichten, Import und Prüfung; im Editor arbeitet Claude über den Godot-MCP (@coding-solo/godot-mcp, MIT, lokal).
+  Einrichten, Import und Prüfung; im Editor arbeitet Claude über den Godot-MCP (@coding-solo/godot-mcp, MIT, lokal in GAMEFORGE_DATA/tools/godot-mcp).
 - Installation nur nach Zustimmung: offizielles GitHub-Release, SHA512-geprüft, in GAMEFORGE_DATA/tools/godot/.
 - Nichts gilt als importiert/geprüft, solange Godot es nicht selbst ohne Fehler eingelesen hat.
 """
@@ -159,13 +159,17 @@ def create_project(root: Path, title: str, profile='3d'):
 
 ERR = re.compile(r'^(ERROR|SCRIPT ERROR|USER ERROR|Parse Error)\b|Failed loading resource|Error importing', re.I)
 WARN = re.compile(r'^(WARNING|USER WARNING)\b', re.I)
+# Aufräum-Meldungen beim Beenden ohne Fenster (z. B. „RID allocations … were leaked at exit“) sind kein Projektfehler
+NOISE = re.compile(r'leaked at exit|resources still in use at exit|ObjectDB instances leaked', re.I)
 
 
 def parse_log(text: str):
     errors, warnings = [], []
     for line in text.splitlines():
         s = line.strip()
-        if ERR.search(s):
+        if NOISE.search(s):
+            warnings.append(s[:300])
+        elif ERR.search(s):
             errors.append(s[:300])
         elif WARN.search(s):
             warnings.append(s[:300])
@@ -192,14 +196,34 @@ def start_editor(exe: Path, proj: Path):
     subprocess.Popen([str(exe), '-e', '--path', str(proj)], close_fds=True, creationflags=getattr(subprocess, 'DETACHED_PROCESS', 0))
 
 
-def mcp_entry(exe: Path):
-    """Eintrag für Claude Code: lokaler Godot-MCP über npx, Godot-Pfad fest gesetzt."""
-    cmd = ['cmd', '/c', 'npx', '-y', MCP_PACKAGE] if os.name == 'nt' else ['npx', '-y', MCP_PACKAGE]
-    return {'type': 'stdio', 'command': cmd[0], 'args': cmd[1:], 'env': {'GODOT_PATH': str(exe)}}
+def mcp_dir(data: Path) -> Path:
+    return data / 'tools' / 'godot-mcp'
 
 
-def register_mcp(exe: Path, claude='claude'):
-    entry = json.dumps(mcp_entry(exe))
+def mcp_script(data: Path) -> Path:
+    return mcp_dir(data) / 'node_modules' / '@coding-solo' / 'godot-mcp' / 'build' / 'index.js'
+
+
+def install_mcp(data: Path, npm='npm', run=subprocess.run):
+    """Godot-MCP fest installieren (feste Version) statt npx: startet sofort, kein Download bei jedem Start."""
+    if mcp_script(data).is_file():
+        return mcp_script(data), False
+    d = mcp_dir(data)
+    d.mkdir(parents=True, exist_ok=True)
+    r = run([npm, 'install', '--prefix', str(d), MCP_PACKAGE, '--no-audit', '--no-fund', '--omit=dev'],
+            capture_output=True, text=True, timeout=600, errors='replace', shell=os.name == 'nt')
+    if r.returncode != 0 or not mcp_script(data).is_file():
+        raise RuntimeError('npm install fehlgeschlagen: ' + ((r.stderr or r.stdout) or '').strip()[-300:])
+    return mcp_script(data), True
+
+
+def mcp_entry(exe: Path, script: Path, node='node'):
+    """Eintrag für Claude Code: lokaler Godot-MCP direkt über Node, Godot-Pfad fest gesetzt."""
+    return {'type': 'stdio', 'command': node, 'args': [str(script)], 'env': {'GODOT_PATH': str(exe)}}
+
+
+def register_mcp(exe: Path, script: Path, claude='claude', node='node'):
+    entry = json.dumps(mcp_entry(exe, script, node))
     subprocess.run([claude, 'mcp', 'remove', 'godot', '--scope', 'user'], capture_output=True, text=True, timeout=60)
     r = subprocess.run([claude, 'mcp', 'add-json', 'godot', entry, '--scope', 'user'], capture_output=True, text=True, timeout=60, errors='replace')
     if r.returncode != 0:

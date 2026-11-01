@@ -1,0 +1,51 @@
+{
+  "datum": "2026-11-01",
+  "godot": "4.7.1.stable.official.a13da4feb (offizielles GitHub-Release, SHA512 geprüft)",
+  "godot_mcp": "@coding-solo/godot-mcp 0.1.1, fest in GAMEFORGE_DATA/tools/godot-mcp, node; claude mcp get godot: Connected",
+  "schritte": {
+    "gf neu --engine godot": "OK (aufgaben.json Phase '06 Godot', CLAUDE.md nennt godot/)",
+    "gf godot projekt --profil 3d": "OK (Forward+, Jolt, MSAA 4x, 8K-Schatten)",
+    "gf godot import x5 (Kenney Nature Kit, CC0)": "OK – je .glb + .glb.import, Godot-Log ohne Fehler",
+    "MCP create_scene / add_node (DirectionalLight3D, Camera3D, WorldEnvironment)": "OK",
+    "Spiel gestartet (Vulkan, RTX 5070, 1920x1080)": "OK – beleg_lichtung.png aus dem laufenden Spiel",
+    "MCP run_project / get_debug_output / stop_project": "OK, errors: []"
+  },
+  "gemessen_m": {
+    "Baum": [
+      0.53,
+      1.43,
+      0.53
+    ],
+    "Fels": [
+      0.78,
+      0.26,
+      1.02
+    ],
+    "Lagerfeuer": [
+      0.54,
+      0.08,
+      0.52
+    ],
+    "Stamm": [
+      1.1,
+      0.42,
+      1.1
+    ],
+    "Gras": [
+      0.41,
+      0.25,
+      0.41
+    ]
+  },
+  "reality_check": [
+    "Technik/Licht/Schatten/AgX korrekt",
+    "Maßstab NICHT real: Kenney-Kachelmaße, Baum 1,43 m",
+    "Farben blass/türkis: so in Kenneys Dateien gespeichert (sRGB im linearen Feld)",
+    "Probelauf prüft die Pipeline, keine Final-Qualität"
+  ],
+  "nicht_getestet": [
+    "Export-Build (Exportvorlagen ~1 GB nicht geladen)",
+    "Blender → .glb aus eigenem Modell (hier fertige CC0-glb verwendet)",
+    "launch_editor (Editor-Fenster)"
+  ]
+}

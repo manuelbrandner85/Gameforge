@@ -11,7 +11,7 @@ description: Prüfen, ob die Werkzeuge für Spiel- und Filmproduktion funktionie
    - **Unreal (nativer MCP, Port 8000, über die GAMEFORGE-Brücke)**: Die Brücke ist immer verbunden und startet Unreal bei Bedarf selbst (`unreal_starten`). Protokoll: `GAMEFORGE_DATA\logs\unreal_mcp_bridge.log`. Fehlen im Projekt die Pflicht-Plugins: Setup-Skript aus `STANDARD.md` (Skill `gameforge-studio`) ausführen, Editor neu starten.
    - **Unreal hängt minutenlang im Ladebildschirm**: Unreal-Wachhund einschalten (`Dokumente\Unreal Wachhund\wachhund-einschalten.cmd`) – nur nach Zustimmung des Nutzers.
    - **MCP in Claude Code fehlt**: Die Verbindung `blender` ist für alle Ordner eingetragen; Blender muss offen sein und das Add-on den Server gestartet haben.
-   - **Godot**: `gf.cmd godot status`. Nicht installiert → nach Zustimmung `gf.cmd godot installieren`, dann `gf.cmd godot mcp-einrichten` (braucht Node.js/npx).
+   - **Godot**: `gf.cmd godot status`. Nicht installiert → nach Zustimmung `gf.cmd godot installieren`, dann `gf.cmd godot mcp-einrichten` (braucht Node.js).
    - **Claude nicht angemeldet**: `claude auth login` in einer Eingabeaufforderung.
    - **ComfyUI**: `gf.cmd comfy start` / `stop` (stop gibt den Grafikspeicher frei – sinnvoll vor großen Unreal-Arbeiten).
 3. Blender ohne MCP testen: `gf.cmd blender-test` (läuft über den GPU-Wächter).
