@@ -10,7 +10,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-from gflib import art_direction, prompts, quality, imagecheck, comfy, hardware, twinmotion, cc0, quellen, blender_setup  # noqa: E402
+from gflib import art_direction, prompts, quality, imagecheck, comfy, hardware, twinmotion, cc0, quellen, blender_setup, godot  # noqa: E402
 
 PLUGIN = HERE.parent
 # GAMEFORGE-Ordner (enthält gameforge_core/ und engines/ mit ComfyUI). Das installierte Plugin liegt als Kopie
@@ -225,7 +225,7 @@ def detect(path):
             return d, reg[d]['kind'], 'vermerktes Projekt'
     film_words = ('trailer', 'film', 'kino', 'cinema', 'movie render', 'drehbuch')
     for i, d in enumerate(chain):
-        up = list(d.glob('*.uproject')) + list(d.glob('*/*.uproject'))
+        up = list(d.glob('*.uproject')) + list(d.glob('*/*.uproject')) + list(d.glob('project.godot')) + list(d.glob('*/project.godot'))
         md = next((c / 'CLAUDE.md' for c in chain[i:] if (c / 'CLAUDE.md').is_file()), None)
         text = md.read_text(encoding='utf-8', errors='replace')[:6000].lower() if md else ''
         if not up and not (d / 'CLAUDE.md').is_file():
@@ -235,8 +235,9 @@ def detect(path):
         game_score = sum(text.count(w) for w in ('gameplay', 'spielbar', 'spielprojekt', 'level', 'quest', 'mission', 'savegame', 'menü'))
         if film_score > game_score:
             return root, 'film', 'Film-/Unreal-Projekt (eigene Regeln)'
-        if up or any(w in text for w in ('spiel', 'game', 'unreal')):
-            return root, 'spiel', 'Spiel-/Unreal-Projekt (eigene Regeln)'
+        if up or any(w in text for w in ('spiel', 'game', 'unreal', 'godot')):
+            kind = 'Godot' if any(x.name == 'project.godot' for x in up) else 'Unreal'
+            return root, 'spiel', f'Spiel-/{kind}-Projekt (eigene Regeln)'
     return None, None, None
 
 
@@ -299,14 +300,15 @@ def filled(text):
     return bool(text) and text.strip() not in ('(offen)', '')
 
 
-def claude_md(title):
+def claude_md(title, engine='Unreal Engine 5'):
+    eng = '`godot/` (Godot-Projekt, 1 Einheit = 1 m, Y oben)' if 'godot' in engine.lower() else '`unreal/`'
     return f'''# Spiel: {title}
 
 Dieser Ordner gehört ausschließlich zum Spiel **{title}**. Nichts mit anderen Spielen vermischen.
 - Verbindliche Spielbibel: `SPIEL.md` (Kanon nur nach ausdrücklicher Zustimmung ändern).
 - Stilvorgaben: `art-direction.json`. Aufgaben: `aufgaben.json`. Ehrlicher Stand: `gf stand "{title}"`.
 - Referenzen: `referenzen/freigegeben/` (offiziell) und `referenzen/entwuerfe/` (noch nicht freigegeben).
-- Blender-Dateien: `blender/`, Exporte: `export/`, Unreal-Projekt: `unreal/`, Originale (nie verändern): `originale/`.
+- Engine: {engine}. Blender-Dateien: `blender/`, Exporte: `export/`, Engine-Projekt: {eng}, Originale (nie verändern): `originale/`.
 '''
 
 
@@ -330,12 +332,12 @@ def project_folder(folder):
                          'Bitte einen vorhandenen Projektordner nennen: gf neu … --ordner "<Pfad>"')
     if is_gameforge(root):
         raise SystemExit(f'In „{root}“ gibt es bereits ein Projekt. Nichts überschrieben.')
-    if (root / 'CLAUDE.md').is_file() or list(root.glob('*.uproject')) or list(root.glob('*/*.uproject')):
+    if (root / 'CLAUDE.md').is_file() or list(root.glob('*.uproject')) or list(root.glob('*/*.uproject')) or (root / 'project.godot').is_file():
         raise SystemExit(f'„{root}“ hat schon eigene Projektregeln bzw. ein Unreal-Projekt. Dort gelten dessen Regeln – GAMEFORGE legt nichts an. '
                          'Zum Mitverwalten: gf registrieren --pfad "<Ordner>" --typ spiel|film')
     reg = {Path(x['path']).resolve() for x in external()}
     for parent in list(root.parents)[:6]:     # nur echte Projekte zählen, keine lose CLAUDE.md
-        if is_gameforge(parent) or parent in reg or list(parent.glob('*.uproject')):
+        if is_gameforge(parent) or parent in reg or list(parent.glob('*.uproject')) or (parent / 'project.godot').is_file():
             raise SystemExit(f'„{root}“ liegt innerhalb des Projekts „{parent.name}“. Kein Projekt im Projekt.')
     return root
 
@@ -378,10 +380,12 @@ def create_game(title, vision='', genre='', style='', camera='', platform='', wi
     write_json(root / 'spiel.json', meta)
     (root / 'SPIEL.md').write_text(bible_md(title, b), encoding='utf-8')
     if not (root / 'CLAUDE.md').exists():
-        (root / 'CLAUDE.md').write_text(claude_md(title), encoding='utf-8')
+        (root / 'CLAUDE.md').write_text(claude_md(title, engine), encoding='utf-8')
     prof = art_direction.build_profile({'title': title, 'style': style, 'genre': genre, 'camera': camera, 'engine': engine, 'bible': b})
     write_json(root / 'art-direction.json', {'profile': prof, 'source': 'automatisch', 'approved': False, 'updated_at': now()})
-    write_json(root / 'aufgaben.json', [{'phase': p, 'title': t, 'acceptance': a, 'status': 'Offen', 'evidence': ''} for p, t, a in TASKS])
+    eng = 'Godot' if 'godot' in engine.lower() else 'Unreal'
+    write_json(root / 'aufgaben.json', [{'phase': p.replace('Unreal', eng), 'title': t, 'acceptance': a.replace('Unreal', eng), 'status': 'Offen', 'evidence': ''}
+                                        for p, t, a in TASKS])
     register(root, 'spiel', title)
     return root
 
@@ -396,9 +400,10 @@ def cmd_neu(a):
             '. Keine Unterordner – sie entstehen erst, wenn wirklich etwas abgelegt wird.')
         return
     had_md = (Path(a.ordner).resolve() / 'CLAUDE.md').exists()
-    root = create_game(a.titel, a.idee or '', a.genre or '', a.stil or '', a.perspektive or '', a.plattform or '', a.wuensche or '', a.kurz or '', folder=a.ordner)
+    engine = 'Godot 4' if a.engine == 'godot' else 'Unreal Engine 5'
+    root = create_game(a.titel, a.idee or '', a.genre or '', a.stil or '', a.perspektive or '', a.plattform or '', a.wuensche or '', a.kurz or '', engine=engine, folder=a.ordner)
     prof = read_json(root / 'art-direction.json')['profile']
-    out(f'SPIEL EINGERICHTET im geöffneten Ordner: {root}')
+    out(f'SPIEL EINGERICHTET im geöffneten Ordner: {root} · Engine: {engine}')
     out(f'Grafikstil erkannt: {prof["style_label"]} ({prof["style_reason"]}) · Qualität AUTO: {prof["quality_auto"]}')
     out('Neu: SPIEL.md (Spielbibel), spiel.json, art-direction.json, aufgaben.json (21 Aufgaben)' + ('' if had_md else ', CLAUDE.md') +
         '. Keine Unterordner – sie entstehen erst, wenn wirklich etwas abgelegt wird.')
@@ -444,7 +449,7 @@ def external_status(root):
         pass
     lines = [f'# Stand: {root.name} (eigenständiges Projekt – nur gelesen)', '',
              f'- Ordner: {root}' + (f' · Git-Zweig: {branch}' if branch else ''),
-             f'- Unreal-Projekt: {", ".join(p.name for p in up) or "keins"}',
+             f'- Unreal-Projekt: {", ".join(p.name for p in up) or "keins"}' + (' · Godot-Projekt: ja' if godot.project_dir(root) else ''),
              f'- Unreal-Dateien (.umap / .uasset): {count("*.umap")} / {count("*.uasset")}',
              f'- Blender-Dateien: {count("*.blend")} · FBX: {count("*.fbx")}',
              f'- Videos (.mp4/.mov): {count("*.mp4") + count("*.mov")} · Audio (.wav): {count("*.wav")}',
@@ -526,6 +531,7 @@ def cmd_stand(a):
              f'- Blender: {sum(ok for _, ok in s["blends"])} gültige .blend-Dateien' + (f' ({sum(not ok for _, ok in s["blends"])} ungültig)' if any(not ok for _, ok in s['blends']) else ''),
              f'- Exporte: {sum(ok for _, ok in s["fbx"])} gültige .fbx-Dateien',
              f'- Unreal: {"Projekt vorhanden" if s["uprojects"] else "kein .uproject im Ordner unreal/"} · {len(s["uassets"])} importierte GAMEFORGE-Assets',
+             f'- Godot: ' + (f'Projekt vorhanden ({godot.project_dir(root)}) · letzte Prüfung: ' + ('OK' if (read_json(godot.project_dir(root) / 'GAMEFORGE_PRUEFUNG.json', {}) or {}).get('ok') else 'keine/mit Fehlern') if godot.project_dir(root) else 'kein Godot-Projekt'),
              f'- Aufgaben: ' + ', '.join(f'{st}: {sum(x["status"] == st for x in t)}' for st in TASK_STATES),
              f'- Spielversionen (Builds) in export/: {len(s["builds"])}',
              f'- DLCs: {", ".join(s["dlcs"]) or "keine"}', '',
@@ -571,6 +577,8 @@ def cmd_system(a):
     out('Unreal installiert: ' + (', '.join(p.name for p in ue) or 'nein'))
     tm = sorted(Path(os.environ.get('ProgramFiles', r'C:\Program Files'), 'Epic Games').glob('Twinmotion*/Twinmotion/Binaries/Win64/TwinmotionCookedEditor-Win64-Shipping.exe'))
     out('Twinmotion (Film-Vorvisualisierung, Bedienung von Hand): ' + (tm[-1].parents[3].name if tm else 'nicht installiert'))
+    gd = godot.find_exe(DATA)
+    out('Godot (zweite Spiel-Engine): ' + (f'{gd} · {godot.version(gd) or "Version unbekannt"}' if gd else 'nicht installiert – „gf godot installieren“ (nach Zustimmung)'))
     root = comfy.find_root(HOME)
     c = comfy.Comfy(HOME, HOME / 'engines' / 'logs')
     out(f'ComfyUI (lokale Bild-KI): {"installiert" if root else "NICHT installiert"}{" · läuft" if c.online() else ""}')
@@ -1162,6 +1170,97 @@ def cmd_twinmotion(a):
             write_json(folder / 'PRUEFUNG.json', {'geprueft_am': now(), 'ergebnisse': res})
 
 
+def _godot_exe():
+    exe = godot.find_exe(DATA)
+    if not exe:
+        raise SystemExit('Godot ist nicht installiert. Mit Zustimmung des Nutzers: gf godot installieren (offizielles Release, SHA512-geprüft, kostenlos/MIT).')
+    return exe
+
+
+def cmd_godot(a):
+    """Godot 4 – zweite Spiel-Engine: einrichten, Projekt anlegen, Editor öffnen, Import und echte Prüfung per Kommandozeile."""
+    if a.aktion == 'status':
+        exe = godot.find_exe(DATA)
+        out('Godot: ' + (f'{exe} · {godot.version(exe) or "Version unbekannt"}' if exe else f'nicht installiert (vorgesehen: {godot.VERSION}, „gf godot installieren“)'))
+        out('Läuft: ' + (', '.join(map(str, godot.running())) or 'nein'))
+        out(f'Node.js für den Godot-MCP: {shutil.which("npx") or "FEHLT"} · Paket {godot.MCP_PACKAGE}')
+        if gc:
+            out(gc.status_text().splitlines()[1])
+        return
+    if a.aktion == 'installieren':
+        exe, new = godot.install(DATA)
+        out(('INSTALLIERT (SHA512 geprüft): ' if new else 'Schon installiert: ') + f'{exe} · {godot.version(exe)}')
+        out('Nächster Schritt: gf godot mcp-einrichten (Claude Code steuert dann den Godot-Editor).')
+        return
+    if a.aktion == 'mcp-einrichten':
+        exe = _godot_exe()
+        if not shutil.which('npx'):
+            raise SystemExit('Node.js (npx) fehlt – der Godot-MCP braucht es.')
+        claude = shutil.which('claude') or 'claude'
+        godot.register_mcp(exe, claude)
+        out(f'MCP „godot“ eingetragen (Claude Code, benutzerweit): {godot.MCP_PACKAGE}, GODOT_PATH={exe}')
+        out('Wirksam in neuen Claude-Code-Sitzungen bzw. nach Neuladen der MCP-Server.')
+        return
+    root = find_game(a.projekt)
+    if a.aktion == 'projekt':
+        need_gameforge(root, 'Godot-Projekt anlegen')
+        title = (read_json(root / 'spiel.json', {}) or {}).get('title') or root.name
+        d = godot.create_project(root, title, a.profil)
+        out(f'GODOT-PROJEKT ANGELEGT: {d / "project.godot"} · Profil {a.profil} ({godot.PROFILES[a.profil]["renderer"]})')
+        out('Prüfen: gf godot pruefen „<Spiel>“ (Godot liest das Projekt echt ein).')
+        return
+    proj = godot.project_dir(root)
+    if not proj:
+        raise SystemExit(f'Kein Godot-Projekt (project.godot) in {root} oder {root / "godot"} – zuerst: gf godot projekt "<Spiel>"')
+    exe = _godot_exe()
+    if a.aktion == 'start':
+        if gc:
+            ok, why, _ = gc.preflight('heavy', gc.estimate_need('godot_editor', 1500))
+            if not ok:
+                raise SystemExit('BLOCKIERT – ' + why)
+        godot.start_editor(exe, proj)
+        out(f'Godot-Editor geöffnet: {proj}')
+        return
+    if a.aktion == 'import':
+        asset_dir = safe_name(a.asset or '')
+        src = Path(a.datei) if a.datei else next((root / 'export' / asset_dir / f'{asset_dir}{e}' for e in godot.MODEL_EXT
+                                                 if (root / 'export' / asset_dir / f'{asset_dir}{e}').is_file()), None)
+        if not src or not src.is_file():
+            raise SystemExit(f'Exportdatei fehlt (erwartet export/{asset_dir}/{asset_dir}.glb) – zuerst in Blender als glTF exportieren oder --datei angeben.')
+        if src.suffix.lower() not in godot.MODEL_EXT:
+            raise SystemExit(f'Godot importiert {", ".join(godot.MODEL_EXT)} – nicht {src.suffix}')
+        dst = proj / 'assets' / asset_dir / src.name
+        if dst.exists() and not a.ueberschreiben:
+            raise SystemExit(f'{dst} gibt es schon – nichts überschrieben (mit Freigabe: --ueberschreiben).')
+        if dst.exists():
+            sichern_datei = BACKUPS / f'godot_{asset_dir}_{now().replace(":", "")[:15]}{src.suffix}'
+            sichern_datei.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(dst, sichern_datei)
+            out(f'Sicherung der alten Datei: {sichern_datei}')
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dst)
+        a.aktion = 'pruefen'
+        rel = dst.relative_to(proj).as_posix()
+    else:
+        rel = None
+    if a.aktion == 'pruefen':
+        with _GpuGuard(f'godot-pruefen:{root.name}', 'godot_headless', 800):
+            res = godot.check_project(exe, proj)
+        if rel:
+            res['datei'] = rel
+            res['importiert'] = godot.imported(proj, rel)
+            if not res['importiert']:
+                res['ok'] = False
+                res['fehler'].append(f'{rel}: keine .import-Datei – Godot hat die Datei nicht eingelesen')
+        res['geprueft_am'] = now()
+        write_json(proj / 'GAMEFORGE_PRUEFUNG.json', res)
+        out(('GEPRÜFT OK' if res['ok'] else 'FEHLER') + f' – Godot hat {proj} eingelesen' + (f' · {rel}: ' + ('importiert' if res.get('importiert') else 'NICHT importiert') if rel else ''))
+        for e in res['fehler'][:15]:
+            out('  ✗ ' + e)
+        for w in res['warnungen'][:8]:
+            out('  ! ' + w)
+
+
 def main(argv=None):
     for stream in (sys.stdout, sys.stderr):
         if stream.encoding and stream.encoding.lower() not in ('utf-8', 'utf8'):
@@ -1171,6 +1270,7 @@ def main(argv=None):
     x = sp.add_parser('neu'); x.add_argument('--titel', required=True); x.add_argument('--typ', default='spiel', choices=['spiel', 'film'])
     x.add_argument('--laenge'); x.add_argument('--format'); x.add_argument('--basis'); x.add_argument('--idee'); x.add_argument('--genre'); x.add_argument('--stil')
     x.add_argument('--perspektive'); x.add_argument('--plattform'); x.add_argument('--wuensche'); x.add_argument('--kurz')
+    x.add_argument('--engine', default='unreal', choices=['unreal', 'godot'], help='Spiel-Engine (Standard Unreal)')
     x.add_argument('--ordner', default='.', help='Projektordner (Standard: der in Claude geöffnete Ordner)'); x.set_defaults(f=cmd_neu)
     sp.add_parser('liste').set_defaults(f=cmd_liste)
     x = sp.add_parser('erkennen'); x.add_argument('pfad', nargs='?', default='.'); x.set_defaults(f=cmd_erkennen)
@@ -1202,6 +1302,9 @@ def main(argv=None):
     x = sp.add_parser('unreal-pruefen'); x.add_argument('pfad', nargs='?', default='.'); x.set_defaults(f=cmd_unreal_pruefen)
     x = sp.add_parser('twinmotion'); x.add_argument('aktion', choices=['status', 'start', 'vorbereiten', 'pruefen']); x.add_argument('projekt', nargs='?', default='.')
     x.add_argument('--asset'); x.add_argument('--datei'); x.add_argument('--sekunden', type=int, default=5); x.set_defaults(f=cmd_twinmotion)
+    x = sp.add_parser('godot'); x.add_argument('aktion', choices=['status', 'installieren', 'mcp-einrichten', 'projekt', 'start', 'import', 'pruefen'])
+    x.add_argument('projekt', nargs='?', default='.'); x.add_argument('--profil', default='3d', choices=list(godot.PROFILES)); x.add_argument('--asset')
+    x.add_argument('--datei'); x.add_argument('--ueberschreiben', action='store_true'); x.set_defaults(f=cmd_godot)
     x = sp.add_parser('jobs'); x.add_argument('aktion', nargs='?', default='liste', choices=['liste', 'arbeiten', 'abbrechen', 'erneut'])
     x.add_argument('id', nargs='?', type=int); x.add_argument('--projekt'); x.add_argument('--leerlauf', type=int, default=5); x.set_defaults(f=cmd_jobs)
     x = sp.add_parser('migrieren'); x.add_argument('--db', required=True); x.add_argument('--ziel', required=True); x.set_defaults(f=cmd_migrieren)

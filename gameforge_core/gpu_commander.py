@@ -80,11 +80,13 @@ def classify(name, cmd):
     low, cmdl = name.lower().replace(".exe", ""), (cmd or "").lower()
     if low in ("python", "pythonw"):
         return ("ComfyUI", "Server") if "comfyui" in cmdl and "main.py" in cmdl else None
-    label = GPU_APPS.get(low)
+    label = GPU_APPS.get(low) or ("Godot" if low.startswith("godot") else None)
     if not label:
         return None
     if low == "blender" and (" -b " in f" {cmdl} " or "--background" in cmdl):
         return label, "Hintergrund"
+    if label == "Godot" and "--headless" in cmdl:
+        return label, "Kommandozeile"
     return label, "Kommandozeile" if "-cmd" in low or "-run=" in cmdl else "Fenster (Editor)"
 
 
@@ -95,7 +97,7 @@ def gpu_apps():
         return json.loads(os.environ["GAMEFORGE_GPU_FAKE_APPS"])
     if os.name == "nt":
         code, out = _run(["powershell", "-NoProfile", "-Command",
-                          "Get-CimInstance Win32_Process | Where-Object { $_.Name -match '^(UnrealEditor|blender|python|NatronRenderer|Resolve|Twinmotion)' } | "
+                          "Get-CimInstance Win32_Process | Where-Object { $_.Name -match '^(UnrealEditor|blender|python|NatronRenderer|Resolve|Twinmotion|Godot)' } | "
                           "ForEach-Object { $_.ProcessId.ToString() + '|' + $_.Name + '|' + [int]($_.WorkingSetSize/1MB) + '|' + $_.CommandLine }"], timeout=20)
         for line in out.splitlines():
             parts = line.split("|", 3)
