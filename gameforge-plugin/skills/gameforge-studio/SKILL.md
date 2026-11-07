@@ -35,7 +35,7 @@ Sobald es um ein Spiel oder einen Film geht, arbeitet GAMEFORGE – in jedem Cha
 - Im Projektordner: `SPIEL.md` bzw. `FILM.md` (Bibel) · `spiel.json`/`film.json` · `art-direction.json` · `aufgaben.json` · `STAND.md`
 - Unterordner entstehen erst, wenn wirklich etwas abgelegt wird: `referenzen/entwuerfe/` · `referenzen/freigegeben/` · `blender/` · `export/` · `unreal/` · `godot/` · `twinmotion/` · `dlc/<Name>/` · `originale/` (nie verändern)
 - Sicherungen, Papierkorb und die Liste bekannter Projekte liegen in GAMEFORGEs eigenem Datenordner (`GAMEFORGE_DATA`), nicht beim Projekt.
-- Werkzeug `gf` (macht Dateiarbeit zuverlässig): `<Basisverzeichnis dieses Skills>/../../scripts/gf.cmd <befehl>` – in Bash mit Anführungszeichen aufrufen. Befehle: `erkennen`, `liste`, `registrieren`, `neu` (`--typ film` für Filme), `stand`, `system`, `prompt`, `bild`, `freigeben`, `blender-auftrag`, `asset-pruefen`, `blender-test`, `assets suchen|laden|liste`, `unreal-pruefen`, `godot status|installieren|mcp-einrichten|projekt|start|import|pruefen`, `twinmotion status|start|vorbereiten|pruefen`, `gpu`, `jobs`, `dlc`, `sichern`, `loeschen`, `wiederherstellen`, `comfy start|stop|status`.
+- Werkzeug `gf` (macht Dateiarbeit zuverlässig): `<Basisverzeichnis dieses Skills>/../../scripts/gf.cmd <befehl>` – in Bash mit Anführungszeichen aufrufen. Befehle: `erkennen`, `liste`, `registrieren`, `neu` (`--typ film` für Filme, `--engine godot`, `--genre-vorlage <id>`), `genres`, `stand`, `system`, `prompt`, `bild`, `freigeben`, `blender-auftrag`, `asset-pruefen`, `blender-test`, `assets suchen|laden|liste`, `unreal-pruefen`, `godot status|installieren|mcp-einrichten|projekt|start|import|pruefen`, `twinmotion status|start|vorbereiten|pruefen`, `gpu`, `jobs`, `dlc`, `sichern`, `loeschen`, `wiederherstellen`, `comfy start|stop|status`.
 
 ## Welche Fähigkeit wofür
 | Wunsch des Nutzers | Skill |
@@ -52,8 +52,11 @@ Sobald es um ein Spiel oder einen Film geht, arbeitet GAMEFORGE – in jedem Cha
 | sichern, Version, löschen, wiederherstellen | `sichern-und-loeschen` |
 | funktioniert Blender/Unreal/Godot/Bild-KI? | `system-check` |
 
-## Team (20 Agenten)
-Für größere Aufgaben: `gameforge:studio-director` plant und verteilt an die Spezialisten (z. B. `gameforge:blender-3d`, `gameforge:unreal-programming`, `gameforge:quality-testing`). Nicht alle gleichzeitig; nie zwei Agenten parallel im selben Blender- oder Unreal-Editor.
+## Team (22 Agenten) und Experten-Rat
+Für größere Aufgaben: `gameforge:studio-director` plant und verteilt an die Spezialisten (z. B. `gameforge:blender-3d`, `gameforge:unreal-programming`, `gameforge:godot-entwicklung`, `gameforge:netzwerk-multiplayer`, `gameforge:quality-testing`). Nicht alle gleichzeitig; nie zwei Agenten parallel im selben Blender-, Unreal- oder Godot-Editor.
+- **Experten-Rat** (`EXPERTEN.md`, 52 Rollen aus UltraGameStudio, MIT): Prüfblickwinkel wie Technical Director, Economy Designer, UE-GAS- oder Godot-Shader-Spezialist. Der Studio-Director wählt je Aufgabe 1–6 Rollen, gibt deren Leitlinien in den Auftrag und prüft gegen deren Grenzen. Kein zweites System – ausgeführt wird immer von den GAMEFORGE-Agenten.
+- **Arbeitsstrategien**: Einordnen und handeln · Auffächern und zusammenführen · Gegenprüfung · Erzeugen und aussieben · Turnier · Bis fertig wiederholen – jeweils mit echtem Abnahme-Tor (siehe Agent `studio-director`).
+- **Genre-Vorlagen** (`gf genres`, 30 Genres): Kernschleife, Pflichtthemen, Kernsysteme, Asset-Plätze, Abnahmekriterien, Grenzen. Bei neuen Spielen als Ja/Nein-Vorschlag anbieten; mit `gf neu … --genre-vorlage <id>` entsteht `GENRE_VORLAGE.md` (nur Vorschlag, kein Kanon) plus Kernsystem-Aufgaben.
 
 ## Unverrückbare Regeln
 1. Jedes Spiel ist getrennt. Vor jeder Arbeit klären, welches Spiel (und ggf. welches DLC) gemeint ist.

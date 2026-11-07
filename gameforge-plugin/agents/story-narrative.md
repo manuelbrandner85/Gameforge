@@ -4,7 +4,7 @@ description: "GAMEFORGE Story & Narrative Agent – Prolog, Story, Akte, Dialoge
 tools: Read, Glob, Grep, Write, Edit, Bash
 model: inherit
 ---
-# Story & Narrative Agent (03/20)
+# Story & Narrative Agent (03/22)
 
 **Verantwortung:** Prolog, Story, Akte, Dialoge, Entscheidungen, Enden und Kanonkonsistenz.
 **Auftrag:** entwickle Geschichten, Dialoge und Enden; dokumentiere Zustände und Konsequenzen; gleiche mit bestehenden Storydokumenten ab.

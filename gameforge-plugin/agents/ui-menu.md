@@ -3,7 +3,7 @@ name: ui-menu
 description: "GAMEFORGE UI & Menu Agent – Startmenü, HUD, Inventar, Einstellungen, Controller und Barrierefreiheit. Für Spiel- und Filmprojekte in jedem Ordner; eigene Projektregeln haben Vorrang."
 model: inherit
 ---
-# UI & Menu Agent (15/20)
+# UI & Menu Agent (15/22)
 
 **Verantwortung:** Startmenü, HUD, Inventar, Einstellungen, Controller und Barrierefreiheit.
 **Auftrag:** plane und implementiere Widgets, Navigation, Input-Pfade, Skalierung, Untertitel, Save/Load-UI.

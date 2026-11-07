@@ -10,7 +10,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-from gflib import art_direction, prompts, quality, imagecheck, comfy, hardware, twinmotion, cc0, quellen, blender_setup, godot  # noqa: E402
+from gflib import art_direction, prompts, quality, imagecheck, comfy, hardware, twinmotion, cc0, quellen, blender_setup, godot, genres  # noqa: E402
 
 PLUGIN = HERE.parent
 # GAMEFORGE-Ordner (enthält gameforge_core/ und engines/ mit ComfyUI). Das installierte Plugin liegt als Kopie
@@ -401,12 +401,42 @@ def cmd_neu(a):
         return
     had_md = (Path(a.ordner).resolve() / 'CLAUDE.md').exists()
     engine = 'Godot 4' if a.engine == 'godot' else 'Unreal Engine 5'
+    vorlage = genres.GENRES.get(a.genre_vorlage) if a.genre_vorlage else None
+    if a.genre_vorlage and not vorlage:
+        raise SystemExit(f'Genre-Vorlage „{a.genre_vorlage}“ gibt es nicht. Liste: gf genres')
     root = create_game(a.titel, a.idee or '', a.genre or '', a.stil or '', a.perspektive or '', a.plattform or '', a.wuensche or '', a.kurz or '', engine=engine, folder=a.ordner)
     prof = read_json(root / 'art-direction.json')['profile']
     out(f'SPIEL EINGERICHTET im geöffneten Ordner: {root} · Engine: {engine}')
     out(f'Grafikstil erkannt: {prof["style_label"]} ({prof["style_reason"]}) · Qualität AUTO: {prof["quality_auto"]}')
-    out('Neu: SPIEL.md (Spielbibel), spiel.json, art-direction.json, aufgaben.json (21 Aufgaben)' + ('' if had_md else ', CLAUDE.md') +
+    extra = ''
+    if vorlage:
+        (root / 'GENRE_VORLAGE.md').write_text(genres.vorlage_md(vorlage, a.engine), encoding='utf-8')
+        tasks = read_json(root / 'aufgaben.json', []) + genres.aufgaben(vorlage)
+        write_json(root / 'aufgaben.json', tasks)
+        meta = read_json(root / 'spiel.json', {})
+        meta['genre_vorlage'] = vorlage['id']
+        write_json(root / 'spiel.json', meta)
+        extra = f', GENRE_VORLAGE.md ({vorlage["name"]}, nur Vorschlag – nicht in der Spielbibel)'
+        if not genres.passt(vorlage, a.engine):
+            out(f'Hinweis: Die Vorlage „{vorlage["name"]}“ ist laut Quelle nicht für {engine} gedacht – machbar, aber mehr Eigenarbeit.')
+    n = len(read_json(root / 'aufgaben.json', []))
+    out(f'Neu: SPIEL.md (Spielbibel), spiel.json, art-direction.json, aufgaben.json ({n} Aufgaben)' + ('' if had_md else ', CLAUDE.md') + extra +
         '. Keine Unterordner – sie entstehen erst, wenn wirklich etwas abgelegt wird.')
+
+
+def cmd_genres(a):
+    """Genre-Vorlagen (Kernschleife, Kernsysteme, Abnahme) – Vorschläge für neue Spiele."""
+    if a.id:
+        g = genres.GENRES.get(a.id)
+        if not g:
+            raise SystemExit(f'Genre-Vorlage „{a.id}“ gibt es nicht. Liste: gf genres')
+        out(genres.vorlage_md(g, a.engine or 'unreal'))
+        return
+    for g in genres.GENRES.values():
+        if a.engine and not genres.passt(g, a.engine):
+            continue
+        out(f'- {g["id"]:26} {g["name"]} · {g["dimension"]} · {g["stufe"]} · {", ".join(g["engines"])} · {g["kernschleife"]}')
+    out('Details: gf genres <id> · Anwenden: gf neu --titel "…" --genre-vorlage <id> [--engine godot]')
 
 
 def cmd_liste(a):
@@ -1273,6 +1303,7 @@ def main(argv=None):
     x.add_argument('--laenge'); x.add_argument('--format'); x.add_argument('--basis'); x.add_argument('--idee'); x.add_argument('--genre'); x.add_argument('--stil')
     x.add_argument('--perspektive'); x.add_argument('--plattform'); x.add_argument('--wuensche'); x.add_argument('--kurz')
     x.add_argument('--engine', default='unreal', choices=['unreal', 'godot'], help='Spiel-Engine (Standard Unreal)')
+    x.add_argument('--genre-vorlage', help='Genre-Vorlage (gf genres) – legt GENRE_VORLAGE.md und Kernsystem-Aufgaben an')
     x.add_argument('--ordner', default='.', help='Projektordner (Standard: der in Claude geöffnete Ordner)'); x.set_defaults(f=cmd_neu)
     sp.add_parser('liste').set_defaults(f=cmd_liste)
     x = sp.add_parser('erkennen'); x.add_argument('pfad', nargs='?', default='.'); x.set_defaults(f=cmd_erkennen)
@@ -1304,6 +1335,8 @@ def main(argv=None):
     x = sp.add_parser('unreal-pruefen'); x.add_argument('pfad', nargs='?', default='.'); x.set_defaults(f=cmd_unreal_pruefen)
     x = sp.add_parser('twinmotion'); x.add_argument('aktion', choices=['status', 'start', 'vorbereiten', 'pruefen']); x.add_argument('projekt', nargs='?', default='.')
     x.add_argument('--asset'); x.add_argument('--datei'); x.add_argument('--sekunden', type=int, default=5); x.set_defaults(f=cmd_twinmotion)
+    x = sp.add_parser('genres'); x.add_argument('id', nargs='?'); x.add_argument('--engine', choices=['unreal', 'godot', 'unity', 'web'])
+    x.set_defaults(f=cmd_genres)
     x = sp.add_parser('godot'); x.add_argument('aktion', choices=['status', 'installieren', 'mcp-einrichten', 'projekt', 'start', 'import', 'pruefen'])
     x.add_argument('projekt', nargs='?', default='.'); x.add_argument('--profil', default='3d', choices=list(godot.PROFILES)); x.add_argument('--asset')
     x.add_argument('--datei'); x.add_argument('--ueberschreiben', action='store_true'); x.set_defaults(f=cmd_godot)

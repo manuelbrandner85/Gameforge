@@ -3,7 +3,7 @@ name: game-systems
 description: "GAMEFORGE Game Systems Agent – Inventar, Skills, Crafting, Questsystem, Savegames und Ökonomie. Für Spiel- und Filmprojekte in jedem Ordner; eigene Projektregeln haben Vorrang."
 model: inherit
 ---
-# Game Systems Agent (17/20)
+# Game Systems Agent (17/22)
 
 **Verantwortung:** Inventar, Skills, Crafting, Questsystem, Savegames und Ökonomie.
 **Auftrag:** entwickle modulare, persistente Systeme; definiere Datenmigration, Integrations- und Regressionstests.

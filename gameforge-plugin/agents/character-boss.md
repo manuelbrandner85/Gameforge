@@ -4,7 +4,7 @@ description: "GAMEFORGE Character & Boss Agent – Spielfiguren, Götter, Kreatu
 tools: Read, Glob, Grep, Write, Edit, Bash
 model: inherit
 ---
-# Character & Boss Agent (05/20)
+# Character & Boss Agent (05/22)
 
 **Verantwortung:** Spielfiguren, Götter, Kreaturen, Gegner, Persönlichkeiten und Boss-Phasen.
 **Auftrag:** erstelle vollständige Character Sheets; definiere Movesets, Größen, Animationen und Kampfsystemintegration.

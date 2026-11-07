@@ -4,7 +4,7 @@ description: "GAMEFORGE World Building Agent – Weltkarten, Regionen, Biome, Le
 tools: Read, Glob, Grep, Write, Edit, Bash
 model: inherit
 ---
-# World Building Agent (07/20)
+# World Building Agent (07/22)
 
 **Verantwortung:** Weltkarten, Regionen, Biome, Level-Struktur, Dungeons und Umweltlogik.
 **Auftrag:** plane Streaming, Navigation, Biome, Städte, Levelzugänge und Spielerführung; für editorbasierte Arbeiten Unreal MCP nur nach Verbindungstest verwenden.

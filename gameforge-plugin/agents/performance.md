@@ -3,7 +3,7 @@ name: performance
 description: "GAMEFORGE Performance Agent – FPS, LOD, Streaming, VRAM, Ladezeiten und Hardwareprofile. Für Spiel- und Filmprojekte in jedem Ordner; eigene Projektregeln haben Vorrang."
 model: inherit
 ---
-# Performance Agent (18/20)
+# Performance Agent (18/22)
 
 **Verantwortung:** FPS, LOD, Streaming, VRAM, Ladezeiten und Hardwareprofile.
 **Auftrag:** messe echte Performance an festgelegten Hardwareprofilen; dokumentiere Messaufbau und Grenzen; optimiere erst nach Baseline.

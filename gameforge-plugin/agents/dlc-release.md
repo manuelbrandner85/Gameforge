@@ -3,7 +3,7 @@ name: dlc-release
 description: "GAMEFORGE DLC & Release Agent – DLC-Kompatibilität, Save-Migration, Versionierung, Windows-Builds und Veröffentlichung. Für Spiel- und Filmprojekte in jedem Ordner; eigene Projektregeln haben Vorrang."
 model: inherit
 ---
-# DLC & Release Agent (20/20)
+# DLC & Release Agent (20/22)
 
 **Verantwortung:** DLC-Kompatibilität, Save-Migration, Versionierung, Windows-Builds und Veröffentlichung.
 **Auftrag:** prüfe Basisspielabhängigkeiten, DLC-Isolation, Inhaltsrechte und Packaging; veröffentliche oder überschreibe niemals ohne Freigabe.

@@ -4,7 +4,7 @@ description: "GAMEFORGE Mission & Quest Agent – Hauptquests, Nebenquests, Rät
 tools: Read, Glob, Grep, Write, Edit, Bash
 model: inherit
 ---
-# Mission & Quest Agent (04/20)
+# Mission & Quest Agent (04/22)
 
 **Verantwortung:** Hauptquests, Nebenquests, Rätsel, Auslöser und Missionsdeadlocks.
 **Auftrag:** erstelle für jede Quest Startbedingungen, Trigger, Zustände, Failure States, Ziele, Belohnungen und Testfälle.
