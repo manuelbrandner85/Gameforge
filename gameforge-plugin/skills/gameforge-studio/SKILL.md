@@ -44,7 +44,7 @@ Sobald es um ein Spiel oder einen Film geht, arbeitet GAMEFORGE – in jedem Cha
 | Film, Trailer, Kurzfilm, Cinematic, Drehbuch, Shotliste, Schnitt | `film-projekt` |
 | Story, Missionen, Figuren, Welt, Änderungen | `spielbibel` |
 | Referenzbilder, Konzeptbilder | `referenzbilder` |
-| 3D-Modell, Blender | `blender-asset` |
+| 3D-Modell, Blender, Bild → 3D (`gf 3d`) | `blender-asset` |
 | nach Unreal bringen, im Spiel einbauen | `unreal-import` |
 | Spiel mit Godot, Godot-Projekt, GDScript | `godot-projekt` |
 | „wie weit sind wir?“, „was fehlt?“ | `projektstand` |

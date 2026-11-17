@@ -36,4 +36,10 @@ SOFTWARE.
 - **Die Desktop-App selbst** (Tauri/React, eigener Agent um Claude Code/Codex/Gemini) – wäre ein zweites Agentensystem neben Claude Code.
 - **„Free-Model-Routing“** über fremde Gratis-Clouds (u. a. schlüssellose Wege wie LLM7/Kilo) – Code, Spielbibeln und Kanon würden an unbekannte Dienste gehen; doppelt zu Claude Code.
 - **Generator-Anbindungen** für Bild, 3D, Musik, Sprache, Video, Rigging (Meshy, Tripo, Rodin, ElevenLabs, Suno, Stability, OpenAI, fal.ai …) – kostenpflichtige Cloud-Dienste mit API-Schlüssel.
-- **Lokale 3D-Generatoren** (TRELLIS, Stable Fast 3D, Hunyuan3D) – in UltraGameStudio nur leere Anschlüsse für einen selbst betriebenen Server; nichts davon wird mitgeliefert. Eigene Einrichtung nur nach Zustimmung und Lizenzprüfung (Hunyuan3D-Lizenz gilt z. B. nicht in der EU).
+- **Lokale 3D-Generatoren** (TRELLIS, Stable Fast 3D, Hunyuan3D) – in UltraGameStudio nur leere Anschlüsse für einen selbst betriebenen Server; nichts davon wird mitgeliefert. Hunyuan3D bleibt ausgeschlossen (Lizenz gilt nicht in der EU), Stable Fast 3D/SPAR3D ebenfalls (Stability Community License).
+
+## Bild → 3D (`gf 3d`, eingerichtet am 07.11.2026)
+Läuft nativ in ComfyUI (Knoten `comfy_extras/nodes_trellis2.py`, GPL-3.0 wie ComfyUI, nicht in GAMEFORGE kopiert). GAMEFORGE baut nur den API-Workflow nach dem TRELLIS.2-Zweig der offiziellen Vorlage „Pixal3D & TRELLIS.2: Image to Model“. Modelle liegen nur lokal unter `engines/` (nicht im Repo), SHA256-geprüft:
+- TRELLIS.2 (Microsoft) – `trellis_2_int8_convrot`, Form- und Textur-VAE, aus Hugging Face `Comfy-Org/TRELLIS.2` – **MIT**
+- BiRefNet (Freistellen) – `Comfy-Org/BiRefNet` – **MIT**
+- DINOv3 ViT-L (Bild-Encoder, Meta) – `Comfy-Org/TRELLIS.2/clip_vision` – **DINOv3 License** (kommerzielle Nutzung erlaubt; keine Nutzung für Militär, Waffen-/ITAR-Zwecke; bei Weitergabe des Modells Lizenz beilegen). Erzeugte 3D-Modelle sind Ausgaben und fallen nicht unter die Weitergabepflicht.

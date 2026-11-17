@@ -142,6 +142,92 @@ class Comfy:
         q = urllib.parse.urlencode({'filename': filename, 'subfolder': subfolder, 'type': typ})
         return self._req('/view?' + q, timeout=60)
 
+    def upload_image(self, path, name=None):
+        """Legt ein Bild in ComfyUIs input/-Ordner (über die lokale Schnittstelle) und gibt den Namen zurück."""
+        path = Path(path)
+        name = name or path.name
+        boundary = uuid.uuid4().hex
+        body = (f'--{boundary}\r\nContent-Disposition: form-data; name="overwrite"\r\n\r\ntrue\r\n'
+                f'--{boundary}\r\nContent-Disposition: form-data; name="image"; filename="{name}"\r\n'
+                f'Content-Type: image/png\r\n\r\n').encode('utf-8') + path.read_bytes() + f'\r\n--{boundary}--\r\n'.encode('utf-8')
+        req = urllib.request.Request(f'http://{HOST}:{PORT}/upload/image', data=body,
+                                     headers={'Content-Type': f'multipart/form-data; boundary={boundary}'})
+        with urllib.request.urlopen(req, timeout=60) as r:
+            return json.loads(r.read())['name']
+
+
+# Bild → 3D-Modell: TRELLIS.2 (Microsoft, MIT) nativ in ComfyUI. Modelle von Comfy-Org (MIT); der Bild-Encoder
+# DINOv3 steht unter Metas DINOv3-Lizenz (kommerziell erlaubt, Einschränkungen u. a. für Militär/ITAR).
+TRELLIS2_MODELS = [
+    ('diffusion_models/trellis_2_int8_convrot.safetensors', 'Comfy-Org/TRELLIS.2', 'd01952ad137213f6a868f86b6b877026276f84af5eec23069217475a0bad3a31'),
+    ('clip_vision/dino_v3_vit_l.safetensors', 'Comfy-Org/TRELLIS.2', '5cb785e458de7c460579082418af81f5c62380c181599344bdc60898c63468ee'),
+    ('vae/trellis_2_shape_vae_bf16.safetensors', 'Comfy-Org/TRELLIS.2', 'de0cb4949a76c59ee5c091a995a69bcc8c51d5aeda939f0c641a50d2a72341f4'),
+    ('vae/trellis_2_texture_vae_bf16.safetensors', 'Comfy-Org/TRELLIS.2', '714e5ebf094a610e12a8e3b5175c18a62f37f6ea4218acb6073644456b73ab0e'),
+    ('background_removal/birefnet.safetensors', 'Comfy-Org/BiRefNet', '9ab37426bf4de0567af6b5d21b16151357149139362e6e8992021b8ce356a154'),
+]
+
+
+def trellis2_missing(root):
+    return [rel for rel, _, _ in TRELLIS2_MODELS if not (Path(root) / 'ComfyUI' / 'models' / rel).is_file()]
+
+
+def trellis2_i2m(image, seed=42, resolution=1536, texture=4096, faces=700000, prefix='gameforge3d/asset', remove_bg=True):
+    """API-Workflow Bild → texturiertes 3D-Modell (GLB mit Basisfarbe, Metallic, Rauheit, Normal, AO).
+    Nachbau des TRELLIS.2-Zweigs der offiziellen ComfyUI-Vorlage „Pixal3D & TRELLIS.2: Image to Model“
+    (gleiche Stufen, Sampler und Backing-Werte), ohne Pixal3D/MoGe."""
+    mask = ['192', 0] if remove_bg else ['122', 1]
+    ks = lambda model, cond, latent, s, steps, cfg, sched: {'class_type': 'KSampler', 'inputs': {
+        'model': model, 'positive': [cond, 0], 'negative': [cond, 1], 'latent_image': latent, 'seed': s, 'steps': steps,
+        'cfg': cfg, 'sampler_name': 'euler', 'scheduler': sched, 'denoise': 1.0}}
+    wf = {
+        '122': {'class_type': 'LoadImage', 'inputs': {'image': image}},
+        '193': {'class_type': 'LoadBackgroundRemovalModel', 'inputs': {'bg_removal_name': 'birefnet.safetensors'}},
+        '192': {'class_type': 'RemoveBackground', 'inputs': {'bg_removal_model': ['193', 0], 'image': ['122', 0]}},
+        '312': {'class_type': 'ImageCropToMask', 'inputs': {'images': ['122', 0], 'masks': mask, 'width': 1024, 'height': 1024,
+                                                             'pad_factor': 1.1, 'grow_mask': 0, 'background': '#000000'}},
+        '15': {'class_type': 'CLIPVisionLoader', 'inputs': {'clip_name': 'dino_v3_vit_l.safetensors'}},
+        '299': {'class_type': 'Trellis2Conditioning', 'inputs': {'clip_vision_model': ['15', 0], 'image': ['312', 0]}},
+        '40': {'class_type': 'UNETLoader', 'inputs': {'unet_name': 'trellis_2_int8_convrot.safetensors', 'weight_dtype': 'default'}},
+        '199': {'class_type': 'CFGOverride', 'inputs': {'model': ['40', 0], 'cfg': 1.0, 'start_percent': 0.667, 'end_percent': 1.0}},
+        '125': {'class_type': 'RescaleCFG', 'inputs': {'model': ['199', 0], 'multiplier': 0.7}},
+        '108': {'class_type': 'ModelSamplingSD3', 'inputs': {'model': ['125', 0], 'shift': 5.0}},
+        '279': {'class_type': 'CFGOverride', 'inputs': {'model': ['40', 0], 'cfg': 1.0, 'start_percent': 0.769, 'end_percent': 1.0}},
+        '126': {'class_type': 'RescaleCFG', 'inputs': {'model': ['279', 0], 'multiplier': 0.5}},
+        '87': {'class_type': 'EmptyTrellis2LatentStructure', 'inputs': {'batch_size': 1}},
+        '3': ks(['108', 0], '299', ['87', 0], seed + 14, 12, 7.5, 'normal'),
+        '117': {'class_type': 'VAELoader', 'inputs': {'vae_name': 'trellis_2_shape_vae_bf16.safetensors'}},
+        '118': {'class_type': 'VAELoader', 'inputs': {'vae_name': 'trellis_2_texture_vae_bf16.safetensors'}},
+        '119': {'class_type': 'VaeDecodeStructureTrellis2', 'inputs': {'samples': ['3', 0], 'vae': ['117', 0], 'resolution': '32'}},
+        '91': {'class_type': 'Trellis2ShapeStage', 'inputs': {'positive': ['299', 0], 'negative': ['299', 1], 'voxel': ['119', 0]}},
+        '18': ks(['126', 0], '91', ['91', 2], seed, 20, 7.5, 'normal'),
+        '94': {'class_type': 'Trellis2UpsampleStage', 'inputs': {'positive': ['91', 0], 'negative': ['91', 1], 'shape_latent': ['18', 0],
+                                                                 'vae': ['117', 0], 'target_resolution': int(resolution)}},
+        '23': ks(['126', 0], '94', ['94', 2], seed, 12, 7.5, 'simple'),
+        '92': {'class_type': 'VaeDecodeShapeTrellis', 'inputs': {'samples': ['23', 0], 'vae': ['117', 0]}},
+        '98': {'class_type': 'Trellis2TextureStage', 'inputs': {'positive': ['94', 0], 'negative': ['94', 1], 'shape_latent': ['23', 0]}},
+        '12': ks(['40', 0], '98', ['98', 2], seed + 1, 12, 1.0, 'normal'),
+        '93': {'class_type': 'VaeDecodeTextureTrellis', 'inputs': {'samples': ['12', 0], 'vae': ['118', 0], 'shape_subdivides': ['92', 1]}},
+        '202': {'class_type': 'GetMeshInfo', 'inputs': {'mesh': ['92', 0]}},
+        '241': {'class_type': 'RemeshMesh', 'inputs': {'mesh': ['202', 0], 'resolution': 768, 'sign_mode': 'udf', 'band': 1.0,
+                                                       'project_back': 0.0, 'fix_poles': False, 'smooth_iters': 20,
+                                                       'drop_small_components': 0.01, 'precluster_max_verts': 20000000}},
+        '186': {'class_type': 'DecimateMesh', 'inputs': {'mesh': ['241', 0], 'target_face_count': int(faces), 'placement_mode': 'midpoint'}},
+        '238': {'class_type': 'MeshSmoothNormals', 'inputs': {'mesh': ['186', 0], 'crease_angle': 180.0}},
+        '196': {'class_type': 'UnwrapMesh', 'inputs': {'mesh': ['238', 0], 'segmenter': 'pec', 'resolution': int(texture), 'padding': 1,
+                                                       'weld_distance': 0.0002}},
+        '147': {'class_type': 'BakeTextureFromVoxel', 'inputs': {'mesh': ['196', 0], 'voxel_colors': ['93', 0], 'reference_mesh': ['92', 0],
+                                                                 'texture_size': int(texture)}},
+        '224': {'class_type': 'BakeNormalMapFromMesh', 'inputs': {'low_poly': ['196', 0], 'high_poly': ['241', 0], 'resolution': 2048,
+                                                                  'cage_distance': 0.05, 'ignore_backfaces': True}},
+        '233': {'class_type': 'BakeAmbientOcclusion', 'inputs': {'low_poly': ['196', 0], 'high_poly': ['241', 0], 'resolution': 1024,
+                                                                 'samples': 64, 'max_distance': 0.71, 'strength': 1.0, 'bias': 0.01}},
+        '210': {'class_type': 'ApplyTextureToMesh', 'inputs': {'mesh': ['196', 0], 'base_color': ['147', 0], 'metallic': ['147', 1],
+                                                               'roughness': ['147', 2], 'occlusion': ['233', 0], 'normal_map': ['224', 0]}},
+        '260': {'class_type': 'MeshSmoothNormals', 'inputs': {'mesh': ['210', 0], 'crease_angle': 180.0}},
+        '400': {'class_type': 'SaveGLB', 'inputs': {'mesh': ['260', 0], 'filename_prefix': prefix}},
+    }
+    return wf
+
 
 def klein_t2i(prompt, seed, width, height, steps=4, cfg=1.0, prefix='gameforge', pixel=None):
     """API-Workflow: FLUX.2 klein Text→Bild. Optional deterministische Pixel-Art-Nachbearbeitung."""

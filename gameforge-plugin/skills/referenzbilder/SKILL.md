@@ -22,4 +22,4 @@ Werkzeug: `gf.cmd` (Pfad siehe Skill `gameforge-studio`).
 
 ## Wenn etwas fehlt
 - ComfyUI nicht installiert / Fehler: Skill `system-check`. Alternative ohne lokale KI: `gf.cmd prompt "<Spiel>" --asset … --art … --ansicht front` liefert einen kopierbaren Prompt für ChatGPT; das Bild legt der Nutzer dann in `referenzen/entwuerfe/<Asset>/` ab.
-- Ein Referenzbild ist **kein 3D-Modell**. Für das Modell: Skill `blender-asset`.
+- Ein Referenzbild ist **kein 3D-Modell**. Für das Modell: Skill `blender-asset`. Aus einer freigegebenen Referenz kann `gf.cmd 3d` lokal einen texturierten Rohling (GLB) erzeugen, der dann in Blender fertig gebaut wird (siehe `blender-asset`, Schritt 2a).

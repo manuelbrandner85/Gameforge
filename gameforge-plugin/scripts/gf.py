@@ -616,6 +616,8 @@ def cmd_system(a):
         for rel in ('diffusion_models/flux-2-klein-4b.safetensors', 'text_encoders/qwen_3_4b.safetensors', 'vae/flux2-vae.safetensors'):
             p = root / 'ComfyUI' / 'models' / rel
             out(f'  Modell {rel}: {"vorhanden" if p.is_file() else "FEHLT"}')
+        miss3d = comfy.trellis2_missing(root)
+        out('  Bild → 3D (TRELLIS.2, „gf 3d“): ' + ('bereit' if not miss3d else 'Modelle fehlen: ' + ', '.join(m.split('/')[-1] for m in miss3d)))
     g = hardware.gpu_status()
     for x in g.get('gpus', []):
         out(f'Grafikkarte: {x["name"]} · VRAM {x.get("vram_used_mb")}/{x.get("vram_total_mb")} MB belegt')
@@ -724,6 +726,85 @@ def _bild_views(a, root, prof, q, qp, views, asset_dir, c, post):
                 out('  Technische Prüfung nicht bestanden – neuer Versuch mit anderem Seed …' if attempt + 1 < qp['max_attempts'] else '  Technische Prüfung endgültig nicht bestanden.')
             orders = [o for o in orders if not (o['asset'] == a.asset and o['view'] == view)] + [{'asset': a.asset, 'type': a.art, 'view': view, 'details': a.details or '', 'state': 'Entwurf' if ok else 'Fehlerhaft', 'updated_at': now()}]
     write_json(root / 'referenzen' / 'auftraege.json', orders)
+
+
+NOAI_HINTS = re.compile(r'(^|[\\/])(fab|fablibrary|vaultcache|megascans|quixel)([\\/]|$)|noai', re.I)
+
+
+def cmd_3d(a):
+    """Bild → texturiertes 3D-Modell (GLB) lokal mit TRELLIS.2 in ComfyUI. Ergebnis ist ein Rohling für Blender."""
+    root = find_game(a.spiel)
+    need_gameforge(root, '3D-Erzeugung')
+    asset_dir = safe_name(a.asset)
+    src = Path(a.bild) if a.bild else root / 'referenzen' / 'freigegeben' / asset_dir / 'front.png'
+    src = (root / src).resolve() if not src.is_absolute() else src.resolve()
+    if not src.is_file():
+        raise SystemExit(f'Eingangsbild fehlt: {src}. Erst eine Referenz freigeben (gf bild … / gf freigeben …) oder --bild angeben.')
+    meta_in = read_json(src.with_suffix('.json'), {}) or {}
+    if NOAI_HINTS.search(str(src)) or 'noai' in json.dumps(meta_in).lower():
+        raise SystemExit('BLOCKIERT – das Bild stammt offenbar aus Fab/Megascans oder ist als NoAI markiert. Solche Inhalte dürfen nicht in generative KI.')
+    croot = comfy.find_root(HOME)
+    if not croot:
+        raise SystemExit('ComfyUI ist nicht installiert (erwartet unter ' + str(HOME / 'engines') + ').')
+    missing = comfy.trellis2_missing(croot)
+    if missing:
+        raise SystemExit('TRELLIS.2-Modelle fehlen: ' + ', '.join(missing) + ' (Comfy-Org/TRELLIS.2 und Comfy-Org/BiRefNet auf Hugging Face, MIT).')
+    folder = root / 'blender' / asset_dir / 'generiert'
+    folder.mkdir(parents=True, exist_ok=True)
+    vs = [int(m.group(1)) for f in folder.glob('*_trellis2_v*.glb') if (m := re.search(r'_v(\d+)\.glb$', f.name))]
+    ver = max(vs, default=0) + 1
+    target = folder / f'{asset_dir}_trellis2_v{ver}.glb'
+    seed = a.seed if a.seed is not None else prompts.asset_seed(root.name, a.asset, ver - 1)
+    c = comfy.Comfy(HOME, HOME / 'engines' / 'logs')
+    out(f'TRELLIS.2 · Auflösung {a.aufloesung} · Textur {a.textur} px · max. {a.flaechen} Flächen · Seed {seed}')
+    if not c.online():
+        out('ComfyUI wird gestartet (nur lokal, 127.0.0.1) …')
+
+    def _room():
+        q_ = c.queue_state() or {}
+        return not q_.get('queue_running') and not q_.get('queue_pending') and c.free()
+    guard = _GpuGuard(f'3d:{root.name}/{a.asset}', f'comfy_trellis2_{a.aufloesung}', 7500, timeout_s=3600, make_room=_room)
+    guard.__enter__()
+    try:
+        c.start()
+        name = c.upload_image(src, f'gf3d_{asset_dir}_{hashlib.sha256(src.read_bytes()).hexdigest()[:10]}.png')
+        wf = comfy.trellis2_i2m(name, seed, a.aufloesung, a.textur, a.flaechen, prefix=f'gameforge3d/{asset_dir}', remove_bg=not a.ohne_freistellen)
+        miss = c.missing_nodes(wf)
+        if miss:
+            raise SystemExit('ComfyUI-Version kennt benötigte Bausteine nicht: ' + ', '.join(miss) + ' (ComfyUI ≥ 0.34 nötig).')
+        t0 = time.time()
+        pid = c.queue(wf)
+        hist = None
+        while time.time() - t0 < 3600:
+            hist = c.history(pid)
+            if hist and (hist.get('status', {}).get('completed') or hist.get('status', {}).get('status_str') == 'error'):
+                break
+            time.sleep(2)
+        if not hist or hist['status'].get('status_str') == 'error':
+            msgs = [m for m in (hist or {}).get('status', {}).get('messages', []) if m[0] == 'execution_error']
+            err = msgs[0][1].get('exception_message', '') if msgs else 'keine Antwort (Zeitlimit 60 min)'
+            if gc and gc.detect_oom(err):
+                raise SystemExit(f'BLOCKIERT: Grafikspeicher voll ({err[:200]}). Die Qualität wird NICHT automatisch gesenkt – andere GPU-Programme schließen und erneut starten, oder bewusst --aufloesung 1024 wählen.')
+            raise SystemExit(f'FEHLER: {err[:500]}')
+        files = [f for o in hist.get('outputs', {}).values() for lst in o.values() if isinstance(lst, list)
+                 for f in lst if isinstance(f, dict) and str(f.get('filename', '')).lower().endswith('.glb')]
+        if not files:
+            raise SystemExit('FEHLER: ComfyUI meldet fertig, aber keine GLB-Datei: ' + json.dumps(hist.get('outputs', {}))[:400])
+        data = c.fetch_image(files[0]['filename'], files[0].get('subfolder', ''), files[0].get('type', 'output'))
+        with open(target, 'xb') as f:
+            f.write(data)
+    finally:
+        guard.__exit__(*sys.exc_info())
+    secs = round(time.time() - t0, 1)
+    ok = data[:4] == b'glTF'
+    meta = {'game': root.name, 'asset': a.asset, 'model': 'TRELLIS.2 int8 (Microsoft, MIT) · DINOv3 ViT-L (Meta DINOv3-Lizenz) · BiRefNet (MIT)',
+            'input': str(src), 'input_sha256': hashlib.sha256(src.read_bytes()).hexdigest(), 'input_review': meta_in.get('review'),
+            'seed': seed, 'resolution': a.aufloesung, 'texture': a.textur, 'max_faces': a.flaechen, 'background_removed': not a.ohne_freistellen,
+            'seconds': secs, 'bytes': len(data), 'glb_header_ok': ok, 'created_at': now(),
+            'review': 'Rohling – Blender-Nacharbeit nötig (Maßstab, Topologie, UV, Material)' if ok else 'Technisch fehlerhaft'}
+    write_json(target.with_suffix('.json'), meta)
+    out(f'3D {target.relative_to(root)} · {len(data) // 1024} KB · {secs} s · GLB-Kopf {"✓" if ok else "✗"}')
+    out('Rohling: in Blender auf echten Maßstab bringen, Topologie/UV/Material prüfen (gf blender-auftrag …), dann erst exportieren.')
 
 
 def cmd_freigeben(a):
@@ -1317,6 +1398,10 @@ def main(argv=None):
     x.add_argument('--ansichten'); x.add_argument('--details'); x.add_argument('--qualitaet', default='AUTO', choices=['AUTO', 'DRAFT', 'STANDARD', 'HIGH', 'CINEMATIC_MASTER'])
     x.add_argument('--neu', action='store_true'); x.set_defaults(f=cmd_bild)
     x = sp.add_parser('freigeben'); x.add_argument('spiel'); x.add_argument('bild'); x.set_defaults(f=cmd_freigeben)
+    x = sp.add_parser('3d'); x.add_argument('spiel'); x.add_argument('--asset', required=True); x.add_argument('--bild')
+    x.add_argument('--aufloesung', type=int, default=1536, choices=[1024, 1536, 2048]); x.add_argument('--textur', type=int, default=4096, choices=[2048, 4096])
+    x.add_argument('--flaechen', type=int, default=700000); x.add_argument('--seed', type=int); x.add_argument('--ohne-freistellen', action='store_true')
+    x.set_defaults(f=cmd_3d)
     x = sp.add_parser('blender-auftrag'); x.add_argument('spiel'); x.add_argument('--asset', required=True); x.add_argument('--art', default='character', choices=list(VIEWS))
     x.add_argument('--details'); x.add_argument('--masse'); x.set_defaults(f=cmd_blender_auftrag)
     x = sp.add_parser('asset-pruefen'); x.add_argument('spiel'); x.add_argument('--asset', required=True); x.set_defaults(f=cmd_asset_pruefen)
